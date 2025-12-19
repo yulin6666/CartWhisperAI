@@ -1,0 +1,78 @@
+[
+  {
+    "timestamp": "2025-12-17T06:39:21.758Z",
+    "status": "failed",
+    "error": "Field 'weight' doesn't exist on type 'ProductVariant'"
+  },
+  {
+    "timestamp": "2025-12-17T06:41:25.728Z",
+    "status": "failed",
+    "error": "Field 'currency' doesn't exist on type 'Order'"
+  },
+  {
+    "timestamp": "2025-12-17T06:44:23.550Z",
+    "status": "failed"
+  },
+  {
+    "timestamp": "2025-12-17T07:11:30.768Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-17T07:14:00.855Z",
+    "status": "failed",
+    "error": "Field 'financialStatus' doesn't exist on type 'Order'"
+  },
+  {
+    "timestamp": "2025-12-17T07:21:17.621Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-17T07:24:02.590Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-17T07:46:43.684Z",
+    "status": "failed",
+    "error": "This app is not approved to access the Order object. See https://shopify.dev/docs/apps/launch/protected-customer-data for more details."
+  },
+  {
+    "timestamp": "2025-12-17T11:41:32.243Z",
+    "status": "failed",
+    "error": "This app is not approved to access the Order object. See https://shopify.dev/docs/apps/launch/protected-customer-data for more details."
+  },
+  {
+    "timestamp": "2025-12-17T11:43:45.247Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-17T11:44:09.598Z",
+    "status": "failed",
+    "error": "This app is not approved to access the Order object. See https://shopify.dev/docs/apps/launch/protected-customer-data for more details."
+  },
+  {
+    "timestamp": "2025-12-17T11:45:56.961Z",
+    "status": "failed",
+    "error": "This app is not approved to access the Order object. See https://shopify.dev/docs/apps/launch/protected-customer-data for more details."
+  },
+  {
+    "timestamp": "2025-12-18T02:28:39.551Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-18T02:29:15.173Z",
+    "productsCount": 30,
+    "duration": "1.20s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-18T02:29:30.630Z",
+    "productsCount": 30,
+    "duration": "1.21s",
+    "status": "success"
+  }
+]

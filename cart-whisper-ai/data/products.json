@@ -1,0 +1,1798 @@
+[
+  {
+    "id": "gid://shopify/Product/7534975221847",
+    "title": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+    "handle": "vans-authentic-lo-pro-burgandy-white",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "The forefather of the Vans family, the original Vans Authentic was introduced in 1966 and nearly 4 decades later is still going strong, its popularity extending from the original fans - skaters and surfers to all sorts. Now remodeled into a low top lace-up with a slim silhouette, the Vans Authentic Lo Pro features sturdy canvas uppers with lower sidewalls, metal eyelets, and low profile mini waffle outsoles for a lightweight feel.",
+    "createdAt": "2025-12-14T15:16:44Z",
+    "updatedAt": "2025-12-15T03:16:51Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+      "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377581592663",
+        "title": "4 / burgandy",
+        "price": "29.00",
+        "sku": "VN-01-4-burgandy",
+        "barcode": null,
+        "inventoryQuantity": 20
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581625431",
+        "title": "5 / burgandy",
+        "price": "29.00",
+        "sku": "VN-01-5-burgandy",
+        "barcode": null,
+        "inventoryQuantity": 20
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581658199",
+        "title": "10 / burgandy",
+        "price": "29.00",
+        "sku": "VN-01-10-burgandy",
+        "barcode": null,
+        "inventoryQuantity": 20
+      }
+    ],
+    "collections": [
+      "VANS",
+      "SALE"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975254615",
+    "title": "VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON",
+    "handle": "vans-authentic-multi-eyelets-gradient-crimson",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "The forefather of the Vans family, the Vans Authentic was introduced in 1966 and nearly 4 decades later is still going strong, its popularity extending from the original fans - skaters and surfers to all sorts. The Vans Authentic is constructed from canvas and Vans' signature waffle outsole construction.",
+    "createdAt": "2025-12-14T15:16:50Z",
+    "updatedAt": "2025-12-15T03:16:55Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_2_image1.jpg?v=1765725412",
+      "altText": "VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377581690967",
+        "title": "5 / red",
+        "price": "99.95",
+        "sku": "VN-02-5-red",
+        "barcode": null,
+        "inventoryQuantity": 13
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581723735",
+        "title": "6 / red",
+        "price": "99.95",
+        "sku": "VN-02-6-red",
+        "barcode": null,
+        "inventoryQuantity": 13
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581756503",
+        "title": "7 / red",
+        "price": "99.95",
+        "sku": "VN-02-7-red",
+        "barcode": null,
+        "inventoryQuantity": 13
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581789271",
+        "title": "8 / red",
+        "price": "99.95",
+        "sku": "VN-02-8-red",
+        "barcode": null,
+        "inventoryQuantity": 13
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581822039",
+        "title": "9 / red",
+        "price": "99.95",
+        "sku": "VN-02-9-red",
+        "barcode": null,
+        "inventoryQuantity": 13
+      }
+    ],
+    "collections": [
+      "VANS",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975287383",
+    "title": "VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK",
+    "handle": "vans-authentic-butterfly-true-white-black",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "The forefather of the Vans family, the Vans Authentic was introduced in 1966 and nearly 4 decades later is still going strong, its popularity extending from the original fans - skaters and surfers to all sorts. The Vans Authentic is constructed from canvas and Vans' signature waffle outsole construction.",
+    "createdAt": "2025-12-14T15:16:56Z",
+    "updatedAt": "2025-12-15T03:17:03Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_3_image1.jpg?v=1765725419",
+      "altText": "VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377581854807",
+        "title": "4 / white",
+        "price": "109.95",
+        "sku": "VN-03-4-white",
+        "barcode": null,
+        "inventoryQuantity": 15
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581887575",
+        "title": "5 / white",
+        "price": "109.95",
+        "sku": "VN-03-5-white",
+        "barcode": null,
+        "inventoryQuantity": 15
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581920343",
+        "title": "6 / white",
+        "price": "109.95",
+        "sku": "VN-03-6-white",
+        "barcode": null,
+        "inventoryQuantity": 15
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581953111",
+        "title": "7 / white",
+        "price": "109.95",
+        "sku": "VN-03-7-white",
+        "barcode": null,
+        "inventoryQuantity": 15
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377581985879",
+        "title": "8 / white",
+        "price": "109.95",
+        "sku": "VN-03-8-white",
+        "barcode": null,
+        "inventoryQuantity": 15
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582018647",
+        "title": "9 / white",
+        "price": "109.95",
+        "sku": "VN-03-9-white",
+        "barcode": null,
+        "inventoryQuantity": 15
+      }
+    ],
+    "collections": [
+      "VANS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975320151",
+    "title": "VANS |\nERA 59 MOROCCAN | GEO/DRESS BLUES",
+    "handle": "vans-era-59-moroccan-geo-dress-blues",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "Vans are a staple in skate culture and street style, and the Vans Era 59 is no exception. This classic lace-up skate shoe is focused on ultimate comfort and cool. Constructed from canvas with leather accents which sets it apart from the original Era, it features a soft footbed, double stitched vamp, a padded tongue and lining, as well as Vans' signature waffle sole.",
+    "createdAt": "2025-12-14T15:17:03Z",
+    "updatedAt": "2025-12-15T03:17:21Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_4_image1.jpg?v=1765725427",
+      "altText": "VANS |\nERA 59 MOROCCAN | GEO/DRESS BLUES"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377582051415",
+        "title": "8 / blue",
+        "price": "119.95",
+        "sku": "VN-04-8-blue",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582084183",
+        "title": "9 / blue",
+        "price": "119.95",
+        "sku": "VN-04-9-blue",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582116951",
+        "title": "10 / blue",
+        "price": "119.95",
+        "sku": "VN-04-10-blue",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582149719",
+        "title": "13 / blue",
+        "price": "119.95",
+        "sku": "VN-04-13-blue",
+        "barcode": null,
+        "inventoryQuantity": 21
+      }
+    ],
+    "collections": [
+      "VANS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975352919",
+    "title": "VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE",
+    "handle": "vans-sk8-hi-decon-cutout-leaves-white",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "The Vans Cut Out Sk8-Hi Decon brings a twist to the iconic Vans Sk8-Hi silhouette: a new deconstructed leather high-top upper with a custom die cut design that lets the material shape on its own accord without much structural constriction. It also features signature rubber waffle outsoles.",
+    "createdAt": "2025-12-14T15:17:09Z",
+    "updatedAt": "2025-12-15T03:17:16Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_5_image1.jpg?v=1765725431",
+      "altText": "VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377582182487",
+        "title": "4 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-4-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582215255",
+        "title": "5 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-5-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582248023",
+        "title": "6 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-6-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582280791",
+        "title": "7 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-7-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582313559",
+        "title": "8 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-8-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582346327",
+        "title": "9 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-9-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582379095",
+        "title": "10 / white",
+        "price": "179.95",
+        "sku": "VN-05\n-10-white",
+        "barcode": null,
+        "inventoryQuantity": 5
+      }
+    ],
+    "collections": [
+      "VANS",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975385687",
+    "title": "PALLADIUM | PALLATECH HI TX | CHEVRON",
+    "handle": "palladium-pallatech-hi-tx-chevron",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "PALLADIUM",
+    "description": "The Palladium iconic classic receives a subtle, yet stylish update. The Pallatech Hi TX features a full grain leather upper with cotton canvas and soft cuff around the collar, providing even more comfort. The boot is finished with a single-unit molded rubber outsole, offering excellent traction while exploring your city. The EVA-cushioned footbed and hugging heel cup cradle the foot for lasting support.",
+    "createdAt": "2025-12-14T15:17:16Z",
+    "updatedAt": "2025-12-15T03:17:22Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_6_image1.jpg?v=1765725438",
+      "altText": "PALLADIUM | PALLATECH HI TX | CHEVRON"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377582444631",
+        "title": "9 / red",
+        "price": "159.95",
+        "sku": "PAL-01\n-9-red",
+        "barcode": null,
+        "inventoryQuantity": 16
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582477399",
+        "title": "10 / red",
+        "price": "159.95",
+        "sku": "PAL-01\n-10-red",
+        "barcode": null,
+        "inventoryQuantity": 16
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582510167",
+        "title": "12 / red",
+        "price": "159.95",
+        "sku": "PAL-01\n-12-red",
+        "barcode": null,
+        "inventoryQuantity": 16
+      }
+    ],
+    "collections": [
+      "PALLADUIM",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975418455",
+    "title": "ASICS TIGER | GEL-LYTE V '30 YEARS OF GEL' PACK",
+    "handle": "asics-tiger-gel-lyte-v-30-years-of-gel-pack",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "ASICS TIGER",
+    "description": "The iconic ASICS Tiger GEL-Lyte III was originally released in 1990. Having over two decades of performance heritage, it offers fine design detailing and a padded split tongue to eliminate tongue movement, built on a sleek silhouette. It comes as no surprise the Gel-Lyte III is a fast growing popular choice for sneaker enthusiasts all over the world.",
+    "createdAt": "2025-12-14T15:17:22Z",
+    "updatedAt": "2025-12-15T03:17:29Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_7_image1.jpg?v=1765725444",
+      "altText": "ASICS TIGER | GEL-LYTE V '30 YEARS OF GEL' PACK"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377582542935",
+        "title": "4 / black",
+        "price": "220.00",
+        "sku": "AsTi-01-4-black",
+        "barcode": null,
+        "inventoryQuantity": 3
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582575703",
+        "title": "8 / black",
+        "price": "220.00",
+        "sku": "AsTi-01-8-black",
+        "barcode": null,
+        "inventoryQuantity": 3
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582608471",
+        "title": "14 / black",
+        "price": "220.00",
+        "sku": "AsTi-01-14-black",
+        "barcode": null,
+        "inventoryQuantity": 3
+      }
+    ],
+    "collections": [
+      "Automated Collection",
+      "ASICS TIGER"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975451223",
+    "title": "PUMA | SUEDE CLASSIC REGAL",
+    "handle": "puma-suede-classic-regal",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "PUMA",
+    "description": "First introduced in 1968, the Puma Suede Classic is Puma's most epic sneaker with its athletic inspired design and smooth suede. The Puma Suede Classic Regal Red/White is constructed with a suede upper and contrasting low profile rubber sole, and fat laces, the classic continues to make its mark on the streets today.",
+    "createdAt": "2025-12-14T15:17:28Z",
+    "updatedAt": "2025-12-15T03:17:37Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_8_image1.jpg?v=1765725449",
+      "altText": "PUMA | SUEDE CLASSIC REGAL"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377582641239",
+        "title": "5 / red",
+        "price": "110.00",
+        "sku": "PM-01-5-red",
+        "barcode": null,
+        "inventoryQuantity": 20
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582674007",
+        "title": "6 / red",
+        "price": "110.00",
+        "sku": "PM-01-6-red",
+        "barcode": null,
+        "inventoryQuantity": 20
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582706775",
+        "title": "7 / red",
+        "price": "110.00",
+        "sku": "PM-01-7-red",
+        "barcode": null,
+        "inventoryQuantity": 20
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582739543",
+        "title": "8 / red",
+        "price": "110.00",
+        "sku": "PM-01-8-red",
+        "barcode": null,
+        "inventoryQuantity": 20
+      }
+    ],
+    "collections": [
+      "PUMA",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975483991",
+    "title": "SUPRA | MENS VAIDER",
+    "handle": "supra-mens-vaider",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "SUPRA",
+    "description": "Supra introduces the Vaider. A stylishly designed high top upper on a vulcanized sole that supplies excellent traction and board feel. A padded collar and tongue lining provide superior comfort",
+    "createdAt": "2025-12-14T15:17:34Z",
+    "updatedAt": "2025-12-15T03:17:41Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_9_image1.jpg?v=1765725456",
+      "altText": "SUPRA | MENS VAIDER"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377582903383",
+        "title": "9 / gray",
+        "price": "169.95",
+        "sku": "su-01-9-gray",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582936151",
+        "title": "10 / gray",
+        "price": "169.95",
+        "sku": "su-01-10-gray",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377582968919",
+        "title": "11 / gray",
+        "price": "169.95",
+        "sku": "su-01-11-gray",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583001687",
+        "title": "12 / gray",
+        "price": "169.95",
+        "sku": "su-01-12-gray",
+        "barcode": null,
+        "inventoryQuantity": 5
+      }
+    ],
+    "collections": [
+      "SUPRA"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975516759",
+    "title": "ADIDAS | SUPERSTAR 80S",
+    "handle": "adidas-superstar-80s",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "ADIDAS",
+    "description": "There's a shell toe for every season, and the adidas Originals Superstar 80s shoes have a full grain leather upper with a shiny badge on the tongue that makes these shoes ready for any time of year.",
+    "createdAt": "2025-12-14T15:17:40Z",
+    "updatedAt": "2025-12-15T03:17:48Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_10_image1.jpg?v=1765725462",
+      "altText": "ADIDAS | SUPERSTAR 80S"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377583034455",
+        "title": "5 / white",
+        "price": "170.00",
+        "sku": "AD-01-5-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583067223",
+        "title": "6 / white",
+        "price": "170.00",
+        "sku": "AD-01-6-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583099991",
+        "title": "7 / white",
+        "price": "170.00",
+        "sku": "AD-01-7-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583132759",
+        "title": "9 / white",
+        "price": "170.00",
+        "sku": "AD-01-9-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583165527",
+        "title": "10 / white",
+        "price": "170.00",
+        "sku": "AD-01-10-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583198295",
+        "title": "11 / white",
+        "price": "170.00",
+        "sku": "AD-01-11-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583231063",
+        "title": "12 / white",
+        "price": "170.00",
+        "sku": "AD-01-12-white",
+        "barcode": null,
+        "inventoryQuantity": 100
+      }
+    ],
+    "collections": [
+      "ADIDAS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975549527",
+    "title": "VANS | ERA 59 (DESERT COWBOY)",
+    "handle": "vans-era-59-desert-cowboy",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "Vans are a staple in skate culture and street style, and the Vans Era 59 is no exception. This classic lace-up skate shoe is focused on ultimate comfort and cool. Constructed from canvas with leather accents which sets it apart from the original Era, it features a soft footbed, double stitched vamp, a padded tongue and lining, as well as Vans' signature waffle sole.",
+    "createdAt": "2025-12-14T15:17:47Z",
+    "updatedAt": "2025-12-15T03:18:01Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_11_image1.jpg?v=1765725469",
+      "altText": "VANS | ERA 59 (DESERT COWBOY)"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377583263831",
+        "title": "9 / light_brown",
+        "price": "109.95",
+        "sku": "VN-06-9-light_brown",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583296599",
+        "title": "10 / light_brown",
+        "price": "109.95",
+        "sku": "VN-06-10-light_brown",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583329367",
+        "title": "11 / light_brown",
+        "price": "109.95",
+        "sku": "VN-06-11-light_brown",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583362135",
+        "title": "12 / light_brown",
+        "price": "109.95",
+        "sku": "VN-06-12-light_brown",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583394903",
+        "title": "13 / light_brown",
+        "price": "109.95",
+        "sku": "VN-06-13-light_brown",
+        "barcode": null,
+        "inventoryQuantity": 50
+      }
+    ],
+    "collections": [
+      "VANS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975582295",
+    "title": "VANS | SH-8 HI",
+    "handle": "vans-sh-8-hi",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "Vans are a staple in skate culture and street style, and this skate sneaker is no exception. Introduced in the early 70's, the Vans SK8 Hi was responsible for the reduced number of ankle injuries in the skating scene with the extra padded ankle support, but its popularity has grown across different cultural scenes. The Vans SK8 Hi True White is constructed from a combination of canvas and suede and features the signature side stripe detail and vulcanized waffle sole. Available in a range of colours.",
+    "createdAt": "2025-12-14T15:17:53Z",
+    "updatedAt": "2025-12-15T03:18:01Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_12_image1.jpg?v=1765725475",
+      "altText": "VANS | SH-8 HI"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377583427671",
+        "title": "4 / black",
+        "price": "129.95",
+        "sku": "VN-07-4-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583460439",
+        "title": "5 / black",
+        "price": "129.95",
+        "sku": "VN-07-5-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583493207",
+        "title": "6 / black",
+        "price": "129.95",
+        "sku": "VN-07-6-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583525975",
+        "title": "7 / black",
+        "price": "129.95",
+        "sku": "VN-07-7-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583558743",
+        "title": "8 / black",
+        "price": "129.95",
+        "sku": "VN-07-8-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583591511",
+        "title": "9 / black",
+        "price": "129.95",
+        "sku": "VN-07-9-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583624279",
+        "title": "10 / black",
+        "price": "129.95",
+        "sku": "VN-07-10-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583657047",
+        "title": "11 / black",
+        "price": "129.95",
+        "sku": "VN-07-11-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583689815",
+        "title": "12 / black",
+        "price": "129.95",
+        "sku": "VN-07-12-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583722583",
+        "title": "14 / black",
+        "price": "129.95",
+        "sku": "VN-07-14-black",
+        "barcode": null,
+        "inventoryQuantity": 31
+      }
+    ],
+    "collections": [
+      "VANS",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975615063",
+    "title": "VANS | OLD SKOOL (BUTTERFLY) TRUE WHITE | BLACK",
+    "handle": "vans-old-skool-butterfly-true-white-black",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "Vans are a staple in skate culture and street style, and this skate sneaker is no exception. Introduced in 1977, the Vans Old Skool sneaker is a classic in the Vans collection. Full of attitude, the Old Skool is durable and lightweight, and can give the other boys in the collection a run for its money. Constructed from canvas, The Vans Old Skool features contrasting suede panels along the toe and heel, plus the iconic stripe along the side of the shoe, and sits over a chunky midsole.",
+    "createdAt": "2025-12-14T15:18:00Z",
+    "updatedAt": "2025-12-15T03:18:07Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_13_image1.jpg?v=1765725483",
+      "altText": "VANS | OLD SKOOL (BUTTERFLY) TRUE WHITE | BLACK"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377583755351",
+        "title": "4 / white",
+        "price": "129.95",
+        "sku": "VN-08-4-white",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583788119",
+        "title": "5 / white",
+        "price": "129.95",
+        "sku": "VN-08-5-white",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583820887",
+        "title": "6 / white",
+        "price": "129.95",
+        "sku": "VN-08-6-white",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583853655",
+        "title": "7 / white",
+        "price": "129.95",
+        "sku": "VN-08-7-white",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583886423",
+        "title": "8 / white",
+        "price": "129.95",
+        "sku": "VN-08-8-white",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377583919191",
+        "title": "9 / white",
+        "price": "129.95",
+        "sku": "VN-08-9-white",
+        "barcode": null,
+        "inventoryQuantity": 50
+      }
+    ],
+    "collections": [
+      "VANS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975680599",
+    "title": "VANS | CLASSIC SLIP-ON (PERFORATED SUEDE)",
+    "handle": "vans-classic-slip-on-perforated-suede",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "VANS",
+    "description": "The Perforated Suede Classic Slip-On features low profile slip-on perforated suede uppers,, padded collars, elastic side accents, and signature rubber waffle outsoles.",
+    "createdAt": "2025-12-14T15:18:07Z",
+    "updatedAt": "2025-12-15T03:18:14Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_14_image1.jpg?v=1765725489",
+      "altText": "VANS | CLASSIC SLIP-ON (PERFORATED SUEDE)"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377584115799",
+        "title": "4 / beige",
+        "price": "119.95",
+        "sku": "VN-09-4-beige",
+        "barcode": null,
+        "inventoryQuantity": 60
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584148567",
+        "title": "5 / beige",
+        "price": "119.95",
+        "sku": "VN-09-5-beige",
+        "barcode": null,
+        "inventoryQuantity": 60
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584181335",
+        "title": "6 / beige",
+        "price": "119.95",
+        "sku": "VN-09-6-beige",
+        "barcode": null,
+        "inventoryQuantity": 60
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584214103",
+        "title": "7 / beige",
+        "price": "119.95",
+        "sku": "VN-09-7-beige",
+        "barcode": null,
+        "inventoryQuantity": 60
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584246871",
+        "title": "8 / beige",
+        "price": "119.95",
+        "sku": "VN-09-8-beige",
+        "barcode": null,
+        "inventoryQuantity": 60
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584279639",
+        "title": "9 / beige",
+        "price": "119.95",
+        "sku": "VN-09-9-beige",
+        "barcode": null,
+        "inventoryQuantity": 60
+      }
+    ],
+    "collections": [
+      "VANS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975713367",
+    "title": "TIMBERLAND | MENS 6 INCH PREMIUM BOOT",
+    "handle": "timberland-mens-6-inch-premium-boot",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "TIMBERLAND",
+    "description": "Timberland has been refining their craft of producing hard-wearing boots for decades. The 6-Inch Premium Waterproof Boot (or Wheat Boot) is the original men's Timberland boot and was first designed nearly 40 years ago. Continuous improvements to the design and construction, such as the addition of Timberland's exclusive anti-fatigue technology for all day comfort, has cemented these boots as a sturdy and dependable staple in anyone's shoe collection. The premium waterproof leather, seam-sealed construction and rugged lug outsoles provides long-lasting durability and comfort to help you get through any environmental conditions and adventure. An absolute must-have.",
+    "createdAt": "2025-12-14T15:18:13Z",
+    "updatedAt": "2025-12-15T03:18:21Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_15_image1.jpg?v=1765725495",
+      "altText": "TIMBERLAND | MENS 6 INCH PREMIUM BOOT"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377584345175",
+        "title": "7 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-7-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584377943",
+        "title": "8 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-8-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584410711",
+        "title": "9 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-9-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584443479",
+        "title": "10 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-10-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584476247",
+        "title": "11 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-11-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584509015",
+        "title": "12 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-12-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584541783",
+        "title": "13 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-13-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584574551",
+        "title": "14 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-14-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584607319",
+        "title": "15 / yellow",
+        "price": "299.95",
+        "sku": "TM-01-15-yellow",
+        "barcode": null,
+        "inventoryQuantity": 50
+      }
+    ],
+    "collections": [
+      "Automated Collection",
+      "TIMBERLAND"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975746135",
+    "title": "NIKE | CRACKLE PRINT TB TEE",
+    "handle": "nike-crackle-print-tb-tee",
+    "status": "ACTIVE",
+    "productType": "T-SHIRTS",
+    "vendor": "NIKE",
+    "description": "Meet your new favorite tee, the Nike Crackle Print T-Shirt. Bringing its A-game in soft, premium fabric, it features a ribbed crew neck and a woven Nike label on the hem.",
+    "createdAt": "2025-12-14T15:18:20Z",
+    "updatedAt": "2025-12-15T03:18:31Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+      "altText": "NIKE | CRACKLE PRINT TB TEE"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377584640087",
+        "title": "s / blue",
+        "price": "40.00",
+        "sku": "NK-01-s-blue",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584672855",
+        "title": "m / blue",
+        "price": "40.00",
+        "sku": "NK-01-m-blue",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584705623",
+        "title": "l / blue",
+        "price": "40.00",
+        "sku": "NK-01-l-blue",
+        "barcode": null,
+        "inventoryQuantity": 50
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584738391",
+        "title": "xl / blue",
+        "price": "40.00",
+        "sku": "NK-01-xl-blue",
+        "barcode": null,
+        "inventoryQuantity": 50
+      }
+    ],
+    "collections": [
+      "NIKE",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975778903",
+    "title": "DR MARTENS | 1461 DMC 3-EYE SHOE | BLACK SMOOTH",
+    "handle": "dr-martens-1461-dmc-3-eye-shoe-black-smooth",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "DR MARTENS",
+    "description": "Make a statement with the iconic Dr Marten's 1461Z DMC 3-Eye shoe. Stamped with Docs trademade look, this lace-up shoe is crafted with high-quality, durable smooth leather, and has been made to last. This unique shoe features an air-cushioned sole offering good abrasion and slip resistance, and is made with Goodyear welt - the sole and upper are heat-sealed and sewn together.",
+    "createdAt": "2025-12-14T15:18:26Z",
+    "updatedAt": "2025-12-15T03:18:36Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_17_image1.jpg?v=1765725508",
+      "altText": "DR MARTENS | 1461 DMC 3-EYE SHOE | BLACK SMOOTH"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377584771159",
+        "title": "5 / black",
+        "price": "229.00",
+        "sku": "DM-01-5-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584803927",
+        "title": "6 / black",
+        "price": "229.00",
+        "sku": "DM-01-6-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584836695",
+        "title": "7 / black",
+        "price": "229.00",
+        "sku": "DM-01-7-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584869463",
+        "title": "8 / black",
+        "price": "229.00",
+        "sku": "DM-01-8-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584902231",
+        "title": "9 / black",
+        "price": "229.00",
+        "sku": "DM-01-9-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584934999",
+        "title": "10 / black",
+        "price": "229.00",
+        "sku": "DM-01-10-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377584967767",
+        "title": "11 / black",
+        "price": "229.00",
+        "sku": "DM-01-11-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585000535",
+        "title": "12 / black",
+        "price": "229.00",
+        "sku": "DM-01-12-black",
+        "barcode": null,
+        "inventoryQuantity": 40
+      }
+    ],
+    "collections": [
+      "Automated Collection",
+      "DR MARTENS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975811671",
+    "title": "DR MARTENS | CAVENDISH 3-EYE SHOE BLACK",
+    "handle": "dr-martens-cavendish-3-eye-shoe-black",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "DR MARTENS",
+    "description": "Make a statement with the Dr Marten's Cavendish 3-Eye shoe. Stamped with Docs trademade look, this lace-up shoe is crafted with high-quality, durable smooth leather, and has been made to last. This unique shoe features an air-cushioned sole offering good abrasion and slip resistance, and is made with Goodyear welt - the sole and upper are heat-sealed and sewn together.",
+    "createdAt": "2025-12-14T15:18:33Z",
+    "updatedAt": "2025-12-15T03:18:38Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_18_image1.jpg?v=1765725515",
+      "altText": "DR MARTENS | CAVENDISH 3-EYE SHOE BLACK"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377585066071",
+        "title": "4 / black",
+        "price": "229.00",
+        "sku": "DM-02-4-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585098839",
+        "title": "5 / black",
+        "price": "229.00",
+        "sku": "DM-02-5-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585131607",
+        "title": "6 / black",
+        "price": "229.00",
+        "sku": "DM-02-6-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585164375",
+        "title": "7 / black",
+        "price": "229.00",
+        "sku": "DM-02-7-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585197143",
+        "title": "8 / black",
+        "price": "229.00",
+        "sku": "DM-02-8-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585229911",
+        "title": "9 / black",
+        "price": "229.00",
+        "sku": "DM-02-9-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      }
+    ],
+    "collections": [
+      "Automated Collection",
+      "DR MARTENS",
+      "WOMEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975844439",
+    "title": "DR MARTENS | 1460Z DMC 8-EYE BOOT | CHERRY SMOOTH",
+    "handle": "dr-martens-1460z-dmc-8-eye-boot-cherry-smooth",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "DR MARTENS",
+    "description": "Make a statement with these iconic Dr Marten boots. This classic style has stood the test of time thanks to the combination of reinvented styling and the rugged yet urban look. Crafted with high-quality, durable leathers, the 1460OZ DMC 8-Eye Boot Cherry Smooth is made to last and will only get better with time. This lace-up boot features the iconic Dr Martens air-cushioned sole offering good abrasion and slip resistance, and is made with Goodyear welt - the sole and upper are heat-sealed and sewn together.",
+    "createdAt": "2025-12-14T15:18:39Z",
+    "updatedAt": "2025-12-15T03:18:46Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_19_image1.jpg?v=1765725521",
+      "altText": "DR MARTENS | 1460Z DMC 8-EYE BOOT | CHERRY SMOOTH"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377585262679",
+        "title": "3 / red",
+        "price": "249.00",
+        "sku": "DM-03-3-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585295447",
+        "title": "4 / red",
+        "price": "249.00",
+        "sku": "DM-03-4-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585328215",
+        "title": "5 / red",
+        "price": "249.00",
+        "sku": "DM-03-5-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585360983",
+        "title": "6 / red",
+        "price": "249.00",
+        "sku": "DM-03-6-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585393751",
+        "title": "7 / red",
+        "price": "249.00",
+        "sku": "DM-03-7-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585426519",
+        "title": "8 / red",
+        "price": "249.00",
+        "sku": "DM-03-8-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585459287",
+        "title": "10 / red",
+        "price": "249.00",
+        "sku": "DM-03-10-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585492055",
+        "title": "11 / red",
+        "price": "249.00",
+        "sku": "DM-03-11-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585524823",
+        "title": "12 / red",
+        "price": "249.00",
+        "sku": "DM-03-12-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585557591",
+        "title": "13 / red",
+        "price": "249.00",
+        "sku": "DM-03-13-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585590359",
+        "title": "15 / red",
+        "price": "249.00",
+        "sku": "DM-03-15-red",
+        "barcode": null,
+        "inventoryQuantity": 21
+      }
+    ],
+    "collections": [
+      "Automated Collection",
+      "DR MARTENS",
+      "WOMEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975877207",
+    "title": "CONVERSE | CHUCK TAYLOR ALL STAR LO",
+    "handle": "converse-chuck-taylor-all-star-lo",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "CONVERSE",
+    "description": "The Converse Chuck Taylor All Star II Lo sneaker. Retaining the revolutionary silhouette we all rely on, but now made even better. New features include Lunarlon sockliner, adding cushioning and arch support. Micro-suede lining, premium canvas construction and a padded, non-slip tongue deliver superior comfort and durability. Moulded eyelets add a premium touch. The embossed, screen-printed license plate and embroidered, star-centered ankle patch add striking depth and dimension to recognizable, classic details.",
+    "createdAt": "2025-12-14T15:18:46Z",
+    "updatedAt": "2025-12-15T03:18:53Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_20_image1.jpg?v=1765725528",
+      "altText": "CONVERSE | CHUCK TAYLOR ALL STAR LO"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377585623127",
+        "title": "3 / white",
+        "price": "100.00",
+        "sku": "C-01-3-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585655895",
+        "title": "4 / white",
+        "price": "100.00",
+        "sku": "C-01-4-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585688663",
+        "title": "5 / white",
+        "price": "100.00",
+        "sku": "C-01-5-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585721431",
+        "title": "6 / white",
+        "price": "100.00",
+        "sku": "C-01-6-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585754199",
+        "title": "7 / white",
+        "price": "100.00",
+        "sku": "C-01-7-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585786967",
+        "title": "8 / white",
+        "price": "100.00",
+        "sku": "C-01-8-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585819735",
+        "title": "9 / white",
+        "price": "100.00",
+        "sku": "C-01-9-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585852503",
+        "title": "10 / white",
+        "price": "100.00",
+        "sku": "C-01-10-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585885271",
+        "title": "11 / white",
+        "price": "100.00",
+        "sku": "C-01-11-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585918039",
+        "title": "12 / white",
+        "price": "100.00",
+        "sku": "C-01-12-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377585950807",
+        "title": "13 / white",
+        "price": "100.00",
+        "sku": "C-01-13-white",
+        "barcode": null,
+        "inventoryQuantity": 25
+      }
+    ],
+    "collections": [
+      "CONVERSE",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975909975",
+    "title": "CONVERSE | CHUCK TAYLOR ALL STAR II HI",
+    "handle": "converse-chuck-taylor-all-star-ii-hi",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "CONVERSE",
+    "description": "Introducing the Converse Chuck Taylor All Star II Hi sneaker. Retaining the revolutionary silhouette we all rely on, but now made ever better. New features include Lunarlon sockliner adds cushioning and arch support. Micro-suede lining, premium textured shield canvas construction and a padded, non-slip tongue deliver superior comfort and durability. Moulded eyelets add a premium touch. The embossed, screen-printed license plate and embroidered, star-centered ankle patch add striking depth and dimension to recognizable, classic details.",
+    "createdAt": "2025-12-14T15:18:53Z",
+    "updatedAt": "2025-12-15T03:19:10Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_21_image1.jpg?v=1765725535",
+      "altText": "CONVERSE | CHUCK TAYLOR ALL STAR II HI"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377585983575",
+        "title": "4 / black",
+        "price": "140.00",
+        "sku": "C-02-4-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586016343",
+        "title": "5 / black",
+        "price": "140.00",
+        "sku": "C-02-5-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586049111",
+        "title": "6 / black",
+        "price": "140.00",
+        "sku": "C-02-6-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586081879",
+        "title": "7 / black",
+        "price": "140.00",
+        "sku": "C-02-7-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586114647",
+        "title": "9 / black",
+        "price": "140.00",
+        "sku": "C-02-9-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586147415",
+        "title": "11 / black",
+        "price": "140.00",
+        "sku": "C-02-11-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586180183",
+        "title": "13 / black",
+        "price": "140.00",
+        "sku": "C-02-13-black",
+        "barcode": null,
+        "inventoryQuantity": 52
+      }
+    ],
+    "collections": [
+      "CONVERSE",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534975975511",
+    "title": "CONVERSE | TODDLER CHUCK TAYLOR ALL STAR AXEL MID",
+    "handle": "converse-toddler-chuck-taylor-all-star-axel-mid",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "CONVERSE",
+    "description": "The Converse Chuck Taylor All Star Axel recasts the iconic original in a refreshed silhouette for a premium look and feel. A no-tie design lets kids slip them on and go, while a rubber outsole delivers reliable traction from the classroom to the playground.",
+    "createdAt": "2025-12-14T15:19:00Z",
+    "updatedAt": "2025-12-15T03:19:06Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_22_image1.jpg?v=1765725543",
+      "altText": "CONVERSE | TODDLER CHUCK TAYLOR ALL STAR AXEL MID"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377586409559",
+        "title": "5 / black",
+        "price": "70.00",
+        "sku": "C-03-5-black",
+        "barcode": null,
+        "inventoryQuantity": 36
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586442327",
+        "title": "6 / black",
+        "price": "70.00",
+        "sku": "C-03-6-black",
+        "barcode": null,
+        "inventoryQuantity": 36
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586475095",
+        "title": "7 / black",
+        "price": "70.00",
+        "sku": "C-03-7-black",
+        "barcode": null,
+        "inventoryQuantity": 36
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586507863",
+        "title": "8 / black",
+        "price": "70.00",
+        "sku": "C-03-8-black",
+        "barcode": null,
+        "inventoryQuantity": 36
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586540631",
+        "title": "9 / black",
+        "price": "70.00",
+        "sku": "C-03-9-black",
+        "barcode": null,
+        "inventoryQuantity": 36
+      }
+    ],
+    "collections": [
+      "CONVERSE"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976008279",
+    "title": "NIKE | TODDLER ROSHE ONE",
+    "handle": "nike-toddler-roshe-one",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "NIKE",
+    "description": "The Nike Roshe One Infant Shoe offers breathable comfort and soft yet durable cushioning with a mesh upper and Phylon midsole that doubles as an outsole. The shoe is intended to be versatile, worn with or without socks, dressed up or down, for walking or just taking it easy.",
+    "createdAt": "2025-12-14T15:19:06Z",
+    "updatedAt": "2025-12-15T03:19:13Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_23_image1.jpg?v=1765725548",
+      "altText": "NIKE | TODDLER ROSHE ONE"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377586573399",
+        "title": "4 / black",
+        "price": "70.00",
+        "sku": "NK-02-4-black",
+        "barcode": null,
+        "inventoryQuantity": 20
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586606167",
+        "title": "7 / black",
+        "price": "70.00",
+        "sku": "NK-02-7-black",
+        "barcode": null,
+        "inventoryQuantity": 20
+      }
+    ],
+    "collections": [
+      "NIKE",
+      "KID"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976073815",
+    "title": "ADIDAS | KID'S STAN SMITH",
+    "handle": "adidas-kids-stan-smith",
+    "status": "ACTIVE",
+    "productType": "SHOES",
+    "vendor": "ADIDAS",
+    "description": "The Stan Smith owned the tennis court in the '70s. Today it runs the streets with the same clean, classic style. These kids' shoes preserve the iconic look of the original, made in leather with punched 3-Stripes, heel and tongue logos and lightweight step-in cushioning.",
+    "createdAt": "2025-12-14T15:19:12Z",
+    "updatedAt": "2025-12-15T03:19:19Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_24_image1.jpg?v=1765725554",
+      "altText": "ADIDAS | KID'S STAN SMITH"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377586704471",
+        "title": "1 / white",
+        "price": "90.00",
+        "sku": "AD-02-1-white",
+        "barcode": null,
+        "inventoryQuantity": 30
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586737239",
+        "title": "2 / white",
+        "price": "90.00",
+        "sku": "AD-02-2-white",
+        "barcode": null,
+        "inventoryQuantity": 30
+      }
+    ],
+    "collections": [
+      "ADIDAS",
+      "KID"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976106583",
+    "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+    "handle": "vans-apparel-and-accessories-classic-super-no-show-socks-3-pack-white",
+    "status": "ACTIVE",
+    "productType": "ACCESSORIES",
+    "vendor": "VANS",
+    "description": "The classic super no show socks are for all your low top shoes like Classic Slip-Ons. These socks are designed to stay hidden under your shoes for an athletic look with either jeans or shorts. Thin walled breathable cotton/nylon blend.",
+    "createdAt": "2025-12-14T15:19:18Z",
+    "updatedAt": "2025-12-15T03:19:23Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+      "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377586802775",
+        "title": "9.5-13 / white",
+        "price": "19.95",
+        "sku": "VN-10-9.5-13-white",
+        "barcode": null,
+        "inventoryQuantity": 21
+      }
+    ],
+    "collections": [
+      "VANS",
+      "WOMEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976139351",
+    "title": "HERSCHEL | IONA",
+    "handle": "herschel-iona",
+    "status": "ACTIVE",
+    "productType": "ACCESSORIES",
+    "vendor": "HERSCHEL",
+    "description": "Featuring a cinch closure concealed by a slender top flap, the Iona backpack unites everyday practicality with clean design.",
+    "createdAt": "2025-12-14T15:19:23Z",
+    "updatedAt": "2025-12-15T03:19:30Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_26_image1.jpg?v=1765725565",
+      "altText": "HERSCHEL | IONA"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377586835543",
+        "title": "OS / black",
+        "price": "119.95",
+        "sku": "H-01-OS-black",
+        "barcode": null,
+        "inventoryQuantity": 20
+      }
+    ],
+    "collections": [
+      "HERSCHEL"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976204887",
+    "title": "FLEX FIT | MINI OTTOMAN BLACK",
+    "handle": "flex-fit-mini-ottoman-black",
+    "status": "ACTIVE",
+    "productType": "ACCESSORIES",
+    "vendor": "FLEX FIT",
+    "description": "Flexfit Mini Ottoman Cap",
+    "createdAt": "2025-12-14T15:19:29Z",
+    "updatedAt": "2025-12-15T03:19:35Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_27_image1.jpg?v=1765725571",
+      "altText": "FLEX FIT | MINI OTTOMAN BLACK"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377586901079",
+        "title": "s / black",
+        "price": "29.99",
+        "sku": "FF-01-s-black",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586933847",
+        "title": "m / black",
+        "price": "29.99",
+        "sku": "FF-01-m-black",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586966615",
+        "title": "l / black",
+        "price": "29.99",
+        "sku": "FF-01-l-black",
+        "barcode": null,
+        "inventoryQuantity": 5
+      },
+      {
+        "id": "gid://shopify/ProductVariant/42377586999383",
+        "title": "xl / black",
+        "price": "29.99",
+        "sku": "FF-01-xl-black",
+        "barcode": null,
+        "inventoryQuantity": 5
+      }
+    ],
+    "collections": [
+      "FLEX FIT",
+      "MEN"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976237655",
+    "title": "NIKE | SWOOSH PRO FLAT PEAK CAP",
+    "handle": "nike-swoosh-pro-flat-peak-cap",
+    "status": "ACTIVE",
+    "productType": "ACCESSORIES",
+    "vendor": "NIKE",
+    "description": "The Nike Swoosh Pro Flat Snapback features an embroidered logo for style and wool construction with an adjustable closure for a comfortable fit.",
+    "createdAt": "2025-12-14T15:19:35Z",
+    "updatedAt": "2025-12-15T03:19:40Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_28_image1.jpg?v=1765725577",
+      "altText": "NIKE | SWOOSH PRO FLAT PEAK CAP"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377587032151",
+        "title": "OS / white",
+        "price": "30.00",
+        "sku": "NK-03-OS-white",
+        "barcode": null,
+        "inventoryQuantity": 40
+      }
+    ],
+    "collections": [
+      "NIKE"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976270423",
+    "title": "ADIDAS | CLASSIC BACKPACK",
+    "handle": "adidas-classic-backpack",
+    "status": "ACTIVE",
+    "productType": "ACCESSORIES",
+    "vendor": "ADIDAS",
+    "description": "This women's backpack has a glam look, thanks to a faux-leather build with an allover fur print. The front zip pocket keeps small things within reach, while an interior divider reins in potential chaos.",
+    "createdAt": "2025-12-14T15:19:40Z",
+    "updatedAt": "2025-12-15T03:19:47Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_29_image1.jpg?v=1765725582",
+      "altText": "ADIDAS | CLASSIC BACKPACK"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377587097687",
+        "title": "OS / black",
+        "price": "70.00",
+        "sku": "AD-03-OS-black",
+        "barcode": null,
+        "inventoryQuantity": 30
+      }
+    ],
+    "collections": [
+      "ADIDAS"
+    ]
+  },
+  {
+    "id": "gid://shopify/Product/7534976303191",
+    "title": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR",
+    "handle": "adidas-classic-backpack-legend-ink-multicolour",
+    "status": "ACTIVE",
+    "productType": "ACCESSORIES",
+    "vendor": "ADIDAS",
+    "description": "The adidas BP Classic Cap features a pre-curved brim to keep your face shaded, while a hook-and-loop adjustable closure provides a comfortable fit. With a 3-Stripes design and reflective accents. The perfect piece to top off any outfit.",
+    "createdAt": "2025-12-14T15:19:46Z",
+    "updatedAt": "2025-12-15T03:19:52Z",
+    "image": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_30_image1.jpg?v=1765725588",
+      "altText": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR"
+    },
+    "variants": [
+      {
+        "id": "gid://shopify/ProductVariant/42377587130455",
+        "title": "OS / blue",
+        "price": "50.00",
+        "sku": "AD-04\n-OS-blue",
+        "barcode": null,
+        "inventoryQuantity": 30
+      }
+    ],
+    "collections": [
+      "ADIDAS"
+    ]
+  }
+]

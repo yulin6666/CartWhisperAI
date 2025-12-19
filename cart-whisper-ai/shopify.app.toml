@@ -22,7 +22,9 @@ api_version = "2026-01"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+# read_customers is required to access customer data in orders
+scopes = "write_products,read_products,read_orders,read_customers"
+use_legacy_install_flow = true
 
 [auth]
 redirect_urls = [ "https://example.com/api/auth" ]
