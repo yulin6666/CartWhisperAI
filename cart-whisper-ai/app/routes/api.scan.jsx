@@ -1,5 +1,6 @@
 import { authenticate } from '../shopify.server';
 import { saveProducts, saveScanLog } from '../utils/fileStorage.server';
+import { calculateProductSimilarities, saveSimilarities } from '../utils/productSimilarity.server';
 
 // GraphQL 查询获取所有产品
 const PRODUCTS_QUERY = `
@@ -13,6 +14,7 @@ const PRODUCTS_QUERY = `
           status
           productType
           vendor
+          tags
           description
           createdAt
           updatedAt
@@ -97,6 +99,7 @@ async function getAllProducts(admin) {
         status: node.status,
         productType: node.productType,
         vendor: node.vendor,
+        tags: node.tags,
         description: node.description,
         createdAt: node.createdAt,
         updatedAt: node.updatedAt,
@@ -135,6 +138,12 @@ export async function action({ request }) {
     // 保存到 JSON 文件
     saveProducts(products);
 
+    // 计算商品相似度
+    console.log('🔗 Calculating product similarities...');
+    const similarities = await calculateProductSimilarities(products, 10);
+    saveSimilarities(similarities);
+    console.log('✅ Similarities calculated and saved');
+
     const endTime = new Date();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
 
@@ -142,6 +151,7 @@ export async function action({ request }) {
     const log = {
       timestamp: new Date().toISOString(),
       productsCount: products.length,
+      similaritiesCount: Object.keys(similarities).length,
       duration: `${duration}s`,
       status: 'success',
     };
@@ -151,6 +161,7 @@ export async function action({ request }) {
       success: true,
       message: 'Scan completed successfully',
       productsCount: products.length,
+      similaritiesCount: Object.keys(similarities).length,
       duration: `${duration}s`,
     };
   } catch (error) {

@@ -74,5 +74,17 @@
     "productsCount": 30,
     "duration": "1.21s",
     "status": "success"
+  },
+  {
+    "timestamp": "2025-12-22T03:34:16.615Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-22T03:36:19.872Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "duration": "108.31s",
+    "status": "success"
   }
 ]

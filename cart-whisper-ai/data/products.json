@@ -6,6 +6,14 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "sale",
+      "summer",
+      "vans"
+    ],
     "description": "The forefather of the Vans family, the original Vans Authentic was introduced in 1966 and nearly 4 decades later is still going strong, its popularity extending from the original fans - skaters and surfers to all sorts. Now remodeled into a low top lace-up with a slim silhouette, the Vans Authentic Lo Pro features sturdy canvas uppers with lower sidewalls, metal eyelets, and low profile mini waffle outsoles for a lightweight feel.",
     "createdAt": "2025-12-14T15:16:44Z",
     "updatedAt": "2025-12-15T03:16:51Z",
@@ -51,6 +59,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "summer",
+      "vans"
+    ],
     "description": "The forefather of the Vans family, the Vans Authentic was introduced in 1966 and nearly 4 decades later is still going strong, its popularity extending from the original fans - skaters and surfers to all sorts. The Vans Authentic is constructed from canvas and Vans' signature waffle outsole construction.",
     "createdAt": "2025-12-14T15:16:50Z",
     "updatedAt": "2025-12-15T03:16:55Z",
@@ -112,6 +127,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "summer",
+      "vans"
+    ],
     "description": "The forefather of the Vans family, the Vans Authentic was introduced in 1966 and nearly 4 decades later is still going strong, its popularity extending from the original fans - skaters and surfers to all sorts. The Vans Authentic is constructed from canvas and Vans' signature waffle outsole construction.",
     "createdAt": "2025-12-14T15:16:56Z",
     "updatedAt": "2025-12-15T03:17:03Z",
@@ -180,6 +202,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "summer",
+      "vans"
+    ],
     "description": "Vans are a staple in skate culture and street style, and the Vans Era 59 is no exception. This classic lace-up skate shoe is focused on ultimate comfort and cool. Constructed from canvas with leather accents which sets it apart from the original Era, it features a soft footbed, double stitched vamp, a padded tongue and lining, as well as Vans' signature waffle sole.",
     "createdAt": "2025-12-14T15:17:03Z",
     "updatedAt": "2025-12-15T03:17:21Z",
@@ -232,6 +261,15 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "autumn",
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "spring",
+      "summer",
+      "vans"
+    ],
     "description": "The Vans Cut Out Sk8-Hi Decon brings a twist to the iconic Vans Sk8-Hi silhouette: a new deconstructed leather high-top upper with a custom die cut design that lets the material shape on its own accord without much structural constriction. It also features signature rubber waffle outsoles.",
     "createdAt": "2025-12-14T15:17:09Z",
     "updatedAt": "2025-12-15T03:17:16Z",
@@ -309,6 +347,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "PALLADIUM",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "palladium",
+      "winter"
+    ],
     "description": "The Palladium iconic classic receives a subtle, yet stylish update. The Pallatech Hi TX features a full grain leather upper with cotton canvas and soft cuff around the collar, providing even more comfort. The boot is finished with a single-unit molded rubber outsole, offering excellent traction while exploring your city. The EVA-cushioned footbed and hugging heel cup cradle the foot for lasting support.",
     "createdAt": "2025-12-14T15:17:16Z",
     "updatedAt": "2025-12-15T03:17:22Z",
@@ -354,6 +399,14 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "ASICS TIGER",
+    "tags": [
+      "asics-tiger",
+      "autumn",
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "spring"
+    ],
     "description": "The iconic ASICS Tiger GEL-Lyte III was originally released in 1990. Having over two decades of performance heritage, it offers fine design detailing and a padded split tongue to eliminate tongue movement, built on a sleek silhouette. It comes as no surprise the Gel-Lyte III is a fast growing popular choice for sneaker enthusiasts all over the world.",
     "createdAt": "2025-12-14T15:17:22Z",
     "updatedAt": "2025-12-15T03:17:29Z",
@@ -399,6 +452,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "PUMA",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "puma",
+      "summer"
+    ],
     "description": "First introduced in 1968, the Puma Suede Classic is Puma's most epic sneaker with its athletic inspired design and smooth suede. The Puma Suede Classic Regal Red/White is constructed with a suede upper and contrasting low profile rubber sole, and fat laces, the classic continues to make its mark on the streets today.",
     "createdAt": "2025-12-14T15:17:28Z",
     "updatedAt": "2025-12-15T03:17:37Z",
@@ -452,6 +512,15 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "SUPRA",
+    "tags": [
+      "autumn",
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "spring",
+      "summer",
+      "supra"
+    ],
     "description": "Supra introduces the Vaider. A stylishly designed high top upper on a vulcanized sole that supplies excellent traction and board feel. A padded collar and tongue lining provide superior comfort",
     "createdAt": "2025-12-14T15:17:34Z",
     "updatedAt": "2025-12-15T03:17:41Z",
@@ -504,6 +573,15 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "ADIDAS",
+    "tags": [
+      "adidas",
+      "autumn",
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "spring",
+      "summer"
+    ],
     "description": "There's a shell toe for every season, and the adidas Originals Superstar 80s shoes have a full grain leather upper with a shiny badge on the tongue that makes these shoes ready for any time of year.",
     "createdAt": "2025-12-14T15:17:40Z",
     "updatedAt": "2025-12-15T03:17:48Z",
@@ -580,6 +658,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "summer",
+      "vans"
+    ],
     "description": "Vans are a staple in skate culture and street style, and the Vans Era 59 is no exception. This classic lace-up skate shoe is focused on ultimate comfort and cool. Constructed from canvas with leather accents which sets it apart from the original Era, it features a soft footbed, double stitched vamp, a padded tongue and lining, as well as Vans' signature waffle sole.",
     "createdAt": "2025-12-14T15:17:47Z",
     "updatedAt": "2025-12-15T03:18:01Z",
@@ -640,6 +725,14 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "autumn",
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "spring",
+      "vans"
+    ],
     "description": "Vans are a staple in skate culture and street style, and this skate sneaker is no exception. Introduced in the early 70's, the Vans SK8 Hi was responsible for the reduced number of ankle injuries in the skating scene with the extra padded ankle support, but its popularity has grown across different cultural scenes. The Vans SK8 Hi True White is constructed from a combination of canvas and suede and features the signature side stripe detail and vulcanized waffle sole. Available in a range of colours.",
     "createdAt": "2025-12-14T15:17:53Z",
     "updatedAt": "2025-12-15T03:18:01Z",
@@ -741,6 +834,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "summer",
+      "vans"
+    ],
     "description": "Vans are a staple in skate culture and street style, and this skate sneaker is no exception. Introduced in 1977, the Vans Old Skool sneaker is a classic in the Vans collection. Full of attitude, the Old Skool is durable and lightweight, and can give the other boys in the collection a run for its money. Constructed from canvas, The Vans Old Skool features contrasting suede panels along the toe and heel, plus the iconic stripe along the side of the shoe, and sits over a chunky midsole.",
     "createdAt": "2025-12-14T15:18:00Z",
     "updatedAt": "2025-12-15T03:18:07Z",
@@ -809,6 +909,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "summer",
+      "vans"
+    ],
     "description": "The Perforated Suede Classic Slip-On features low profile slip-on perforated suede uppers,, padded collars, elastic side accents, and signature rubber waffle outsoles.",
     "createdAt": "2025-12-14T15:18:07Z",
     "updatedAt": "2025-12-15T03:18:14Z",
@@ -877,6 +984,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "TIMBERLAND",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "timberland",
+      "winter"
+    ],
     "description": "Timberland has been refining their craft of producing hard-wearing boots for decades. The 6-Inch Premium Waterproof Boot (or Wheat Boot) is the original men's Timberland boot and was first designed nearly 40 years ago. Continuous improvements to the design and construction, such as the addition of Timberland's exclusive anti-fatigue technology for all day comfort, has cemented these boots as a sturdy and dependable staple in anyone's shoe collection. The premium waterproof leather, seam-sealed construction and rugged lug outsoles provides long-lasting durability and comfort to help you get through any environmental conditions and adventure. An absolute must-have.",
     "createdAt": "2025-12-14T15:18:13Z",
     "updatedAt": "2025-12-15T03:18:21Z",
@@ -970,6 +1084,13 @@
     "status": "ACTIVE",
     "productType": "T-SHIRTS",
     "vendor": "NIKE",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "men",
+      "nike",
+      "summer"
+    ],
     "description": "Meet your new favorite tee, the Nike Crackle Print T-Shirt. Bringing its A-game in soft, premium fabric, it features a ribbed crew neck and a woven Nike label on the hem.",
     "createdAt": "2025-12-14T15:18:20Z",
     "updatedAt": "2025-12-15T03:18:31Z",
@@ -1023,6 +1144,14 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "DR MARTENS",
+    "tags": [
+      "autumn",
+      "clothes",
+      "drmartens",
+      "egnition-sample-data",
+      "spring",
+      "women"
+    ],
     "description": "Make a statement with the iconic Dr Marten's 1461Z DMC 3-Eye shoe. Stamped with Docs trademade look, this lace-up shoe is crafted with high-quality, durable smooth leather, and has been made to last. This unique shoe features an air-cushioned sole offering good abrasion and slip resistance, and is made with Goodyear welt - the sole and upper are heat-sealed and sewn together.",
     "createdAt": "2025-12-14T15:18:26Z",
     "updatedAt": "2025-12-15T03:18:36Z",
@@ -1108,6 +1237,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "DR MARTENS",
+    "tags": [
+      "autumn",
+      "clothes",
+      "drmartens",
+      "egnition-sample-data",
+      "women"
+    ],
     "description": "Make a statement with the Dr Marten's Cavendish 3-Eye shoe. Stamped with Docs trademade look, this lace-up shoe is crafted with high-quality, durable smooth leather, and has been made to last. This unique shoe features an air-cushioned sole offering good abrasion and slip resistance, and is made with Goodyear welt - the sole and upper are heat-sealed and sewn together.",
     "createdAt": "2025-12-14T15:18:33Z",
     "updatedAt": "2025-12-15T03:18:38Z",
@@ -1178,6 +1314,14 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "DR MARTENS",
+    "tags": [
+      "autumn",
+      "clothes",
+      "drmartens",
+      "egnition-sample-data",
+      "spring",
+      "women"
+    ],
     "description": "Make a statement with these iconic Dr Marten boots. This classic style has stood the test of time thanks to the combination of reinvented styling and the rugged yet urban look. Crafted with high-quality, durable leathers, the 1460OZ DMC 8-Eye Boot Cherry Smooth is made to last and will only get better with time. This lace-up boot features the iconic Dr Martens air-cushioned sole offering good abrasion and slip resistance, and is made with Goodyear welt - the sole and upper are heat-sealed and sewn together.",
     "createdAt": "2025-12-14T15:18:39Z",
     "updatedAt": "2025-12-15T03:18:46Z",
@@ -1288,6 +1432,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "CONVERSE",
+    "tags": [
+      "clothes",
+      "converse",
+      "egnition-sample-data",
+      "men",
+      "summer"
+    ],
     "description": "The Converse Chuck Taylor All Star II Lo sneaker. Retaining the revolutionary silhouette we all rely on, but now made even better. New features include Lunarlon sockliner, adding cushioning and arch support. Micro-suede lining, premium canvas construction and a padded, non-slip tongue deliver superior comfort and durability. Moulded eyelets add a premium touch. The embossed, screen-printed license plate and embroidered, star-centered ankle patch add striking depth and dimension to recognizable, classic details.",
     "createdAt": "2025-12-14T15:18:46Z",
     "updatedAt": "2025-12-15T03:18:53Z",
@@ -1397,6 +1548,13 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "CONVERSE",
+    "tags": [
+      "clothes",
+      "converse",
+      "egnition-sample-data",
+      "men",
+      "summer"
+    ],
     "description": "Introducing the Converse Chuck Taylor All Star II Hi sneaker. Retaining the revolutionary silhouette we all rely on, but now made ever better. New features include Lunarlon sockliner adds cushioning and arch support. Micro-suede lining, premium textured shield canvas construction and a padded, non-slip tongue deliver superior comfort and durability. Moulded eyelets add a premium touch. The embossed, screen-printed license plate and embroidered, star-centered ankle patch add striking depth and dimension to recognizable, classic details.",
     "createdAt": "2025-12-14T15:18:53Z",
     "updatedAt": "2025-12-15T03:19:10Z",
@@ -1474,6 +1632,12 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "CONVERSE",
+    "tags": [
+      "clothes",
+      "converse",
+      "egnition-sample-data",
+      "kid"
+    ],
     "description": "The Converse Chuck Taylor All Star Axel recasts the iconic original in a refreshed silhouette for a premium look and feel. A no-tie design lets kids slip them on and go, while a rubber outsole delivers reliable traction from the classroom to the playground.",
     "createdAt": "2025-12-14T15:19:00Z",
     "updatedAt": "2025-12-15T03:19:06Z",
@@ -1534,6 +1698,12 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "NIKE",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "kid",
+      "nike"
+    ],
     "description": "The Nike Roshe One Infant Shoe offers breathable comfort and soft yet durable cushioning with a mesh upper and Phylon midsole that doubles as an outsole. The shoe is intended to be versatile, worn with or without socks, dressed up or down, for walking or just taking it easy.",
     "createdAt": "2025-12-14T15:19:06Z",
     "updatedAt": "2025-12-15T03:19:13Z",
@@ -1571,6 +1741,12 @@
     "status": "ACTIVE",
     "productType": "SHOES",
     "vendor": "ADIDAS",
+    "tags": [
+      "adidas",
+      "clothes",
+      "egnition-sample-data",
+      "kid"
+    ],
     "description": "The Stan Smith owned the tennis court in the '70s. Today it runs the streets with the same clean, classic style. These kids' shoes preserve the iconic look of the original, made in leather with punched 3-Stripes, heel and tongue logos and lightweight step-in cushioning.",
     "createdAt": "2025-12-14T15:19:12Z",
     "updatedAt": "2025-12-15T03:19:19Z",
@@ -1608,6 +1784,12 @@
     "status": "ACTIVE",
     "productType": "ACCESSORIES",
     "vendor": "VANS",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "unisex",
+      "vans"
+    ],
     "description": "The classic super no show socks are for all your low top shoes like Classic Slip-Ons. These socks are designed to stay hidden under your shoes for an athletic look with either jeans or shorts. Thin walled breathable cotton/nylon blend.",
     "createdAt": "2025-12-14T15:19:18Z",
     "updatedAt": "2025-12-15T03:19:23Z",
@@ -1637,6 +1819,12 @@
     "status": "ACTIVE",
     "productType": "ACCESSORIES",
     "vendor": "HERSCHEL",
+    "tags": [
+      "backpack",
+      "clothes",
+      "egnition-sample-data",
+      "herschel"
+    ],
     "description": "Featuring a cinch closure concealed by a slender top flap, the Iona backpack unites everyday practicality with clean design.",
     "createdAt": "2025-12-14T15:19:23Z",
     "updatedAt": "2025-12-15T03:19:30Z",
@@ -1665,6 +1853,12 @@
     "status": "ACTIVE",
     "productType": "ACCESSORIES",
     "vendor": "FLEX FIT",
+    "tags": [
+      "clothes",
+      "egnition-sample-data",
+      "flex-fit",
+      "men"
+    ],
     "description": "Flexfit Mini Ottoman Cap",
     "createdAt": "2025-12-14T15:19:29Z",
     "updatedAt": "2025-12-15T03:19:35Z",
@@ -1718,6 +1912,12 @@
     "status": "ACTIVE",
     "productType": "ACCESSORIES",
     "vendor": "NIKE",
+    "tags": [
+      "cap",
+      "clothes",
+      "egnition-sample-data",
+      "nike"
+    ],
     "description": "The Nike Swoosh Pro Flat Snapback features an embroidered logo for style and wool construction with an adjustable closure for a comfortable fit.",
     "createdAt": "2025-12-14T15:19:35Z",
     "updatedAt": "2025-12-15T03:19:40Z",
@@ -1746,6 +1946,12 @@
     "status": "ACTIVE",
     "productType": "ACCESSORIES",
     "vendor": "ADIDAS",
+    "tags": [
+      "adidas",
+      "backpack",
+      "clothes",
+      "egnition-sample-data"
+    ],
     "description": "This women's backpack has a glam look, thanks to a faux-leather build with an allover fur print. The front zip pocket keeps small things within reach, while an interior divider reins in potential chaos.",
     "createdAt": "2025-12-14T15:19:40Z",
     "updatedAt": "2025-12-15T03:19:47Z",
@@ -1774,6 +1980,12 @@
     "status": "ACTIVE",
     "productType": "ACCESSORIES",
     "vendor": "ADIDAS",
+    "tags": [
+      "adidas",
+      "backpack",
+      "clothes",
+      "egnition-sample-data"
+    ],
     "description": "The adidas BP Classic Cap features a pre-curved brim to keep your face shaded, while a hook-and-loop adjustable closure provides a comfortable fit. With a 3-Stripes design and reflective accents. The perfect piece to top off any outfit.",
     "createdAt": "2025-12-14T15:19:46Z",
     "updatedAt": "2025-12-15T03:19:52Z",
