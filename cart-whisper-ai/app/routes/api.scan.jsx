@@ -2,7 +2,7 @@ import { authenticate } from '../shopify.server';
 import { saveProducts, saveScanLog } from '../utils/fileStorage.server';
 import { calculateProductSimilarities, saveSimilarities } from '../utils/productSimilarity.server';
 import { postProcessSimilarities, generateRecommendationWithDeepSeek, saveRecommendations } from '../utils/productRecommendation.server';
-import { saveMarkdownReport, generateAllRecommendationCopies, saveCopies } from '../utils/recommendationExport.server';
+import { saveMarkdownReport } from '../utils/recommendationExport.server';
 import { createLogger } from '../utils/logger.server';
 
 // GraphQL 查询获取所有产品
@@ -193,13 +193,10 @@ export async function action({ request }) {
       saveRecommendations(recommendations);
     }
 
-    // 生成 Markdown 报告和推荐文案
-    logger.info('\n📝 Generating Markdown report and recommendation copies...');
+    // 生成 Markdown 报告
+    logger.info('\n📝 Generating Markdown report...');
     saveMarkdownReport(recommendations);
-    const copies = await generateAllRecommendationCopies(recommendations, logger);
-    saveCopies(copies);
-    logger.success(`✅ Markdown report and copies generated`);
-    logger.info(`   📊 Generated copies for ${Object.keys(copies).length} products`);
+    logger.success(`✅ Markdown report generated`);
 
     const endTime = new Date();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -212,7 +209,6 @@ export async function action({ request }) {
       processedCount: Object.keys(processedData).length,
       recommendationsGenerated: !!recommendations,
       recommendationError: recommendationError,
-      copiesCount: Object.keys(copies).length,
       duration: `${duration}s`,
       status: 'success',
     };
@@ -228,7 +224,6 @@ export async function action({ request }) {
       productsCount: products.length,
       similaritiesCount: Object.keys(similarities).length,
       processedCount: Object.keys(processedData).length,
-      copiesCount: Object.keys(copies).length,
       recommendationsGenerated: !!recommendations,
       duration: `${duration}s`,
       logFile: logFilePath,

@@ -172,11 +172,6 @@ export default function ScanPage() {
               <p style={{ color: '#155724', margin: '5px 0' }}>
                 🛒 Orders: <strong>{fetcher.data.ordersCount}</strong>
               </p>
-              {fetcher.data.copiesCount && (
-                <p style={{ color: '#155724', margin: '5px 0' }}>
-                  💬 AI Copies: <strong>{fetcher.data.copiesCount}</strong>
-                </p>
-              )}
               <p style={{ color: '#155724', margin: '5px 0' }}>
                 ⏱️ Duration: <strong>{fetcher.data.duration}</strong>
               </p>
