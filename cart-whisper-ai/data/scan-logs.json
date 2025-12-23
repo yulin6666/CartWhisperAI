@@ -197,5 +197,16 @@
     "copiesCount": 5,
     "duration": "14.48s",
     "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T08:14:57.284Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "copiesCount": 5,
+    "duration": "14.35s",
+    "status": "success"
   }
 ]

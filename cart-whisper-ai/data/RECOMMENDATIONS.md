@@ -35,7 +35,7 @@
 | 原价 | ¥99.95 |
 | 分类 | SHOES |
 
-**🤖 推荐理由:** These socks are a classic accessory from the same brand, designed to be worn comfortably with low-top shoes like the Vans Authentic, making them a natural and practical complementary purchase.
+**🤖 推荐理由:** These socks are a classic accessory from the same brand, designed to be worn comfortably with low-top shoes like the Vans Authentic, making them a natural and practical pairing.
 
 | 推荐商品 | 价格 | 分类 | 相似度 |
 |---------|------|------|--------|
