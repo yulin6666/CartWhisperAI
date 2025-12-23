@@ -1,4 +1,5 @@
 import { useFetcher, useLoaderData, Link } from 'react-router';
+import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { loadProducts, loadOrders, getDataDir } from '../utils/fileStorage.server';
 import { readFileSync, existsSync } from 'fs';
@@ -36,6 +37,32 @@ export default function ScanPage() {
   const { productsCount, ordersCount, lastLog, dataDir, productsPreview, ordersPreview } = useLoaderData();
   const fetcher = useFetcher();
   const isScanning = fetcher.state === 'submitting';
+  const [showDetailedLog, setShowDetailedLog] = useState(false);
+  const [detailedLog, setDetailedLog] = useState(null);
+  const [logLoading, setLogLoading] = useState(false);
+
+  // 当扫描完成时获取详细日志
+  useEffect(() => {
+    if (fetcher.data?.success && showDetailedLog) {
+      fetchDetailedLog();
+    }
+  }, [fetcher.data?.success, showDetailedLog]);
+
+  // 获取详细日志
+  const fetchDetailedLog = async () => {
+    try {
+      setLogLoading(true);
+      const response = await fetch('/api/logs?action=latest');
+      const data = await response.json();
+      if (data.latest) {
+        setDetailedLog(data.latest);
+      }
+    } catch (error) {
+      console.error('Failed to fetch log:', error);
+    } finally {
+      setLogLoading(false);
+    }
+  };
 
   // Log fetcher data for debugging
   if (fetcher.data) {
@@ -145,9 +172,30 @@ export default function ScanPage() {
               <p style={{ color: '#155724', margin: '5px 0' }}>
                 🛒 Orders: <strong>{fetcher.data.ordersCount}</strong>
               </p>
+              {fetcher.data.copiesCount && (
+                <p style={{ color: '#155724', margin: '5px 0' }}>
+                  💬 AI Copies: <strong>{fetcher.data.copiesCount}</strong>
+                </p>
+              )}
               <p style={{ color: '#155724', margin: '5px 0' }}>
                 ⏱️ Duration: <strong>{fetcher.data.duration}</strong>
               </p>
+              <button
+                onClick={() => setShowDetailedLog(!showDetailedLog)}
+                style={{
+                  marginTop: '10px',
+                  padding: '8px 16px',
+                  backgroundColor: '#155724',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                }}
+              >
+                {showDetailedLog ? '🔽 Hide' : '📋 View'} Detailed Log
+              </button>
             </>
           ) : (
             <>
@@ -161,6 +209,73 @@ export default function ScanPage() {
                 </p>
               )}
             </>
+          )}
+        </div>
+      )}
+
+      {/* 详细日志 */}
+      {showDetailedLog && (
+        <div
+          style={{
+            padding: '15px',
+            marginBottom: '20px',
+            borderRadius: '6px',
+            border: '2px solid #007bff',
+            backgroundColor: '#f8f9fa',
+          }}
+        >
+          <h3 style={{ margin: '0 0 10px 0', color: '#0056b3' }}>📋 Detailed Scan Log</h3>
+          {logLoading ? (
+            <p style={{ color: '#666', fontStyle: 'italic' }}>Loading log...</p>
+          ) : detailedLog ? (
+            <>
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '12px' }}>
+                📁 File: <strong>{detailedLog.name}</strong> | 📊 Size: <strong>{(detailedLog.size / 1024).toFixed(2)} KB</strong>
+              </p>
+              <div
+                style={{
+                  backgroundColor: '#fff',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  padding: '10px',
+                  maxHeight: '500px',
+                  overflowY: 'auto',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {detailedLog.content}
+              </div>
+              <button
+                onClick={() => {
+                  const element = document.createElement('a');
+                  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(detailedLog.content));
+                  element.setAttribute('download', detailedLog.name);
+                  element.style.display = 'none';
+                  document.body.appendChild(element);
+                  element.click();
+                  document.body.removeChild(element);
+                }}
+                style={{
+                  marginTop: '10px',
+                  padding: '8px 16px',
+                  backgroundColor: '#0056b3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                }}
+              >
+                💾 Download Log
+              </button>
+            </>
+          ) : (
+            <p style={{ color: '#666', fontStyle: 'italic' }}>No log available. Run a scan first.</p>
           )}
         </div>
       )}

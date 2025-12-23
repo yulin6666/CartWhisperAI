@@ -3,6 +3,7 @@ import { saveProducts, saveScanLog } from '../utils/fileStorage.server';
 import { calculateProductSimilarities, saveSimilarities } from '../utils/productSimilarity.server';
 import { postProcessSimilarities, generateRecommendationWithDeepSeek, saveRecommendations } from '../utils/productRecommendation.server';
 import { saveMarkdownReport, generateAllRecommendationCopies, saveCopies } from '../utils/recommendationExport.server';
+import { createLogger } from '../utils/logger.server';
 
 // GraphQL 查询获取所有产品
 const PRODUCTS_QUERY = `
@@ -125,66 +126,80 @@ async function getAllProducts(admin) {
 
 
 export async function action({ request }) {
+  // 创建详细日志记录器
+  const logger = createLogger('scan');
+
   try {
-    console.log('🔄 Starting scan...');
+    logger.success('🔄 Starting scan...');
     const { admin } = await authenticate.admin(request);
-    console.log('✅ Authentication successful');
+    logger.success('✅ Authentication successful');
 
     const startTime = new Date();
 
     // 获取所有产品
-    console.log('📦 Fetching products...');
+    logger.info('📦 Fetching products...');
     const products = await getAllProducts(admin);
-    console.log(`✅ Got ${products.length} products`);
+    logger.success(`✅ Got ${products.length} products`);
+    logger.info(`   📝 Product list: ${products.map(p => p.title).join(', ')}`);
 
     // 保存到 JSON 文件
     saveProducts(products);
 
-    // 计算所有商品的相似度（这样才能找到不同分类的推荐商品）
-    console.log('🔗 Calculating product similarities...');
+    // 计算所有商品的相似度（这样才能找到全库最好的推荐）
+    logger.info('🔗 Calculating product similarities for ALL products...');
     const similarities = await calculateProductSimilarities(products, 10);
     saveSimilarities(similarities);
-    console.log('✅ Similarities calculated and saved');
-
-    // 为了节约 token，只对前 5 个商品生成推荐文案
-    const productsForRecommendation = products.slice(0, 5);
-    console.log(`\n⚡ Processing top 5 products for AI copy generation (saving tokens)...`);
-    console.log(`   📊 Will process: ${productsForRecommendation.map(p => p.title).join(', ')}`);
+    logger.success('✅ Similarities calculated and saved');
+    logger.info(`   📊 Found similarities for: ${Object.keys(similarities).length} products`);
 
     // 后处理相似度（过滤价格和分类）
     // 传入所有产品以便查找被推荐商品的完整信息
-    console.log('\n🔍 Post-processing similarities...');
+    logger.info('🔍 Post-processing similarities...');
     const processedData = postProcessSimilarities(products, similarities);
 
-    // 使用 DeepSeek 生成推荐理由
-    let recommendations = null;
+    // 为了节约 token，只对前 5 个商品生成 DeepSeek AI 推荐理由
+    const productsForAI = Object.entries(processedData)
+      .slice(0, 5)
+      .reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+      }, {});
+    logger.warn(`⚡ ONLY sending top 5 products to DeepSeek API to save tokens...`);
+    logger.info(`   📊 Will process: ${Object.values(productsForAI).map(p => p.productTitle).join(', ')}`);
+
+    // 使用 DeepSeek 为前5个商品生成推荐理由（节约token）
+    let recommendations = { ...processedData }; // 复制所有数据
     let recommendationError = null;
+
     if (process.env.DEEPSEEK_API_KEY) {
       try {
-        console.log('\n🤖 Generating recommendations with DeepSeek...');
-        recommendations = await generateRecommendationWithDeepSeek(processedData);
+        logger.info('\n🤖 Generating recommendations with DeepSeek for top 5 products...');
+        const aiRecommendations = await generateRecommendationWithDeepSeek(productsForAI);
+
+        // 只用AI生成的推荐理由来更新前5个商品
+        Object.assign(recommendations, aiRecommendations);
+
         saveRecommendations(recommendations);
-        console.log('✅ Recommendations generated and saved');
+        logger.success('✅ Recommendations generated and saved');
       } catch (err) {
-        console.warn('⚠️ Failed to generate recommendations:', err.message);
+        logger.error(`⚠️ Failed to generate recommendations: ${err.message}`);
         recommendationError = err.message;
         // 即使推荐失败也继续，保存已处理的数据
-        saveRecommendations(processedData);
-        recommendations = processedData;
+        saveRecommendations(recommendations);
       }
     } else {
-      console.warn('⚠️ DEEPSEEK_API_KEY not set, skipping AI recommendations');
-      console.log('   Saving post-processed data without AI reasoning...');
-      saveRecommendations(processedData);
-      recommendations = processedData;
+      logger.warn('⚠️ DEEPSEEK_API_KEY not set, skipping AI recommendations');
+      logger.info('   Saving recommendations without AI reasoning...');
+      saveRecommendations(recommendations);
     }
 
     // 生成 Markdown 报告和推荐文案
-    console.log('\n📝 Generating Markdown report and recommendation copies...');
+    logger.info('\n📝 Generating Markdown report and recommendation copies...');
     saveMarkdownReport(recommendations);
     const copies = await generateAllRecommendationCopies(recommendations);
     saveCopies(copies);
-    console.log('✅ Markdown report and copies generated');
+    logger.success(`✅ Markdown report and copies generated`);
+    logger.info(`   📊 Generated copies for ${Object.keys(copies).length} products`);
 
     const endTime = new Date();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -197,10 +212,15 @@ export async function action({ request }) {
       processedCount: Object.keys(processedData).length,
       recommendationsGenerated: !!recommendations,
       recommendationError: recommendationError,
+      copiesCount: Object.keys(copies).length,
       duration: `${duration}s`,
       status: 'success',
     };
     saveScanLog(log);
+
+    // 保存详细日志
+    const logFilePath = logger.save();
+    logger.info(`\n📁 Log file: ${logFilePath}`);
 
     return {
       success: true,
@@ -208,8 +228,10 @@ export async function action({ request }) {
       productsCount: products.length,
       similaritiesCount: Object.keys(similarities).length,
       processedCount: Object.keys(processedData).length,
+      copiesCount: Object.keys(copies).length,
       recommendationsGenerated: !!recommendations,
       duration: `${duration}s`,
+      logFile: logFilePath,
     };
   } catch (error) {
     let errorMessage = 'Unknown error occurred';
@@ -224,9 +246,17 @@ export async function action({ request }) {
       errorMessage = String(error);
     }
 
-    console.error('❌ Scan error:', error);
-    console.error('Error message:', errorMessage);
-    console.error('Error stack:', error?.stack);
+    logger.error(`❌ Scan error: ${errorMessage}`);
+    if (error?.stack) {
+      logger.error(`Stack: ${error.stack}`);
+    }
+
+    // 保存详细日志
+    try {
+      logger.save();
+    } catch (logError) {
+      console.error('Failed to save log:', logError);
+    }
 
     // 保存错误日志
     const log = {

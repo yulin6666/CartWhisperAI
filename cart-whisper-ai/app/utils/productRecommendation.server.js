@@ -140,22 +140,34 @@ export async function generateRecommendationWithDeepSeek(processedData) {
 
     // 构建 prompt
     const candidatesText = data.candidates
-      .map((c, idx) => `${idx + 1}. ${c.title} (价格: ${c.price}, 分类: ${c.category}, 相似度: ${c.similarity})`)
+      .map((c, idx) => `${idx + 1}. ${c.title} (Price: $${c.price}, Category: ${c.category}, Similarity: ${(c.similarity * 100).toFixed(1)}%)`)
       .join('\n');
 
     const prompt = `
-根据以下商品和推荐候选，生成一个简洁的推荐理由（1-2句话）。
+Analyze the following product and recommendations, then provide a brief recommendation reason (1-2 sentences) in English.
 
-主商品: ${data.productTitle}
-价格: ${data.productPrice}
-分类: ${data.productCategory}
+Main Product: ${data.productTitle}
+Price: $${data.productPrice}
+Category: ${data.productCategory}
 
-推荐候选商品:
+Recommended Candidates:
 ${candidatesText}
 
-请分析这些商品的共同特点，并给出为什么这些商品可以作为搭配或替代品的理由。
-回复格式: 直接给出理由，不需要前缀。
+Analyze the common characteristics of these products and explain why they work well as complementary or alternative products.
+Response format: Provide only the reasoning, no prefix or explanation needed.
 `;
+
+    // 打印详细信息到日志
+    console.log(`\n========================================`);
+    console.log(`📦 Main Product: ${data.productTitle}`);
+    console.log(`💰 Price: $${data.productPrice}`);
+    console.log(`📁 Category: ${data.productCategory}`);
+    console.log(`\n🎯 Recommended Candidates:`);
+    data.candidates.forEach((c, idx) => {
+      console.log(`   ${idx + 1}. ${c.title}`);
+      console.log(`      Price: $${c.price} | Category: ${c.category} | Similarity: ${(c.similarity * 100).toFixed(1)}%`);
+    });
+    console.log(`========================================`);
 
     try {
       console.log(`\n🔄 Generating recommendation for: ${data.productTitle}`);
@@ -172,8 +184,10 @@ ${candidatesText}
         max_tokens: 200,
       });
 
-      const reasoning = response.choices[0]?.message?.content?.trim() || '无法生成推荐理由';
-      console.log(`✅ Generated: ${reasoning.substring(0, 50)}...`);
+      const reasoning = response.choices[0]?.message?.content?.trim() || 'Failed to generate reasoning';
+      console.log(`✅ Reasoning Generated:`);
+      console.log(`   "${reasoning}"`);
+      console.log(`========================================`);
 
       recommendations[productId] = {
         ...data,
@@ -181,9 +195,10 @@ ${candidatesText}
       };
     } catch (error) {
       console.error(`❌ Error generating recommendation for ${data.productTitle}:`, error.message);
+      console.log(`========================================`);
       recommendations[productId] = {
         ...data,
-        reasoning: `生成失败: ${error.message}`,
+        reasoning: `Failed to generate: ${error.message}`,
       };
     }
   }

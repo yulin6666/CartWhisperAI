@@ -126,5 +126,65 @@
     "recommendationError": null,
     "duration": "53.50s",
     "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T06:51:30.412Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "copiesCount": 21,
+    "duration": "55.21s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T07:03:56.392Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "copiesCount": 5,
+    "duration": "49.58s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T07:11:54.590Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-23T07:12:10.446Z",
+    "productsCount": 30,
+    "similaritiesCount": 5,
+    "processedCount": 5,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "copiesCount": 0,
+    "duration": "1.27s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T07:16:29.453Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "copiesCount": 5,
+    "duration": "14.78s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T07:24:14.650Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "copiesCount": 5,
+    "duration": "14.77s",
+    "status": "success"
   }
 ]

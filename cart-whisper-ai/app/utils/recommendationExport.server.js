@@ -92,19 +92,20 @@ async function generateAICopy(product) {
     });
 
     const topCandidate = product.candidates[0];
-    const prompt = `你是一个电商营销文案专家。请为以下商品组合生成一句简洁有吸引力的推荐文案（不超过30字）。
+    const prompt = `You are an expert in e-commerce marketing copywriting. Generate a concise and compelling product recommendation copy for the following product combination (no more than 50 characters).
 
-主商品：${product.productTitle}（¥${product.productPrice}）
-推荐商品：${topCandidate?.title}（¥${topCandidate?.price}）
-相似度：${(topCandidate?.similarity * 100).toFixed(0)}%
-品牌：${topCandidate?.vendor}
+Main Product: ${product.productTitle} ($${product.productPrice})
+Recommended Product: ${topCandidate?.title} ($${topCandidate?.price})
+Similarity: ${(topCandidate?.similarity * 100).toFixed(0)}%
+Brand: ${topCandidate?.vendor}
 
-要求：
-1. 突出商品组合的价值和搭配理由
-2. 语言简洁、自然、有吸引力
-3. 不要使用"助您提升生活品质"等空泛表达
-4. 可以突出价格优惠或品牌
-5. 直接返回文案，不要任何前缀或解释`;
+Requirements:
+1. Highlight the value and pairing rationale of the product combination
+2. Keep language concise, natural, and compelling
+3. Avoid generic phrases like "enhance your lifestyle"
+4. Can emphasize price value or brand reputation
+5. Return only the copy text with no prefix or additional explanation
+6. Use English language`;
 
     const response = await client.chat.completions.create({
       model: 'deepseek-chat',
@@ -148,11 +149,12 @@ export async function generateAllRecommendationCopies(recommendations) {
   const copies = {};
 
   // 使用 Promise.all 并行生成文案
-  const entries = Object.entries(recommendations).filter(
-    ([_, product]) => product.candidates && product.candidates.length > 0
-  );
+  // 只为前5个有推荐的商品生成文案，节约token
+  const entries = Object.entries(recommendations)
+    .filter(([_, product]) => product.candidates && product.candidates.length > 0)
+    .slice(0, 5);
 
-  console.log(`🤖 Starting to generate AI copies for ${entries.length} products...`);
+  console.log(`🤖 Starting to generate AI copies for top 5 products with recommendations (to save tokens)...`);
 
   const copyPromises = entries.map(async ([productId, product]) => {
     const copy = await generateAICopy(product);
