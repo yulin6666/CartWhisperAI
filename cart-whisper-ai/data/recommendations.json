@@ -1,0 +1,806 @@
+{
+  "gid://shopify/Product/7534975221847": {
+    "productId": "gid://shopify/Product/7534975221847",
+    "productTitle": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+    "productPrice": 29,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+      "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.795,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双经典的VANS板鞋搭配同品牌的无痕短袜，能提供更舒适的穿着体验，同时保持简洁统一的风格。"
+  },
+  "gid://shopify/Product/7534975254615": {
+    "productId": "gid://shopify/Product/7534975254615",
+    "productTitle": "VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON",
+    "productPrice": 99.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_2_image1.jpg?v=1765725412",
+      "altText": "VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.7761,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双VANS渐变板鞋的撞色设计非常亮眼，搭配一包经典的白色隐形袜，既能提升穿着舒适度，又能让鞋子的色彩成为全身搭配的焦点。"
+  },
+  "gid://shopify/Product/7534975287383": {
+    "productId": "gid://shopify/Product/7534975287383",
+    "productTitle": "VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK",
+    "productPrice": 109.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_3_image1.jpg?v=1765725419",
+      "altText": "VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.8095,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双经典的VANS板鞋搭配同品牌的无痕短袜，能提供舒适的穿着体验，保持简约清爽的造型。"
+  },
+  "gid://shopify/Product/7534975320151": {
+    "productId": "gid://shopify/Product/7534975320151",
+    "productTitle": "VANS |\nERA 59 MOROCCAN | GEO/DRESS BLUES",
+    "productPrice": 119.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_4_image1.jpg?v=1765725427",
+      "altText": "VANS |\nERA 59 MOROCCAN | GEO/DRESS BLUES"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.7981,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双Vans ERA 59鞋款风格复古，搭配同品牌的经典隐形袜，能提供舒适贴合的穿着体验，让整体造型更完整。"
+  },
+  "gid://shopify/Product/7534975352919": {
+    "productId": "gid://shopify/Product/7534975352919",
+    "productTitle": "VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE",
+    "productPrice": 179.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_5_image1.jpg?v=1765725431",
+      "altText": "VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.7704,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双VANS SK8-HI DECON鞋款设计独特，搭配同品牌的经典隐形袜，能提供舒适的穿着体验，让整体造型更完整。"
+  },
+  "gid://shopify/Product/7534975385687": {
+    "productId": "gid://shopify/Product/7534975385687",
+    "productTitle": "PALLADIUM | PALLATECH HI TX | CHEVRON",
+    "productPrice": 159.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_6_image1.jpg?v=1765725438",
+      "altText": "PALLADIUM | PALLATECH HI TX | CHEVRON"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534975418455": {
+    "productId": "gid://shopify/Product/7534975418455",
+    "productTitle": "ASICS TIGER | GEL-LYTE V '30 YEARS OF GEL' PACK",
+    "productPrice": 220,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_7_image1.jpg?v=1765725444",
+      "altText": "ASICS TIGER | GEL-LYTE V '30 YEARS OF GEL' PACK"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534975746135",
+        "title": "NIKE | CRACKLE PRINT TB TEE",
+        "similarity": 0.51,
+        "price": 40,
+        "category": "T-SHIRTS",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+          "altText": "NIKE | CRACKLE PRINT TB TEE"
+        }
+      }
+    ],
+    "reasoning": "这款T恤的复古街头风格与ASICS GEL-LYTE V的经典鞋型相得益彰，轻松打造协调的休闲造型。"
+  },
+  "gid://shopify/Product/7534975451223": {
+    "productId": "gid://shopify/Product/7534975451223",
+    "productTitle": "PUMA | SUEDE CLASSIC REGAL",
+    "productPrice": 110,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_8_image1.jpg?v=1765725449",
+      "altText": "PUMA | SUEDE CLASSIC REGAL"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534975483991": {
+    "productId": "gid://shopify/Product/7534975483991",
+    "productTitle": "SUPRA | MENS VAIDER",
+    "productPrice": 169.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_9_image1.jpg?v=1765725456",
+      "altText": "SUPRA | MENS VAIDER"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534975516759": {
+    "productId": "gid://shopify/Product/7534975516759",
+    "productTitle": "ADIDAS | SUPERSTAR 80S",
+    "productPrice": 170,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_10_image1.jpg?v=1765725462",
+      "altText": "ADIDAS | SUPERSTAR 80S"
+    },
+    "candidateCount": 3,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976270423",
+        "title": "ADIDAS | CLASSIC BACKPACK",
+        "similarity": 0.7785,
+        "price": 70,
+        "category": "ACCESSORIES",
+        "vendor": "ADIDAS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_29_image1.jpg?v=1765725582",
+          "altText": "ADIDAS | CLASSIC BACKPACK"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534976303191",
+        "title": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR",
+        "similarity": 0.7254,
+        "price": 50,
+        "category": "ACCESSORIES",
+        "vendor": "ADIDAS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_30_image1.jpg?v=1765725588",
+          "altText": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534976237655",
+        "title": "NIKE | SWOOSH PRO FLAT PEAK CAP",
+        "similarity": 0.6658,
+        "price": 30,
+        "category": "ACCESSORIES",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_28_image1.jpg?v=1765725577",
+          "altText": "NIKE | SWOOSH PRO FLAT PEAK CAP"
+        }
+      }
+    ],
+    "reasoning": "这些阿迪达斯配饰与您的SUPERSTAR 80S运动鞋风格统一，能轻松打造完整的品牌运动造型。"
+  },
+  "gid://shopify/Product/7534975549527": {
+    "productId": "gid://shopify/Product/7534975549527",
+    "productTitle": "VANS | ERA 59 (DESERT COWBOY)",
+    "productPrice": 109.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_11_image1.jpg?v=1765725469",
+      "altText": "VANS | ERA 59 (DESERT COWBOY)"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.7882,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双VANS复古板鞋风格经典，搭配同品牌的无痕短袜三件套，能提升穿着舒适感与整体造型的完整度。"
+  },
+  "gid://shopify/Product/7534975582295": {
+    "productId": "gid://shopify/Product/7534975582295",
+    "productTitle": "VANS | SH-8 HI",
+    "productPrice": 129.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_12_image1.jpg?v=1765725475",
+      "altText": "VANS | SH-8 HI"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.8183,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双VANS SH-8 HI高帮鞋搭配同品牌的经典隐形袜，能提供更舒适的穿着体验，避免磨脚，是完美的穿搭组合。"
+  },
+  "gid://shopify/Product/7534975615063": {
+    "productId": "gid://shopify/Product/7534975615063",
+    "productTitle": "VANS | OLD SKOOL (BUTTERFLY) TRUE WHITE | BLACK",
+    "productPrice": 129.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_13_image1.jpg?v=1765725483",
+      "altText": "VANS | OLD SKOOL (BUTTERFLY) TRUE WHITE | BLACK"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.7873,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双VANS经典板鞋搭配同品牌的三双装隐形袜，能提供舒适透气的穿着体验，保持简约黑白风格的同时呵护双脚。"
+  },
+  "gid://shopify/Product/7534975680599": {
+    "productId": "gid://shopify/Product/7534975680599",
+    "productTitle": "VANS | CLASSIC SLIP-ON (PERFORATED SUEDE)",
+    "productPrice": 119.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_14_image1.jpg?v=1765725489",
+      "altText": "VANS | CLASSIC SLIP-ON (PERFORATED SUEDE)"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.7926,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双经典的Vans Slip-On透气舒适，搭配同品牌的隐形袜套装能进一步提升穿着体验，避免磨脚的同时保持清爽。"
+  },
+  "gid://shopify/Product/7534975713367": {
+    "productId": "gid://shopify/Product/7534975713367",
+    "productTitle": "TIMBERLAND | MENS 6 INCH PREMIUM BOOT",
+    "productPrice": 299.95,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_15_image1.jpg?v=1765725495",
+      "altText": "TIMBERLAND | MENS 6 INCH PREMIUM BOOT"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534975746135": {
+    "productId": "gid://shopify/Product/7534975746135",
+    "productTitle": "NIKE | CRACKLE PRINT TB TEE",
+    "productPrice": 40,
+    "productCategory": "T-SHIRTS",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+      "altText": "NIKE | CRACKLE PRINT TB TEE"
+    },
+    "candidateCount": 2,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976237655",
+        "title": "NIKE | SWOOSH PRO FLAT PEAK CAP",
+        "similarity": 0.688,
+        "price": 30,
+        "category": "ACCESSORIES",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_28_image1.jpg?v=1765725577",
+          "altText": "NIKE | SWOOSH PRO FLAT PEAK CAP"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975221847",
+        "title": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+        "similarity": 0.6352,
+        "price": 29,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+          "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+        }
+      }
+    ],
+    "reasoning": "这款T恤简约百搭，搭配同品牌的棒球帽能轻松提升整体造型感，或与经典款Vans板鞋组合打造休闲街头风格。"
+  },
+  "gid://shopify/Product/7534975778903": {
+    "productId": "gid://shopify/Product/7534975778903",
+    "productTitle": "DR MARTENS | 1461 DMC 3-EYE SHOE | BLACK SMOOTH",
+    "productPrice": 229,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_17_image1.jpg?v=1765725508",
+      "altText": "DR MARTENS | 1461 DMC 3-EYE SHOE | BLACK SMOOTH"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.5273,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双经典马丁靴风格硬朗，搭配VANS的隐形袜能提升穿着舒适度，避免磨脚，是实用又低调的穿搭组合。"
+  },
+  "gid://shopify/Product/7534975811671": {
+    "productId": "gid://shopify/Product/7534975811671",
+    "productTitle": "DR MARTENS | CAVENDISH 3-EYE SHOE BLACK",
+    "productPrice": 229,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_18_image1.jpg?v=1765725515",
+      "altText": "DR MARTENS | CAVENDISH 3-EYE SHOE BLACK"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.5325,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "这双马丁靴风格硬朗，搭配这组Vans隐形袜，既能保持鞋款的利落外观，又能提升穿着的舒适感，是兼顾造型与实用的经典组合。"
+  },
+  "gid://shopify/Product/7534975844439": {
+    "productId": "gid://shopify/Product/7534975844439",
+    "productTitle": "DR MARTENS | 1460Z DMC 8-EYE BOOT | CHERRY SMOOTH",
+    "productPrice": 249,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_19_image1.jpg?v=1765725521",
+      "altText": "DR MARTENS | 1460Z DMC 8-EYE BOOT | CHERRY SMOOTH"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976106583",
+        "title": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+        "similarity": 0.5706,
+        "price": 19.95,
+        "category": "ACCESSORIES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+          "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+        }
+      }
+    ],
+    "reasoning": "搭配这双经典的樱桃红马丁靴，白色隐形短袜能提供舒适的穿着体验，同时保持简洁清爽的造型。"
+  },
+  "gid://shopify/Product/7534975877207": {
+    "productId": "gid://shopify/Product/7534975877207",
+    "productTitle": "CONVERSE | CHUCK TAYLOR ALL STAR LO",
+    "productPrice": 100,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_20_image1.jpg?v=1765725528",
+      "altText": "CONVERSE | CHUCK TAYLOR ALL STAR LO"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534975909975": {
+    "productId": "gid://shopify/Product/7534975909975",
+    "productTitle": "CONVERSE | CHUCK TAYLOR ALL STAR II HI",
+    "productPrice": 140,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_21_image1.jpg?v=1765725535",
+      "altText": "CONVERSE | CHUCK TAYLOR ALL STAR II HI"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534975975511": {
+    "productId": "gid://shopify/Product/7534975975511",
+    "productTitle": "CONVERSE | TODDLER CHUCK TAYLOR ALL STAR AXEL MID",
+    "productPrice": 70,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_22_image1.jpg?v=1765725543",
+      "altText": "CONVERSE | TODDLER CHUCK TAYLOR ALL STAR AXEL MID"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534976008279": {
+    "productId": "gid://shopify/Product/7534976008279",
+    "productTitle": "NIKE | TODDLER ROSHE ONE",
+    "productPrice": 70,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_23_image1.jpg?v=1765725548",
+      "altText": "NIKE | TODDLER ROSHE ONE"
+    },
+    "candidateCount": 2,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976237655",
+        "title": "NIKE | SWOOSH PRO FLAT PEAK CAP",
+        "similarity": 0.6367,
+        "price": 30,
+        "category": "ACCESSORIES",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_28_image1.jpg?v=1765725577",
+          "altText": "NIKE | SWOOSH PRO FLAT PEAK CAP"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975746135",
+        "title": "NIKE | CRACKLE PRINT TB TEE",
+        "similarity": 0.5946,
+        "price": 40,
+        "category": "T-SHIRTS",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+          "altText": "NIKE | CRACKLE PRINT TB TEE"
+        }
+      }
+    ],
+    "reasoning": "同品牌风格一致，帽子或T恤都能轻松搭配这双童鞋，打造完整的运动休闲造型。"
+  },
+  "gid://shopify/Product/7534976073815": {
+    "productId": "gid://shopify/Product/7534976073815",
+    "productTitle": "ADIDAS | KID'S STAN SMITH",
+    "productPrice": 90,
+    "productCategory": "SHOES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_24_image1.jpg?v=1765725554",
+      "altText": "ADIDAS | KID'S STAN SMITH"
+    },
+    "candidateCount": 3,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534976270423",
+        "title": "ADIDAS | CLASSIC BACKPACK",
+        "similarity": 0.6993,
+        "price": 70,
+        "category": "ACCESSORIES",
+        "vendor": "ADIDAS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_29_image1.jpg?v=1765725582",
+          "altText": "ADIDAS | CLASSIC BACKPACK"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534976303191",
+        "title": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR",
+        "similarity": 0.6347,
+        "price": 50,
+        "category": "ACCESSORIES",
+        "vendor": "ADIDAS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_30_image1.jpg?v=1765725588",
+          "altText": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534976237655",
+        "title": "NIKE | SWOOSH PRO FLAT PEAK CAP",
+        "similarity": 0.609,
+        "price": 30,
+        "category": "ACCESSORIES",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_28_image1.jpg?v=1765725577",
+          "altText": "NIKE | SWOOSH PRO FLAT PEAK CAP"
+        }
+      }
+    ],
+    "reasoning": "为孩子的阿迪达斯经典鞋款搭配同品牌背包，轻松打造活力校园造型。"
+  },
+  "gid://shopify/Product/7534976106583": {
+    "productId": "gid://shopify/Product/7534976106583",
+    "productTitle": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE",
+    "productPrice": 19.95,
+    "productCategory": "ACCESSORIES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_25_image1.jpg?v=1765725559",
+      "altText": "VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534976139351": {
+    "productId": "gid://shopify/Product/7534976139351",
+    "productTitle": "HERSCHEL | IONA",
+    "productPrice": 119.95,
+    "productCategory": "ACCESSORIES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_26_image1.jpg?v=1765725565",
+      "altText": "HERSCHEL | IONA"
+    },
+    "candidateCount": 4,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534975746135",
+        "title": "NIKE | CRACKLE PRINT TB TEE",
+        "similarity": 0.4921,
+        "price": 40,
+        "category": "T-SHIRTS",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+          "altText": "NIKE | CRACKLE PRINT TB TEE"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975549527",
+        "title": "VANS | ERA 59 (DESERT COWBOY)",
+        "similarity": 0.4889,
+        "price": 109.95,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_11_image1.jpg?v=1765725469",
+          "altText": "VANS | ERA 59 (DESERT COWBOY)"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975221847",
+        "title": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+        "similarity": 0.4689,
+        "price": 29,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+          "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975254615",
+        "title": "VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON",
+        "similarity": 0.4678,
+        "price": 99.95,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_2_image1.jpg?v=1765725412",
+          "altText": "VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON"
+        }
+      }
+    ],
+    "reasoning": "这些Vans经典鞋款与Herschel配饰风格相配，都能打造休闲街头造型，是日常出行的舒适搭配选择。"
+  },
+  "gid://shopify/Product/7534976204887": {
+    "productId": "gid://shopify/Product/7534976204887",
+    "productTitle": "FLEX FIT | MINI OTTOMAN BLACK",
+    "productPrice": 29.99,
+    "productCategory": "ACCESSORIES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_27_image1.jpg?v=1765725571",
+      "altText": "FLEX FIT | MINI OTTOMAN BLACK"
+    },
+    "candidateCount": 0,
+    "candidates": [],
+    "recommendation": "没有合适的推荐商品",
+    "reasoning": "候选商品不足"
+  },
+  "gid://shopify/Product/7534976237655": {
+    "productId": "gid://shopify/Product/7534976237655",
+    "productTitle": "NIKE | SWOOSH PRO FLAT PEAK CAP",
+    "productPrice": 30,
+    "productCategory": "ACCESSORIES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_28_image1.jpg?v=1765725577",
+      "altText": "NIKE | SWOOSH PRO FLAT PEAK CAP"
+    },
+    "candidateCount": 1,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534975221847",
+        "title": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+        "similarity": 0.5914,
+        "price": 29,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+          "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+        }
+      }
+    ],
+    "reasoning": "这顶耐克平檐帽与这双Vans低帮板鞋都是经典街头风格单品，价格相近，轻松搭配出简约休闲的潮流造型。"
+  },
+  "gid://shopify/Product/7534976270423": {
+    "productId": "gid://shopify/Product/7534976270423",
+    "productTitle": "ADIDAS | CLASSIC BACKPACK",
+    "productPrice": 70,
+    "productCategory": "ACCESSORIES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_29_image1.jpg?v=1765725582",
+      "altText": "ADIDAS | CLASSIC BACKPACK"
+    },
+    "candidateCount": 2,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534975221847",
+        "title": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+        "similarity": 0.6219,
+        "price": 29,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+          "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975746135",
+        "title": "NIKE | CRACKLE PRINT TB TEE",
+        "similarity": 0.6077,
+        "price": 40,
+        "category": "T-SHIRTS",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+          "altText": "NIKE | CRACKLE PRINT TB TEE"
+        }
+      }
+    ],
+    "reasoning": "这款经典背包与VANS复古板鞋风格相配，轻松打造休闲运动造型；同时搭配NIKE裂纹印花T恤，能形成舒适统一的日常穿搭组合。"
+  },
+  "gid://shopify/Product/7534976303191": {
+    "productId": "gid://shopify/Product/7534976303191",
+    "productTitle": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR",
+    "productPrice": 50,
+    "productCategory": "ACCESSORIES",
+    "productImage": {
+      "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_30_image1.jpg?v=1765725588",
+      "altText": "ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR"
+    },
+    "candidateCount": 2,
+    "candidates": [
+      {
+        "id": "gid://shopify/Product/7534975746135",
+        "title": "NIKE | CRACKLE PRINT TB TEE",
+        "similarity": 0.6382,
+        "price": 40,
+        "category": "T-SHIRTS",
+        "vendor": "NIKE",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_16_image1.jpg?v=1765725502",
+          "altText": "NIKE | CRACKLE PRINT TB TEE"
+        }
+      },
+      {
+        "id": "gid://shopify/Product/7534975221847",
+        "title": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE",
+        "similarity": 0.6154,
+        "price": 29,
+        "category": "SHOES",
+        "vendor": "VANS",
+        "image": {
+          "url": "https://cdn.shopify.com/s/files/1/0652/6618/8375/files/product_1_image1.jpg?v=1765725406",
+          "altText": "VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE"
+        }
+      }
+    ],
+    "reasoning": "这款多色阿迪达斯背包风格鲜明，搭配同属街头潮流风的VANS经典板鞋，能轻松打造协调的休闲造型。"
+  }
+}

@@ -86,5 +86,45 @@
     "similaritiesCount": 30,
     "duration": "108.31s",
     "status": "success"
+  },
+  {
+    "timestamp": "2025-12-22T11:34:50.353Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": false,
+    "recommendationError": null,
+    "duration": "1.33s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T03:24:46.026Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "1.38s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T06:33:58.320Z",
+    "productsCount": 30,
+    "similaritiesCount": 5,
+    "processedCount": 5,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "1.68s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-23T06:38:59.381Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "53.50s",
+    "status": "success"
   }
 ]

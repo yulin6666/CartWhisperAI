@@ -1,4 +1,4 @@
-import { useFetcher, useLoaderData } from 'react-router';
+import { useFetcher, useLoaderData, Link } from 'react-router';
 import { authenticate } from '../shopify.server';
 import { loadProducts, loadOrders, getDataDir } from '../utils/fileStorage.server';
 import { readFileSync, existsSync } from 'fs';
@@ -83,7 +83,7 @@ export default function ScanPage() {
       </div>
 
       {/* 扫描按钮 */}
-      <div style={{ marginBottom: '30px' }}>
+      <div style={{ marginBottom: '30px', display: 'flex', gap: '10px' }}>
         <fetcher.Form method="post" action="/api/scan">
           <button
             type="submit"
@@ -102,6 +102,25 @@ export default function ScanPage() {
             {isScanning ? '🔄 Scanning...' : '🔍 Scan Now'}
           </button>
         </fetcher.Form>
+
+        <Link
+          to="/app/recommendations"
+          style={{
+            padding: '12px 24px',
+            fontSize: '16px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+          }}
+        >
+          📊 View Recommendations
+        </Link>
       </div>
 
       {/* 扫描结果 */}

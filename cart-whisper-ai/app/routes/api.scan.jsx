@@ -1,6 +1,8 @@
 import { authenticate } from '../shopify.server';
 import { saveProducts, saveScanLog } from '../utils/fileStorage.server';
 import { calculateProductSimilarities, saveSimilarities } from '../utils/productSimilarity.server';
+import { postProcessSimilarities, generateRecommendationWithDeepSeek, saveRecommendations } from '../utils/productRecommendation.server';
+import { saveMarkdownReport, generateAllRecommendationCopies, saveCopies } from '../utils/recommendationExport.server';
 
 // GraphQL 查询获取所有产品
 const PRODUCTS_QUERY = `
@@ -138,11 +140,51 @@ export async function action({ request }) {
     // 保存到 JSON 文件
     saveProducts(products);
 
-    // 计算商品相似度
+    // 计算所有商品的相似度（这样才能找到不同分类的推荐商品）
     console.log('🔗 Calculating product similarities...');
     const similarities = await calculateProductSimilarities(products, 10);
     saveSimilarities(similarities);
     console.log('✅ Similarities calculated and saved');
+
+    // 为了节约 token，只对前 5 个商品生成推荐文案
+    const productsForRecommendation = products.slice(0, 5);
+    console.log(`\n⚡ Processing top 5 products for AI copy generation (saving tokens)...`);
+    console.log(`   📊 Will process: ${productsForRecommendation.map(p => p.title).join(', ')}`);
+
+    // 后处理相似度（过滤价格和分类）
+    // 传入所有产品以便查找被推荐商品的完整信息
+    console.log('\n🔍 Post-processing similarities...');
+    const processedData = postProcessSimilarities(products, similarities);
+
+    // 使用 DeepSeek 生成推荐理由
+    let recommendations = null;
+    let recommendationError = null;
+    if (process.env.DEEPSEEK_API_KEY) {
+      try {
+        console.log('\n🤖 Generating recommendations with DeepSeek...');
+        recommendations = await generateRecommendationWithDeepSeek(processedData);
+        saveRecommendations(recommendations);
+        console.log('✅ Recommendations generated and saved');
+      } catch (err) {
+        console.warn('⚠️ Failed to generate recommendations:', err.message);
+        recommendationError = err.message;
+        // 即使推荐失败也继续，保存已处理的数据
+        saveRecommendations(processedData);
+        recommendations = processedData;
+      }
+    } else {
+      console.warn('⚠️ DEEPSEEK_API_KEY not set, skipping AI recommendations');
+      console.log('   Saving post-processed data without AI reasoning...');
+      saveRecommendations(processedData);
+      recommendations = processedData;
+    }
+
+    // 生成 Markdown 报告和推荐文案
+    console.log('\n📝 Generating Markdown report and recommendation copies...');
+    saveMarkdownReport(recommendations);
+    const copies = await generateAllRecommendationCopies(recommendations);
+    saveCopies(copies);
+    console.log('✅ Markdown report and copies generated');
 
     const endTime = new Date();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -152,6 +194,9 @@ export async function action({ request }) {
       timestamp: new Date().toISOString(),
       productsCount: products.length,
       similaritiesCount: Object.keys(similarities).length,
+      processedCount: Object.keys(processedData).length,
+      recommendationsGenerated: !!recommendations,
+      recommendationError: recommendationError,
       duration: `${duration}s`,
       status: 'success',
     };
@@ -162,6 +207,8 @@ export async function action({ request }) {
       message: 'Scan completed successfully',
       productsCount: products.length,
       similaritiesCount: Object.keys(similarities).length,
+      processedCount: Object.keys(processedData).length,
+      recommendationsGenerated: !!recommendations,
       duration: `${duration}s`,
     };
   } catch (error) {
