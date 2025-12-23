@@ -118,10 +118,11 @@ export function postProcessSimilarities(products, similarities) {
 /**
  * 使用 DeepSeek 生成商品组合推荐理由
  * @param {Object} processedData - 后处理的推荐数据
+ * @param {Object} logger - 日志记录器对象
  * @returns {Object} - 包含推荐理由的数据
  */
-export async function generateRecommendationWithDeepSeek(processedData) {
-  console.log('🤖 Generating recommendations with DeepSeek...');
+export async function generateRecommendationWithDeepSeek(processedData, logger = console) {
+  logger.info('🤖 Generating recommendations with DeepSeek...');
 
   const client = getDeepSeekClient();
   const recommendations = {};
@@ -129,7 +130,7 @@ export async function generateRecommendationWithDeepSeek(processedData) {
   // 处理每个商品的推荐
   for (const [productId, data] of Object.entries(processedData)) {
     if (data.candidates.length === 0) {
-      console.warn(`⚠️ No candidates for ${data.productTitle}`);
+      logger.warn(`⚠️ No candidates for ${data.productTitle}`);
       recommendations[productId] = {
         ...data,
         recommendation: '没有合适的推荐商品',
@@ -158,19 +159,31 @@ Response format: Provide only the reasoning, no prefix or explanation needed.
 `;
 
     // 打印详细信息到日志
-    console.log(`\n========================================`);
-    console.log(`📦 Main Product: ${data.productTitle}`);
-    console.log(`💰 Price: $${data.productPrice}`);
-    console.log(`📁 Category: ${data.productCategory}`);
-    console.log(`\n🎯 Recommended Candidates:`);
+    logger.info(`\n========================================`);
+    logger.info(`📦 Main Product: ${data.productTitle}`);
+    logger.info(`💰 Price: $${data.productPrice}`);
+    logger.info(`📁 Category: ${data.productCategory}`);
+    logger.info(`\n🎯 Recommended Candidates:`);
     data.candidates.forEach((c, idx) => {
-      console.log(`   ${idx + 1}. ${c.title}`);
-      console.log(`      Price: $${c.price} | Category: ${c.category} | Similarity: ${(c.similarity * 100).toFixed(1)}%`);
+      logger.info(`   ${idx + 1}. ${c.title}`);
+      logger.info(`      Price: $${c.price} | Category: ${c.category} | Similarity: ${(c.similarity * 100).toFixed(1)}%`);
     });
-    console.log(`========================================`);
+    logger.info(`========================================`);
 
     try {
-      console.log(`\n🔄 Generating recommendation for: ${data.productTitle}`);
+      logger.info(`\n🔄 Generating recommendation for: ${data.productTitle}`);
+
+      // 打印 Prompt
+      logger.info(`\n📝 DeepSeek Prompt:`);
+      logger.info(`---`);
+      logger.info(prompt);
+      logger.info(`---`);
+
+      // 发送请求到 DeepSeek
+      logger.info(`\n📤 Sending request to DeepSeek API...`);
+      logger.info(`   Model: deepseek-chat`);
+      logger.info(`   Temperature: 0`);
+      logger.info(`   Max Tokens: 200`);
 
       const response = await client.chat.completions.create({
         model: 'deepseek-chat',
@@ -184,18 +197,33 @@ Response format: Provide only the reasoning, no prefix or explanation needed.
         max_tokens: 200,
       });
 
+      // 打印完整响应信息
+      logger.info(`\n📥 DeepSeek API Response:`);
+      logger.info(`   Model: ${response.model}`);
+      logger.info(`   Created: ${response.created}`);
+      logger.info(`   Usage:`);
+      logger.info(`     - Prompt Tokens: ${response.usage?.prompt_tokens}`);
+      logger.info(`     - Completion Tokens: ${response.usage?.completion_tokens}`);
+      logger.info(`     - Total Tokens: ${response.usage?.total_tokens}`);
+      logger.info(`   Finish Reason: ${response.choices[0]?.finish_reason}`);
+
       const reasoning = response.choices[0]?.message?.content?.trim() || 'Failed to generate reasoning';
-      console.log(`✅ Reasoning Generated:`);
-      console.log(`   "${reasoning}"`);
-      console.log(`========================================`);
+      logger.info(`\n✅ Generated Reasoning:`);
+      logger.info(`   "${reasoning}"`);
+      logger.info(`========================================`);
 
       recommendations[productId] = {
         ...data,
         reasoning,
       };
     } catch (error) {
-      console.error(`❌ Error generating recommendation for ${data.productTitle}:`, error.message);
-      console.log(`========================================`);
+      logger.error(`\n❌ Error generating recommendation for ${data.productTitle}:`);
+      logger.error(`   Message: ${error.message}`);
+      if (error.response) {
+        logger.error(`   Status: ${error.response.status}`);
+        logger.error(`   Data: ${JSON.stringify(error.response.data)}`);
+      }
+      logger.info(`========================================`);
       recommendations[productId] = {
         ...data,
         reasoning: `Failed to generate: ${error.message}`,
@@ -203,7 +231,7 @@ Response format: Provide only the reasoning, no prefix or explanation needed.
     }
   }
 
-  console.log('✅ All recommendations generated');
+  logger.info('✅ All recommendations generated');
   return recommendations;
 }
 

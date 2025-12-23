@@ -174,7 +174,7 @@ export async function action({ request }) {
     if (process.env.DEEPSEEK_API_KEY) {
       try {
         logger.info('\n🤖 Generating recommendations with DeepSeek for top 5 products...');
-        const aiRecommendations = await generateRecommendationWithDeepSeek(productsForAI);
+        const aiRecommendations = await generateRecommendationWithDeepSeek(productsForAI, logger);
 
         // 只用AI生成的推荐理由来更新前5个商品
         Object.assign(recommendations, aiRecommendations);
@@ -196,7 +196,7 @@ export async function action({ request }) {
     // 生成 Markdown 报告和推荐文案
     logger.info('\n📝 Generating Markdown report and recommendation copies...');
     saveMarkdownReport(recommendations);
-    const copies = await generateAllRecommendationCopies(recommendations);
+    const copies = await generateAllRecommendationCopies(recommendations, logger);
     saveCopies(copies);
     logger.success(`✅ Markdown report and copies generated`);
     logger.info(`   📊 Generated copies for ${Object.keys(copies).length} products`);

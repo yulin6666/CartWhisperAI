@@ -79,9 +79,9 @@ export function saveMarkdownReport(recommendations) {
 /**
  * 使用 DeepSeek AI 生成个性化推荐文案
  */
-async function generateAICopy(product) {
+async function generateAICopy(product, logger = console) {
   if (!process.env.DEEPSEEK_API_KEY) {
-    console.warn('⚠️ DEEPSEEK_API_KEY not set, falling back to template');
+    logger.warn('⚠️ DEEPSEEK_API_KEY not set, falling back to template');
     return generateRecommendationCopy(product);
   }
 
@@ -107,6 +107,15 @@ Requirements:
 5. Return only the copy text with no prefix or additional explanation
 6. Use English language`;
 
+    // 打印 Prompt
+    logger.info(`\n  📝 AI Copy Prompt for "${product.productTitle}":`);
+    logger.info(`  ---`);
+    logger.info(`  ${prompt}`);
+    logger.info(`  ---`);
+
+    // 发送请求到 DeepSeek
+    logger.info(`\n  📤 Sending to DeepSeek API (Temperature: 0.7, Max Tokens: 100)...`);
+
     const response = await client.chat.completions.create({
       model: 'deepseek-chat',
       messages: [{ role: 'user', content: prompt }],
@@ -114,17 +123,23 @@ Requirements:
       max_tokens: 100,
     });
 
+    // 打印响应信息
+    logger.info(`\n  📥 DeepSeek Response:`);
+    logger.info(`     Tokens Used: ${response.usage?.total_tokens} (prompt: ${response.usage?.prompt_tokens}, completion: ${response.usage?.completion_tokens})`);
+
     const copy = response.choices[0]?.message?.content?.trim();
     if (copy) {
-      console.log(`  ✅ Generated AI copy for: ${product.productTitle}`);
+      logger.info(`  ✅ Generated: "${copy}"`);
       return copy;
     }
   } catch (error) {
-    console.warn(`⚠️ Failed to generate AI copy for ${product.productTitle}:`, error.message);
+    logger.warn(`  ⚠️ Failed to generate AI copy for ${product.productTitle}: ${error.message}`);
   }
 
   // 降级到模板生成
-  return generateRecommendationCopy(product);
+  const fallbackCopy = generateRecommendationCopy(product);
+  logger.info(`  ℹ️ Using template fallback: "${fallbackCopy}"`);
+  return fallbackCopy;
 }
 
 /**
@@ -145,7 +160,7 @@ export function generateRecommendationCopy(product) {
 /**
  * 生成所有商品的推荐文案（使用 AI）
  */
-export async function generateAllRecommendationCopies(recommendations) {
+export async function generateAllRecommendationCopies(recommendations, logger = console) {
   const copies = {};
 
   // 使用 Promise.all 并行生成文案
@@ -154,10 +169,10 @@ export async function generateAllRecommendationCopies(recommendations) {
     .filter(([_, product]) => product.candidates && product.candidates.length > 0)
     .slice(0, 5);
 
-  console.log(`🤖 Starting to generate AI copies for top 5 products with recommendations (to save tokens)...`);
+  logger.info(`🤖 Starting to generate AI copies for top 5 products with recommendations (to save tokens)...`);
 
   const copyPromises = entries.map(async ([productId, product]) => {
-    const copy = await generateAICopy(product);
+    const copy = await generateAICopy(product, logger);
     return [productId, {
       productTitle: product.productTitle,
       copy: copy,
@@ -170,7 +185,7 @@ export async function generateAllRecommendationCopies(recommendations) {
     copies[productId] = data;
   });
 
-  console.log(`✅ Generated ${Object.keys(copies).length} AI-powered recommendation copies`);
+  logger.info(`✅ Generated ${Object.keys(copies).length} AI-powered recommendation copies`);
   return copies;
 }
 
