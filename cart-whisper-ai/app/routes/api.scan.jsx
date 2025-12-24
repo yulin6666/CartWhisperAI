@@ -4,6 +4,7 @@ import { calculateProductSimilarities, saveSimilarities } from '../utils/product
 import { postProcessSimilarities, generateRecommendationWithDeepSeek, saveRecommendations } from '../utils/productRecommendation.server';
 import { saveMarkdownReport } from '../utils/recommendationExport.server';
 import { createLogger } from '../utils/logger.server';
+import { syncRecommendationsToDatabase } from '../utils/recommendationSync.server';
 
 // GraphQL 查询获取所有产品
 const PRODUCTS_QUERY = `
@@ -131,8 +132,9 @@ export async function action({ request }) {
 
   try {
     logger.success('🔄 Starting scan...');
-    const { admin } = await authenticate.admin(request);
-    logger.success('✅ Authentication successful');
+    const { admin, session } = await authenticate.admin(request);
+    const shop = session.shop;
+    logger.success(`✅ Authentication successful for shop: ${shop}`);
 
     const startTime = new Date();
 
@@ -198,6 +200,15 @@ export async function action({ request }) {
     saveMarkdownReport(recommendations);
     logger.success(`✅ Markdown report generated`);
 
+    // 同步推荐数据到数据库
+    logger.info('\n💾 Syncing recommendations to database...');
+    const syncResult = await syncRecommendationsToDatabase(shop, recommendations, logger);
+    if (syncResult.success) {
+      logger.success(`✅ Database sync complete: ${syncResult.total} recommendations synced`);
+    } else {
+      logger.error(`⚠️ Database sync failed: ${syncResult.error}`);
+    }
+
     const endTime = new Date();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
 
@@ -225,6 +236,7 @@ export async function action({ request }) {
       similaritiesCount: Object.keys(similarities).length,
       processedCount: Object.keys(processedData).length,
       recommendationsGenerated: !!recommendations,
+      recommendationsSynced: syncResult.success ? syncResult.total : 0,
       duration: `${duration}s`,
       logFile: logFilePath,
     };

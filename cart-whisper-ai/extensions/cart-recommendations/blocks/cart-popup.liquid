@@ -1,0 +1,726 @@
+{% comment %}
+  Cart Whisper AI - Add to Cart Popup
+  This embed block shows a recommendation popup when items are added to cart
+{% endcomment %}
+
+<!-- Cart Whisper Popup Container -->
+<div id="cart-whisper-popup"
+     class="cart-whisper-popup-overlay"
+     data-shop="{{ shop.permanent_domain }}"
+     data-api-url="{{ block.settings.api_url }}"
+     data-limit="{{ block.settings.limit }}"
+     style="display: none;">
+
+  <div class="cart-whisper-popup-modal">
+    <button class="cart-whisper-popup-close" onclick="cartWhisperClosePopup()" aria-label="Close">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <div class="cart-whisper-popup-header">
+      <div class="cart-whisper-popup-check">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="{{ block.settings.success_color }}" stroke-width="3">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
+      <h2 class="cart-whisper-popup-title">{{ block.settings.success_title }}</h2>
+      <p class="cart-whisper-popup-subtitle">{{ block.settings.success_subtitle }}</p>
+    </div>
+
+    <div class="cart-whisper-popup-divider"></div>
+
+    <div class="cart-whisper-popup-recommendations">
+      <div class="cart-whisper-popup-products" id="cart-whisper-popup-products">
+        <!-- Products loaded dynamically -->
+      </div>
+    </div>
+
+    <div class="cart-whisper-popup-actions">
+      <button class="cart-whisper-popup-continue" onclick="cartWhisperClosePopup()">
+        {{ block.settings.continue_text }}
+      </button>
+      <a href="/cart" class="cart-whisper-popup-checkout">
+        {{ block.settings.checkout_text }}
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cart-whisper-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+
+  .cart-whisper-popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .cart-whisper-popup-modal {
+    background: {{ block.settings.popup_background }};
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .cart-whisper-popup-overlay.active .cart-whisper-popup-modal {
+    transform: scale(1);
+  }
+
+  .cart-whisper-popup-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+
+  .cart-whisper-popup-close:hover {
+    color: #333;
+  }
+
+  .cart-whisper-popup-header {
+    text-align: center;
+    padding: 32px 24px 24px;
+  }
+
+  .cart-whisper-popup-check {
+    margin-bottom: 16px;
+  }
+
+  .cart-whisper-popup-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 8px;
+  }
+
+  .cart-whisper-popup-subtitle {
+    font-size: 14px;
+    color: {{ block.settings.subtitle_color }};
+    margin: 0;
+  }
+
+  .cart-whisper-popup-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 0 24px;
+  }
+
+  .cart-whisper-popup-recommendations {
+    padding: 24px;
+  }
+
+  .cart-whisper-popup-rec-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 16px;
+  }
+
+  .cart-whisper-popup-products {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cart-whisper-popup-product {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .cart-whisper-popup-product:hover {
+    background: #f0f0f0;
+  }
+
+  .cart-whisper-popup-product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .cart-whisper-popup-product-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cart-whisper-popup-product-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin: 0 0 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cart-whisper-popup-product-reason {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin: 0 0 10px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cart-whisper-popup-product-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cart-whisper-popup-product-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: {{ block.settings.price_color }};
+  }
+
+  .cart-whisper-popup-add-btn {
+    background: {{ block.settings.button_color }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .cart-whisper-popup-add-btn:hover {
+    opacity: 0.9;
+  }
+
+  .cart-whisper-popup-add-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cart-whisper-popup-actions {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 24px;
+  }
+
+  .cart-whisper-popup-continue {
+    flex: 1;
+    padding: 14px 24px;
+    border: 1px solid #e0e0e0;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.2s;
+  }
+
+  .cart-whisper-popup-continue:hover {
+    background: #f5f5f5;
+  }
+
+  .cart-whisper-popup-checkout {
+    flex: 1;
+    padding: 14px 24px;
+    background: {{ block.settings.checkout_button_color }};
+    color: {{ block.settings.checkout_button_text_color }};
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+
+  .cart-whisper-popup-checkout:hover {
+    opacity: 0.9;
+  }
+
+  .cart-whisper-popup-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+  }
+
+  @media (max-width: 500px) {
+    .cart-whisper-popup-modal {
+      max-height: 100vh;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .cart-whisper-popup-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script>
+// CartWhisper: 立即设置 fetch 拦截器（在 IIFE 之前）
+(function() {
+  'use strict';
+
+  console.log('[CartWhisper] Installing fetch interceptor...');
+
+  // 存储弹窗显示函数，稍后由主代码设置
+  window._cartWhisperShowPopup = null;
+
+  // 立即拦截 fetch
+  const originalFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+    console.log('[CartWhisper] Fetch intercepted:', url);
+
+    const response = await originalFetch.apply(this, args);
+
+    // 检查是否是添加购物车请求
+    if (url.includes('/cart/add')) {
+      console.log('[CartWhisper] *** CART ADD DETECTED ***');
+      try {
+        const clonedResponse = response.clone();
+        const data = await clonedResponse.json();
+        console.log('[CartWhisper] Cart add response data:', data);
+
+        const productId = data.items?.[0]?.product_id || data.product_id;
+        console.log('[CartWhisper] Extracted product ID:', productId);
+
+        if (productId && window._cartWhisperShowPopup) {
+          console.log('[CartWhisper] Triggering popup...');
+          setTimeout(() => window._cartWhisperShowPopup(productId), 300);
+        } else if (!window._cartWhisperShowPopup) {
+          console.warn('[CartWhisper] Popup function not ready yet');
+        }
+      } catch (e) {
+        console.error('[CartWhisper] Error parsing cart response:', e);
+      }
+    }
+
+    return response;
+  };
+
+  // 也拦截 XMLHttpRequest
+  const originalXHROpen = XMLHttpRequest.prototype.open;
+  const originalXHRSend = XMLHttpRequest.prototype.send;
+
+  XMLHttpRequest.prototype.open = function(method, url) {
+    this._cartWhisperUrl = url;
+    this._cartWhisperMethod = method;
+    return originalXHROpen.apply(this, arguments);
+  };
+
+  XMLHttpRequest.prototype.send = function(body) {
+    const xhr = this;
+    const url = this._cartWhisperUrl || '';
+
+    console.log('[CartWhisper] XHR intercepted:', this._cartWhisperMethod, url);
+
+    if (url.includes('/cart/add')) {
+      console.log('[CartWhisper] *** XHR CART ADD DETECTED ***');
+      this.addEventListener('load', function() {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          console.log('[CartWhisper] XHR cart response:', data);
+
+          const productId = data.items?.[0]?.product_id || data.product_id;
+          if (productId && window._cartWhisperShowPopup) {
+            setTimeout(() => window._cartWhisperShowPopup(productId), 300);
+          }
+        } catch (e) {
+          console.error('[CartWhisper] XHR parse error:', e);
+        }
+      });
+    }
+
+    return originalXHRSend.apply(this, arguments);
+  };
+
+  console.log('[CartWhisper] Fetch interceptor installed successfully!');
+})();
+
+// CartWhisper: 主要弹窗逻辑
+(function() {
+  'use strict';
+
+  const popup = document.getElementById('cart-whisper-popup');
+  if (!popup) return;
+
+  const shop = popup.dataset.shop;
+  const apiUrl = popup.dataset.apiUrl || '';
+  const limit = parseInt(popup.dataset.limit, 10) || 3;
+  const productsContainer = document.getElementById('cart-whisper-popup-products');
+
+  // 调试信息
+  console.log('[CartWhisper] === DEBUG INFO ===');
+  console.log('[CartWhisper] Shop:', shop);
+  console.log('[CartWhisper] API URL configured:', apiUrl);
+  console.log('[CartWhisper] Limit:', limit);
+  console.log('[CartWhisper] =================');
+
+  // 关闭弹窗
+  window.cartWhisperClosePopup = function() {
+    popup.classList.remove('active');
+    setTimeout(() => {
+      popup.style.display = 'none';
+    }, 300);
+  };
+
+  // 点击遮罩关闭
+  popup.addEventListener('click', function(e) {
+    if (e.target === popup) {
+      cartWhisperClosePopup();
+    }
+  });
+
+  // ESC键关闭
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && popup.classList.contains('active')) {
+      cartWhisperClosePopup();
+    }
+  });
+
+  // 获取推荐
+  async function fetchRecommendations(productId) {
+    // 构建 API URL
+    // 注意：如果 apiUrl 为空，会尝试 App Proxy 路径
+    let fetchUrl;
+    const effectiveApiUrl = apiUrl || '';
+
+    console.log('[CartWhisper] Building URL with apiUrl:', effectiveApiUrl, 'productId:', productId);
+
+    if (effectiveApiUrl && effectiveApiUrl.length > 0) {
+      // 直接调用应用 API
+      fetchUrl = `${effectiveApiUrl}/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+    } else {
+      // 尝试 App Proxy
+      fetchUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
+    }
+
+    console.log('[CartWhisper] Final fetch URL:', fetchUrl);
+
+    try {
+      const response = await fetch(fetchUrl, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      console.log('[CartWhisper] Response status:', response.status);
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('[CartWhisper] Error response:', text);
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      console.log('[CartWhisper] Got recommendations:', data);
+      return data.recommendations || [];
+    } catch (error) {
+      console.error('[CartWhisper] Failed to fetch recommendations', error);
+      return [];
+    }
+  }
+
+  // 添加到购物车
+  window.cartWhisperPopupAdd = async function(button, handle) {
+    console.log('[CartWhisper] Add button clicked, handle:', handle);
+    button.disabled = true;
+    button.textContent = '{{ block.settings.adding_text }}';
+
+    try {
+      // 用 handle 获取产品信息
+      const productResponse = await fetch(`/products/${handle}.js`);
+      if (!productResponse.ok) {
+        throw new Error('Product not found');
+      }
+      const product = await productResponse.json();
+      const variantId = product.variants[0]?.id;
+
+      console.log('[CartWhisper] Variant ID:', variantId);
+
+      if (variantId) {
+        const addResponse = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
+        });
+
+        if (addResponse.ok) {
+          button.textContent = '{{ block.settings.added_text }}';
+          document.dispatchEvent(new CustomEvent('cart:refresh'));
+          // 2秒后恢复按钮状态
+          setTimeout(() => {
+            button.disabled = false;
+            button.textContent = '{{ block.settings.button_text }}';
+          }, 2000);
+        } else {
+          throw new Error('Failed to add to cart');
+        }
+      }
+    } catch (error) {
+      console.error('[CartWhisper] Failed to add to cart:', error);
+      button.textContent = '{{ block.settings.button_text }}';
+      button.disabled = false;
+    }
+  };
+
+  // 渲染推荐
+  function renderRecommendations(recommendations) {
+    if (!recommendations || recommendations.length === 0) {
+      productsContainer.innerHTML = '<p class="cart-whisper-popup-loading">{{ block.settings.no_recommendations_text }}</p>';
+      return;
+    }
+
+    const moneyFormat = window.Shopify?.moneyFormat || '${{amount}}';
+
+    productsContainer.innerHTML = recommendations.map(rec => {
+      const price = formatMoney(rec.price);
+      const imageUrl = rec.image || 'https://via.placeholder.com/80x80?text=No+Image';
+      const productUrl = rec.handle ? `/products/${rec.handle}` : `/products/${rec.numericId}`;
+      const addHandle = rec.handle || rec.numericId;
+
+      return `
+        <div class="cart-whisper-popup-product">
+          <a href="${productUrl}">
+            <img class="cart-whisper-popup-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
+          </a>
+          <div class="cart-whisper-popup-product-info">
+            ${rec.reasoning ? `<p class="cart-whisper-popup-product-reason">${escapeHtml(rec.reasoning)}</p>` : ''}
+            <a href="${productUrl}" style="text-decoration:none;color:inherit;">
+              <h4 class="cart-whisper-popup-product-title">${escapeHtml(rec.title)}</h4>
+            </a>
+            <div class="cart-whisper-popup-product-bottom">
+              <span class="cart-whisper-popup-product-price">${price}</span>
+              <button class="cart-whisper-popup-add-btn" onclick="event.stopPropagation(); cartWhisperPopupAdd(this, '${addHandle}')">
+                {{ block.settings.button_text }}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function formatMoney(price) {
+    // 直接格式化价格，不需要转换
+    const amount = parseFloat(price).toFixed(2);
+    return `$${amount}`;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+  }
+
+  // 显示弹窗
+  async function showPopup(productId) {
+    console.log('[CartWhisper] showPopup called with productId:', productId);
+
+    console.log('[CartWhisper] Showing popup...');
+    productsContainer.innerHTML = '<p class="cart-whisper-popup-loading">{{ block.settings.loading_text }}</p>';
+    popup.style.display = 'flex';
+
+    requestAnimationFrame(() => {
+      popup.classList.add('active');
+    });
+
+    const recommendations = await fetchRecommendations(productId);
+    console.log('[CartWhisper] Got recommendations for popup:', recommendations);
+    renderRecommendations(recommendations);
+  }
+
+  // 注册 showPopup 函数到全局，供拦截器使用
+  window._cartWhisperShowPopup = showPopup;
+  console.log('[CartWhisper] Popup function registered');
+
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Cart Popup",
+  "target": "body",
+  "settings": [
+    {
+      "type": "text",
+      "id": "api_url",
+      "label": "API URL",
+      "info": "Your CartWhisperAI app URL (e.g., https://your-app.fly.dev)"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Number of recommendations",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Success Message"
+    },
+    {
+      "type": "text",
+      "id": "success_title",
+      "label": "Success title",
+      "default": "Added to cart!"
+    },
+    {
+      "type": "text",
+      "id": "success_subtitle",
+      "label": "Success subtitle",
+      "default": "Your item has been added to the shopping cart."
+    },
+    {
+      "type": "color",
+      "id": "success_color",
+      "label": "Success icon color",
+      "default": "#22c55e"
+    },
+    {
+      "type": "header",
+      "content": "Recommendations"
+    },
+    {
+      "type": "text",
+      "id": "recommendation_title",
+      "label": "Recommendation title",
+      "default": "Complete your look"
+    },
+    {
+      "type": "text",
+      "id": "no_recommendations_text",
+      "label": "No recommendations text",
+      "default": "No additional recommendations"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Add button text",
+      "default": "Add"
+    },
+    {
+      "type": "text",
+      "id": "adding_text",
+      "label": "Adding text",
+      "default": "Adding..."
+    },
+    {
+      "type": "text",
+      "id": "added_text",
+      "label": "Added text",
+      "default": "Added!"
+    },
+    {
+      "type": "text",
+      "id": "loading_text",
+      "label": "Loading text",
+      "default": "Loading recommendations..."
+    },
+    {
+      "type": "text",
+      "id": "continue_text",
+      "label": "Continue shopping text",
+      "default": "Continue Shopping"
+    },
+    {
+      "type": "text",
+      "id": "checkout_text",
+      "label": "Checkout text",
+      "default": "View Cart"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "popup_background",
+      "label": "Popup background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "price_color",
+      "label": "Price color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Add button color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Add button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "checkout_button_color",
+      "label": "Checkout button color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "checkout_button_text_color",
+      "label": "Checkout button text color",
+      "default": "#ffffff"
+    }
+  ]
+}
+{% endschema %}

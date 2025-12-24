@@ -32,3 +32,42 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
+
+// 商品推荐匹配表 - 存储商品A对应推荐商品B的信息
+model ProductRecommendation {
+  id                  String    @id @default(cuid())
+  shop                String    // 店铺域名
+
+  // 源商品信息 (商品A)
+  sourceProductId     String    // Shopify Product GID
+  sourceProductTitle  String
+  sourceProductPrice  Float
+  sourceProductCategory String?
+  sourceProductImage  String?
+
+  // 推荐商品信息 (商品B)
+  recommendedProductId    String    // Shopify Product GID
+  recommendedProductHandle String?  // 商品 handle，用于前端链接
+  recommendedProductTitle String
+  recommendedProductPrice Float
+  recommendedProductCategory String?
+  recommendedProductVendor String?
+  recommendedProductImage String?
+
+  // 推荐信息
+  similarity          Float     // 相似度分数 0-1
+  reasoning           String?   // AI生成的推荐理由
+  priority            Int       @default(0)  // 推荐优先级，数字越大优先级越高
+
+  // 状态
+  isActive            Boolean   @default(true)
+
+  // 时间戳
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // 索引优化查询性能
+  @@index([shop, sourceProductId])
+  @@index([shop, isActive])
+  @@unique([shop, sourceProductId, recommendedProductId])
+}

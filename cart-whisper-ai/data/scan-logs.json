@@ -208,5 +208,50 @@
     "copiesCount": 5,
     "duration": "14.35s",
     "status": "success"
+  },
+  {
+    "timestamp": "2025-12-24T03:29:34.722Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "13.18s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-24T03:43:14.604Z",
+    "status": "failed",
+    "error": "[object Response]"
+  },
+  {
+    "timestamp": "2025-12-24T03:43:31.210Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "11.88s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-24T06:37:18.390Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "12.57s",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-12-24T12:25:10.576Z",
+    "productsCount": 30,
+    "similaritiesCount": 30,
+    "processedCount": 30,
+    "recommendationsGenerated": true,
+    "recommendationError": null,
+    "duration": "11.35s",
+    "status": "success"
   }
 ]

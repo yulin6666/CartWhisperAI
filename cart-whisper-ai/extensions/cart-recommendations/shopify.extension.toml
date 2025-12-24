@@ -1,0 +1,6 @@
+api_version = "2024-04"
+uid = "d71b01d3-dccb-3d16-1c2a-cc7818e5e0932046a4f7"
+type = "theme_app_extension"
+
+[capabilities]
+ajax_api = true

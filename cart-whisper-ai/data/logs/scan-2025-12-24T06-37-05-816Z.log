@@ -1,0 +1,265 @@
+[2025-12-24T06:37:05.816Z] [SUCCESS] 🔄 Starting scan...
+[2025-12-24T06:37:05.817Z] [SUCCESS] ✅ Authentication successful for shop: test-store-1100000000000000000000000000000002771.myshopify.com
+[2025-12-24T06:37:05.817Z] [INFO] 📦 Fetching products...
+[2025-12-24T06:37:07.148Z] [SUCCESS] ✅ Got 30 products
+[2025-12-24T06:37:07.148Z] [INFO]    📝 Product list: VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE, VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON, VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK, VANS |
+ERA 59 MOROCCAN | GEO/DRESS BLUES, VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE, PALLADIUM | PALLATECH HI TX | CHEVRON, ASICS TIGER | GEL-LYTE V '30 YEARS OF GEL' PACK, PUMA | SUEDE CLASSIC REGAL, SUPRA | MENS VAIDER, ADIDAS | SUPERSTAR 80S, VANS | ERA 59 (DESERT COWBOY), VANS | SH-8 HI, VANS | OLD SKOOL (BUTTERFLY) TRUE WHITE | BLACK, VANS | CLASSIC SLIP-ON (PERFORATED SUEDE), TIMBERLAND | MENS 6 INCH PREMIUM BOOT, NIKE | CRACKLE PRINT TB TEE, DR MARTENS | 1461 DMC 3-EYE SHOE | BLACK SMOOTH, DR MARTENS | CAVENDISH 3-EYE SHOE BLACK, DR MARTENS | 1460Z DMC 8-EYE BOOT | CHERRY SMOOTH, CONVERSE | CHUCK TAYLOR ALL STAR LO, CONVERSE | CHUCK TAYLOR ALL STAR II HI, CONVERSE | TODDLER CHUCK TAYLOR ALL STAR AXEL MID, NIKE | TODDLER ROSHE ONE, ADIDAS | KID'S STAN SMITH, VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE, HERSCHEL | IONA, FLEX FIT | MINI OTTOMAN BLACK, NIKE | SWOOSH PRO FLAT PEAK CAP, ADIDAS | CLASSIC BACKPACK, ADIDAS | CLASSIC BACKPACK | LEGEND INK MULTICOLOUR
+[2025-12-24T06:37:07.149Z] [INFO] 🔗 Calculating product similarities for ALL products...
+[2025-12-24T06:37:07.340Z] [SUCCESS] ✅ Similarities calculated and saved
+[2025-12-24T06:37:07.340Z] [INFO]    📊 Found similarities for: 30 products
+[2025-12-24T06:37:07.340Z] [INFO] 🔍 Post-processing similarities...
+[2025-12-24T06:37:07.342Z] [WARN] ⚡ ONLY sending top 5 products to DeepSeek API to save tokens...
+[2025-12-24T06:37:07.342Z] [INFO]    📊 Will process: VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE, VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON, VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK, VANS |
+ERA 59 MOROCCAN | GEO/DRESS BLUES, VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE
+[2025-12-24T06:37:07.342Z] [INFO] 
+🤖 Generating recommendations with DeepSeek for top 5 products...
+[2025-12-24T06:37:07.342Z] [INFO] 🤖 Generating recommendations with DeepSeek...
+[2025-12-24T06:37:07.343Z] [INFO] 
+========================================
+[2025-12-24T06:37:07.343Z] [INFO] 📦 Main Product: VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE
+[2025-12-24T06:37:07.343Z] [INFO] 💰 Price: $29
+[2025-12-24T06:37:07.343Z] [INFO] 📁 Category: SHOES
+[2025-12-24T06:37:07.343Z] [INFO] 
+🎯 Recommended Candidates:
+[2025-12-24T06:37:07.343Z] [INFO]    1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE
+[2025-12-24T06:37:07.343Z] [INFO]       Price: $19.95 | Category: ACCESSORIES | Similarity: 79.5%
+[2025-12-24T06:37:07.343Z] [INFO] ========================================
+[2025-12-24T06:37:07.343Z] [INFO] 
+🔄 Generating recommendation for: VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE
+[2025-12-24T06:37:07.343Z] [INFO] 
+📝 DeepSeek Prompt:
+[2025-12-24T06:37:07.343Z] [INFO] ---
+[2025-12-24T06:37:07.343Z] [INFO] 
+Analyze the following product and recommendations, then provide a brief recommendation reason (1-2 sentences) in English.
+
+Main Product: VANS |AUTHENTIC | LO PRO | BURGANDY/WHITE
+Price: $29
+Category: SHOES
+
+Recommended Candidates:
+1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE (Price: $19.95, Category: ACCESSORIES, Similarity: 79.5%)
+
+Analyze the common characteristics of these products and explain why they work well as complementary or alternative products.
+Response format: Provide only the reasoning, no prefix or explanation needed.
+
+[2025-12-24T06:37:07.343Z] [INFO] ---
+[2025-12-24T06:37:07.343Z] [INFO] 
+📤 Sending request to DeepSeek API...
+[2025-12-24T06:37:07.343Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:07.343Z] [INFO]    Temperature: 0
+[2025-12-24T06:37:07.343Z] [INFO]    Max Tokens: 200
+[2025-12-24T06:37:09.600Z] [INFO] 
+📥 DeepSeek API Response:
+[2025-12-24T06:37:09.600Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:09.600Z] [INFO]    Created: 1766558229
+[2025-12-24T06:37:09.600Z] [INFO]    Usage:
+[2025-12-24T06:37:09.600Z] [INFO]      - Prompt Tokens: 144
+[2025-12-24T06:37:09.600Z] [INFO]      - Completion Tokens: 24
+[2025-12-24T06:37:09.600Z] [INFO]      - Total Tokens: 168
+[2025-12-24T06:37:09.600Z] [INFO]    Finish Reason: stop
+[2025-12-24T06:37:09.600Z] [INFO] 
+✅ Generated Reasoning:
+[2025-12-24T06:37:09.600Z] [INFO]    "These socks are a practical and style-matching accessory for the shoes, enhancing comfort and completing the casual Vans outfit."
+[2025-12-24T06:37:09.600Z] [INFO] ========================================
+[2025-12-24T06:37:09.600Z] [INFO] 
+========================================
+[2025-12-24T06:37:09.600Z] [INFO] 📦 Main Product: VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON
+[2025-12-24T06:37:09.600Z] [INFO] 💰 Price: $99.95
+[2025-12-24T06:37:09.600Z] [INFO] 📁 Category: SHOES
+[2025-12-24T06:37:09.600Z] [INFO] 
+🎯 Recommended Candidates:
+[2025-12-24T06:37:09.600Z] [INFO]    1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE
+[2025-12-24T06:37:09.600Z] [INFO]       Price: $19.95 | Category: ACCESSORIES | Similarity: 77.6%
+[2025-12-24T06:37:09.600Z] [INFO] ========================================
+[2025-12-24T06:37:09.600Z] [INFO] 
+🔄 Generating recommendation for: VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON
+[2025-12-24T06:37:09.600Z] [INFO] 
+📝 DeepSeek Prompt:
+[2025-12-24T06:37:09.600Z] [INFO] ---
+[2025-12-24T06:37:09.600Z] [INFO] 
+Analyze the following product and recommendations, then provide a brief recommendation reason (1-2 sentences) in English.
+
+Main Product: VANS | AUTHENTIC | (MULTI EYELETS) | GRADIENT/CRIMSON
+Price: $99.95
+Category: SHOES
+
+Recommended Candidates:
+1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE (Price: $19.95, Category: ACCESSORIES, Similarity: 77.6%)
+
+Analyze the common characteristics of these products and explain why they work well as complementary or alternative products.
+Response format: Provide only the reasoning, no prefix or explanation needed.
+
+[2025-12-24T06:37:09.600Z] [INFO] ---
+[2025-12-24T06:37:09.600Z] [INFO] 
+📤 Sending request to DeepSeek API...
+[2025-12-24T06:37:09.600Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:09.600Z] [INFO]    Temperature: 0
+[2025-12-24T06:37:09.600Z] [INFO]    Max Tokens: 200
+[2025-12-24T06:37:12.132Z] [INFO] 
+📥 DeepSeek API Response:
+[2025-12-24T06:37:12.132Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:12.132Z] [INFO]    Created: 1766558231
+[2025-12-24T06:37:12.132Z] [INFO]    Usage:
+[2025-12-24T06:37:12.132Z] [INFO]      - Prompt Tokens: 152
+[2025-12-24T06:37:12.132Z] [INFO]      - Completion Tokens: 34
+[2025-12-24T06:37:12.132Z] [INFO]      - Total Tokens: 186
+[2025-12-24T06:37:12.132Z] [INFO]    Finish Reason: stop
+[2025-12-24T06:37:12.132Z] [INFO] 
+✅ Generated Reasoning:
+[2025-12-24T06:37:12.132Z] [INFO]    "These socks are a classic accessory from the same brand, designed to be worn comfortably with low-top shoes like the Vans Authentic, making them a perfect complementary purchase."
+[2025-12-24T06:37:12.132Z] [INFO] ========================================
+[2025-12-24T06:37:12.132Z] [INFO] 
+========================================
+[2025-12-24T06:37:12.132Z] [INFO] 📦 Main Product: VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK
+[2025-12-24T06:37:12.132Z] [INFO] 💰 Price: $109.95
+[2025-12-24T06:37:12.132Z] [INFO] 📁 Category: SHOES
+[2025-12-24T06:37:12.132Z] [INFO] 
+🎯 Recommended Candidates:
+[2025-12-24T06:37:12.132Z] [INFO]    1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE
+[2025-12-24T06:37:12.132Z] [INFO]       Price: $19.95 | Category: ACCESSORIES | Similarity: 81.0%
+[2025-12-24T06:37:12.132Z] [INFO] ========================================
+[2025-12-24T06:37:12.132Z] [INFO] 
+🔄 Generating recommendation for: VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK
+[2025-12-24T06:37:12.132Z] [INFO] 
+📝 DeepSeek Prompt:
+[2025-12-24T06:37:12.132Z] [INFO] ---
+[2025-12-24T06:37:12.132Z] [INFO] 
+Analyze the following product and recommendations, then provide a brief recommendation reason (1-2 sentences) in English.
+
+Main Product: VANS | AUTHENTIC (BUTTERFLY) TRUE | WHITE / BLACK
+Price: $109.95
+Category: SHOES
+
+Recommended Candidates:
+1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE (Price: $19.95, Category: ACCESSORIES, Similarity: 81.0%)
+
+Analyze the common characteristics of these products and explain why they work well as complementary or alternative products.
+Response format: Provide only the reasoning, no prefix or explanation needed.
+
+[2025-12-24T06:37:12.132Z] [INFO] ---
+[2025-12-24T06:37:12.132Z] [INFO] 
+📤 Sending request to DeepSeek API...
+[2025-12-24T06:37:12.132Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:12.132Z] [INFO]    Temperature: 0
+[2025-12-24T06:37:12.132Z] [INFO]    Max Tokens: 200
+[2025-12-24T06:37:14.074Z] [INFO] 
+📥 DeepSeek API Response:
+[2025-12-24T06:37:14.074Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:14.074Z] [INFO]    Created: 1766558234
+[2025-12-24T06:37:14.074Z] [INFO]    Usage:
+[2025-12-24T06:37:14.074Z] [INFO]      - Prompt Tokens: 146
+[2025-12-24T06:37:14.074Z] [INFO]      - Completion Tokens: 27
+[2025-12-24T06:37:14.074Z] [INFO]      - Total Tokens: 173
+[2025-12-24T06:37:14.074Z] [INFO]    Finish Reason: stop
+[2025-12-24T06:37:14.074Z] [INFO] 
+✅ Generated Reasoning:
+[2025-12-24T06:37:14.075Z] [INFO]    "These socks are a practical and style-matching accessory designed to be worn with the recommended shoes, enhancing comfort and completing the casual look."
+[2025-12-24T06:37:14.075Z] [INFO] ========================================
+[2025-12-24T06:37:14.075Z] [INFO] 
+========================================
+[2025-12-24T06:37:14.075Z] [INFO] 📦 Main Product: VANS |
+ERA 59 MOROCCAN | GEO/DRESS BLUES
+[2025-12-24T06:37:14.075Z] [INFO] 💰 Price: $119.95
+[2025-12-24T06:37:14.075Z] [INFO] 📁 Category: SHOES
+[2025-12-24T06:37:14.075Z] [INFO] 
+🎯 Recommended Candidates:
+[2025-12-24T06:37:14.075Z] [INFO]    1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE
+[2025-12-24T06:37:14.075Z] [INFO]       Price: $19.95 | Category: ACCESSORIES | Similarity: 79.8%
+[2025-12-24T06:37:14.075Z] [INFO] ========================================
+[2025-12-24T06:37:14.075Z] [INFO] 
+🔄 Generating recommendation for: VANS |
+ERA 59 MOROCCAN | GEO/DRESS BLUES
+[2025-12-24T06:37:14.075Z] [INFO] 
+📝 DeepSeek Prompt:
+[2025-12-24T06:37:14.075Z] [INFO] ---
+[2025-12-24T06:37:14.075Z] [INFO] 
+Analyze the following product and recommendations, then provide a brief recommendation reason (1-2 sentences) in English.
+
+Main Product: VANS |
+ERA 59 MOROCCAN | GEO/DRESS BLUES
+Price: $119.95
+Category: SHOES
+
+Recommended Candidates:
+1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE (Price: $19.95, Category: ACCESSORIES, Similarity: 79.8%)
+
+Analyze the common characteristics of these products and explain why they work well as complementary or alternative products.
+Response format: Provide only the reasoning, no prefix or explanation needed.
+
+[2025-12-24T06:37:14.075Z] [INFO] ---
+[2025-12-24T06:37:14.075Z] [INFO] 
+📤 Sending request to DeepSeek API...
+[2025-12-24T06:37:14.075Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:14.075Z] [INFO]    Temperature: 0
+[2025-12-24T06:37:14.075Z] [INFO]    Max Tokens: 200
+[2025-12-24T06:37:16.482Z] [INFO] 
+📥 DeepSeek API Response:
+[2025-12-24T06:37:16.482Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:16.482Z] [INFO]    Created: 1766558236
+[2025-12-24T06:37:16.482Z] [INFO]    Usage:
+[2025-12-24T06:37:16.482Z] [INFO]      - Prompt Tokens: 144
+[2025-12-24T06:37:16.482Z] [INFO]      - Completion Tokens: 29
+[2025-12-24T06:37:16.482Z] [INFO]      - Total Tokens: 173
+[2025-12-24T06:37:16.482Z] [INFO]    Finish Reason: stop
+[2025-12-24T06:37:16.482Z] [INFO] 
+✅ Generated Reasoning:
+[2025-12-24T06:37:16.482Z] [INFO]    "These socks are a practical and style-cohesive accessory designed to be worn with Vans shoes, enhancing comfort without altering the shoe's classic look."
+[2025-12-24T06:37:16.482Z] [INFO] ========================================
+[2025-12-24T06:37:16.482Z] [INFO] 
+========================================
+[2025-12-24T06:37:16.482Z] [INFO] 📦 Main Product: VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE
+[2025-12-24T06:37:16.482Z] [INFO] 💰 Price: $179.95
+[2025-12-24T06:37:16.482Z] [INFO] 📁 Category: SHOES
+[2025-12-24T06:37:16.482Z] [INFO] 
+🎯 Recommended Candidates:
+[2025-12-24T06:37:16.482Z] [INFO]    1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE
+[2025-12-24T06:37:16.482Z] [INFO]       Price: $19.95 | Category: ACCESSORIES | Similarity: 77.0%
+[2025-12-24T06:37:16.482Z] [INFO] ========================================
+[2025-12-24T06:37:16.482Z] [INFO] 
+🔄 Generating recommendation for: VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE
+[2025-12-24T06:37:16.482Z] [INFO] 
+📝 DeepSeek Prompt:
+[2025-12-24T06:37:16.482Z] [INFO] ---
+[2025-12-24T06:37:16.482Z] [INFO] 
+Analyze the following product and recommendations, then provide a brief recommendation reason (1-2 sentences) in English.
+
+Main Product: VANS | SK8-HI DECON (CUTOUT)| LEAVES/WHITE
+Price: $179.95
+Category: SHOES
+
+Recommended Candidates:
+1. VANS APPAREL AND ACCESSORIES | CLASSIC SUPER NO SHOW SOCKS 3 PACK WHITE (Price: $19.95, Category: ACCESSORIES, Similarity: 77.0%)
+
+Analyze the common characteristics of these products and explain why they work well as complementary or alternative products.
+Response format: Provide only the reasoning, no prefix or explanation needed.
+
+[2025-12-24T06:37:16.482Z] [INFO] ---
+[2025-12-24T06:37:16.482Z] [INFO] 
+📤 Sending request to DeepSeek API...
+[2025-12-24T06:37:16.482Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:16.482Z] [INFO]    Temperature: 0
+[2025-12-24T06:37:16.482Z] [INFO]    Max Tokens: 200
+[2025-12-24T06:37:18.354Z] [INFO] 
+📥 DeepSeek API Response:
+[2025-12-24T06:37:18.354Z] [INFO]    Model: deepseek-chat
+[2025-12-24T06:37:18.354Z] [INFO]    Created: 1766558238
+[2025-12-24T06:37:18.354Z] [INFO]    Usage:
+[2025-12-24T06:37:18.354Z] [INFO]      - Prompt Tokens: 147
+[2025-12-24T06:37:18.354Z] [INFO]      - Completion Tokens: 27
+[2025-12-24T06:37:18.354Z] [INFO]      - Total Tokens: 174
+[2025-12-24T06:37:18.354Z] [INFO]    Finish Reason: stop
+[2025-12-24T06:37:18.354Z] [INFO] 
+✅ Generated Reasoning:
+[2025-12-24T06:37:18.354Z] [INFO]    "These socks are a practical accessory that pairs well with the VANS shoes, enhancing comfort and style while staying within the same brand ecosystem."
+[2025-12-24T06:37:18.354Z] [INFO] ========================================
+[2025-12-24T06:37:18.354Z] [INFO] ✅ All recommendations generated
+[2025-12-24T06:37:18.355Z] [SUCCESS] ✅ Recommendations generated and saved
+[2025-12-24T06:37:18.355Z] [INFO] 
+📝 Generating Markdown report...
+[2025-12-24T06:37:18.355Z] [SUCCESS] ✅ Markdown report generated
+[2025-12-24T06:37:18.355Z] [INFO] 
+💾 Syncing recommendations to database...
+[2025-12-24T06:37:18.355Z] [INFO] 开始同步推荐数据到数据库，店铺: test-store-1100000000000000000000000000000002771.myshopify.com
+[2025-12-24T06:37:18.358Z] [INFO] 已将 32 条现有推荐标记为非活跃
+[2025-12-24T06:37:18.390Z] [INFO] 同步完成: 创建/更新 32 条, 非活跃 0 条, 错误 0 条
+[2025-12-24T06:37:18.390Z] [SUCCESS] ✅ Database sync complete: 32 recommendations synced

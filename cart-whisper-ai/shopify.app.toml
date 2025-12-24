@@ -28,3 +28,8 @@ use_legacy_install_flow = true
 
 [auth]
 redirect_urls = [ "https://example.com/api/auth" ]
+
+[app_proxy]
+url = "https://example.com/api/proxy"
+subpath = "chat-proxy"
+prefix = "apps"

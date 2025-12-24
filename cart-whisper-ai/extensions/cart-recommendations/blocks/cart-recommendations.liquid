@@ -1,0 +1,548 @@
+{% comment %}
+  Cart Whisper AI - Smart Product Recommendations
+  This block displays AI-powered product recommendations in the cart
+{% endcomment %}
+
+<div id="cart-whisper-recommendations"
+     class="cart-whisper-container"
+     data-shop="{{ shop.permanent_domain }}"
+     data-api-url="{{ block.settings.api_url }}"
+     data-limit="{{ block.settings.limit }}"
+     style="display: none;">
+
+  <div class="cart-whisper-header">
+    <h3 class="cart-whisper-title">{{ block.settings.title }}</h3>
+    {% if block.settings.subtitle != blank %}
+      <p class="cart-whisper-subtitle">{{ block.settings.subtitle }}</p>
+    {% endif %}
+  </div>
+
+  <div class="cart-whisper-products" id="cart-whisper-products-list">
+    <!-- Products will be loaded dynamically -->
+  </div>
+
+  <div class="cart-whisper-loading" id="cart-whisper-loading">
+    <div class="cart-whisper-spinner"></div>
+    <span>{{ block.settings.loading_text }}</span>
+  </div>
+
+</div>
+
+<style>
+  .cart-whisper-container {
+    margin: {{ block.settings.margin_top }}px 0 {{ block.settings.margin_bottom }}px;
+    padding: 20px;
+    background: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    {% if block.settings.show_border %}
+    border: 1px solid {{ block.settings.border_color }};
+    {% endif %}
+  }
+
+  .cart-whisper-header {
+    margin-bottom: 16px;
+    text-align: {{ block.settings.text_align }};
+  }
+
+  .cart-whisper-title {
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: 600;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 8px 0;
+  }
+
+  .cart-whisper-subtitle {
+    font-size: 14px;
+    color: {{ block.settings.subtitle_color }};
+    margin: 0;
+  }
+
+  .cart-whisper-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax({{ block.settings.card_min_width }}px, 1fr));
+    gap: 16px;
+  }
+
+  .cart-whisper-product {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cart-whisper-product:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+
+  .cart-whisper-product-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #f5f5f5;
+  }
+
+  .cart-whisper-product-info {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cart-whisper-product-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin: 0 0 8px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cart-whisper-product-reasoning {
+    font-size: 12px;
+    color: #666;
+    margin: 0 0 12px;
+    line-height: 1.5;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cart-whisper-product-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .cart-whisper-product-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: {{ block.settings.price_color }};
+  }
+
+  .cart-whisper-add-btn {
+    background: {{ block.settings.button_color }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .cart-whisper-add-btn:hover {
+    opacity: 0.9;
+  }
+
+  .cart-whisper-add-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cart-whisper-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    color: #666;
+  }
+
+  .cart-whisper-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #e0e0e0;
+    border-top-color: {{ block.settings.button_color }};
+    border-radius: 50%;
+    animation: cart-whisper-spin 1s linear infinite;
+  }
+
+  @keyframes cart-whisper-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .cart-whisper-no-recommendations {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+  }
+
+  @media (max-width: 768px) {
+    .cart-whisper-products {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .cart-whisper-products {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+(function() {
+  'use strict';
+
+  const container = document.getElementById('cart-whisper-recommendations');
+  if (!container) return;
+
+  const shop = container.dataset.shop;
+  const apiUrl = container.dataset.apiUrl || '';
+  const limit = parseInt(container.dataset.limit, 10) || 3;
+  const productsList = document.getElementById('cart-whisper-products-list');
+  const loadingEl = document.getElementById('cart-whisper-loading');
+
+  // 获取购物车中的商品
+  async function getCartItems() {
+    try {
+      const response = await fetch('/cart.js');
+      const cart = await response.json();
+      return cart.items || [];
+    } catch (error) {
+      console.error('CartWhisper: Failed to get cart items', error);
+      return [];
+    }
+  }
+
+  // 从API获取推荐 (通过 App Proxy)
+  async function fetchRecommendations(productId) {
+    // 使用 App Proxy 路径: /apps/chat-proxy/recommendations
+    const proxyUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
+    console.log('[CartWhisper] Fetching recommendations:', proxyUrl);
+
+    try {
+      const response = await fetch(proxyUrl);
+      console.log('[CartWhisper] Response status:', response.status);
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('[CartWhisper] Error response:', text);
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      console.log('[CartWhisper] Got recommendations:', data);
+      return data.recommendations || [];
+    } catch (error) {
+      console.error('[CartWhisper] Failed to fetch recommendations', error);
+      return [];
+    }
+  }
+
+  // 添加商品到购物车
+  async function addToCart(variantId, button) {
+    button.disabled = true;
+    button.textContent = '{{ block.settings.adding_text }}';
+
+    try {
+      const response = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [{ id: variantId, quantity: 1 }]
+        })
+      });
+
+      if (response.ok) {
+        button.textContent = '{{ block.settings.added_text }}';
+        // 触发购物车更新事件
+        document.dispatchEvent(new CustomEvent('cart:refresh'));
+        // 2秒后恢复按钮
+        setTimeout(() => {
+          button.disabled = false;
+          button.textContent = '{{ block.settings.button_text }}';
+        }, 2000);
+      } else {
+        throw new Error('Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('CartWhisper: Failed to add to cart', error);
+      button.disabled = false;
+      button.textContent = '{{ block.settings.button_text }}';
+    }
+  }
+
+  // 渲染推荐商品
+  function renderRecommendations(recommendations) {
+    if (!recommendations || recommendations.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    const currency = window.Shopify?.currency?.active || 'USD';
+    const moneyFormat = window.Shopify?.moneyFormat || '${{amount}}';
+
+    productsList.innerHTML = recommendations.map(rec => {
+      const price = formatMoney(rec.price);
+      const imageUrl = rec.image || 'https://via.placeholder.com/300x300?text=No+Image';
+
+      return `
+        <div class="cart-whisper-product">
+          <a href="/products/${rec.numericId}">
+            <img class="cart-whisper-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
+          </a>
+          <div class="cart-whisper-product-info">
+            <a href="/products/${rec.numericId}" style="text-decoration:none;color:inherit;">
+              <h4 class="cart-whisper-product-title">${escapeHtml(rec.title)}</h4>
+            </a>
+            ${rec.reasoning ? `<p class="cart-whisper-product-reasoning">${escapeHtml(rec.reasoning)}</p>` : ''}
+            <div class="cart-whisper-product-footer">
+              <span class="cart-whisper-product-price">${price}</span>
+              <button class="cart-whisper-add-btn" data-product-id="${rec.numericId}" onclick="cartWhisperAddToCart(this, '${rec.numericId}')">
+                {{ block.settings.button_text }}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    loadingEl.style.display = 'none';
+    container.style.display = 'block';
+  }
+
+  // 格式化价格
+  function formatMoney(price) {
+    const amount = parseFloat(price).toFixed(2);
+    return `$${amount}`;
+  }
+
+  // HTML转义
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+  }
+
+  // 全局添加购物车函数
+  window.cartWhisperAddToCart = async function(button, productId) {
+    // 先获取商品的第一个variant
+    try {
+      const response = await fetch(`/products/${productId}.js`);
+      const product = await response.json();
+      const variantId = product.variants[0]?.id;
+      if (variantId) {
+        await addToCart(variantId, button);
+      }
+    } catch (error) {
+      console.error('CartWhisper: Failed to get product variant', error);
+    }
+  };
+
+  // 主函数
+  async function init() {
+    if (!apiUrl) {
+      console.warn('CartWhisper: API URL not configured');
+      container.style.display = 'none';
+      return;
+    }
+
+    const cartItems = await getCartItems();
+    if (cartItems.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    // 获取购物车中第一个商品的推荐
+    const firstItem = cartItems[0];
+    const productId = firstItem.product_id;
+
+    const recommendations = await fetchRecommendations(productId);
+    renderRecommendations(recommendations);
+  }
+
+  // 页面加载后执行
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // 监听购物车更新
+  document.addEventListener('cart:refresh', init);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Cart Recommendations",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "api_url",
+      "label": "API URL",
+      "info": "Your CartWhisperAI app URL (e.g., https://your-app.fly.dev)"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "You might also like"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Based on what's in your cart"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Number of recommendations",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Add to Cart"
+    },
+    {
+      "type": "text",
+      "id": "adding_text",
+      "label": "Adding text",
+      "default": "Adding..."
+    },
+    {
+      "type": "text",
+      "id": "added_text",
+      "label": "Added text",
+      "default": "Added!"
+    },
+    {
+      "type": "text",
+      "id": "loading_text",
+      "label": "Loading text",
+      "default": "Loading recommendations..."
+    },
+    {
+      "type": "header",
+      "content": "Style Settings"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "price_color",
+      "label": "Price color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title size (px)",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius (px)",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show border",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "card_min_width",
+      "label": "Card minimum width (px)",
+      "min": 150,
+      "max": 300,
+      "step": 10,
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "label": "Margin top (px)",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "label": "Margin bottom (px)",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "default": 24
+    }
+  ]
+}
+{% endschema %}
