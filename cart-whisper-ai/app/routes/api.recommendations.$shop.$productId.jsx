@@ -1,35 +1,13 @@
-import { getRecommendationsByNumericId, getRecommendationsForProduct } from "../utils/recommendationSync.server";
+import { getApiKey } from "../utils/shopConfig.server";
+import { getRecommendations } from "../utils/backendApi.server";
 
 /**
  * 公开的推荐API端点
  * 供Theme App Extension获取商品推荐
  *
  * GET /api/recommendations/:shop/:productId
- *
- * @param shop - 店铺域名 (例如: store-name.myshopify.com)
- * @param productId - 商品ID (可以是数字ID或完整GID)
- *
- * Query参数:
- * - limit: 返回推荐数量限制 (默认3)
- *
- * 返回格式:
- * {
- *   success: boolean,
- *   productId: string,
- *   recommendations: [
- *     {
- *       id: string,           // Shopify Product GID
- *       numericId: string,    // 数字ID，用于前端链接
- *       title: string,
- *       price: number,
- *       image: string,
- *       reasoning: string     // AI推荐理由
- *     }
- *   ]
- * }
  */
 export async function loader({ params, request }) {
-  // CORS 头，允许跨域请求
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -47,35 +25,32 @@ export async function loader({ params, request }) {
       );
     }
 
-    // 解析query参数
+    // 解析 query 参数
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get("limit") || "3", 10);
 
-    // 判断productId是数字ID还是GID
-    let recommendations;
+    // 获取 API Key
+    const apiKey = await getApiKey(shop);
+
+    // 从后端获取推荐
+    // 处理 productId：如果是 GID 格式，提取数字 ID
+    let numericProductId = productId;
     if (productId.startsWith("gid://")) {
-      recommendations = await getRecommendationsForProduct(shop, productId, limit);
-    } else {
-      recommendations = await getRecommendationsByNumericId(shop, productId, limit);
+      numericProductId = productId.replace("gid://shopify/Product/", "");
     }
 
-    // 处理返回数据，添加数字ID便于前端使用
-    const formattedRecommendations = recommendations.map((rec) => {
-      // 从GID中提取数字ID
-      const numericId = rec.id.replace("gid://shopify/Product/", "");
-      return {
-        id: rec.id,
-        numericId,
-        handle: rec.handle,
-        title: rec.title,
-        price: rec.price,
-        category: rec.category,
-        vendor: rec.vendor,
-        image: rec.image,
-        similarity: rec.similarity,
-        reasoning: rec.reasoning,
-      };
-    });
+    const result = await getRecommendations(apiKey, numericProductId, limit);
+
+    // 格式化返回数据
+    const formattedRecommendations = (result.recommendations || []).map((rec) => ({
+      id: `gid://shopify/Product/${rec.id}`,
+      numericId: rec.id,
+      handle: rec.handle,
+      title: rec.title,
+      price: rec.price,
+      image: rec.image,
+      reasoning: rec.reason,
+    }));
 
     return new Response(
       JSON.stringify({
@@ -90,13 +65,13 @@ export async function loader({ params, request }) {
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     return new Response(
-      JSON.stringify({ success: false, error: "Failed to fetch recommendations" }),
+      JSON.stringify({ success: false, error: error.message || "Failed to fetch recommendations" }),
       { status: 500, headers }
     );
   }
 }
 
-// 处理OPTIONS预检请求
+// 处理 OPTIONS 预检请求
 export async function action({ request }) {
   if (request.method === "OPTIONS") {
     return new Response(null, {

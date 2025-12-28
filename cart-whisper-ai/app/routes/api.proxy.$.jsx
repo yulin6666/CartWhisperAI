@@ -1,4 +1,5 @@
-import { getRecommendationsByNumericId } from "../utils/recommendationSync.server";
+import { getApiKey } from "../utils/shopConfig.server";
+import { getRecommendations, healthCheck } from "../utils/backendApi.server";
 
 /**
  * App Proxy 处理器
@@ -11,14 +12,19 @@ export async function loader({ request }) {
   const url = new URL(request.url);
   const path = url.pathname.replace("/api/proxy", "");
 
-  // CORS 和响应头
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   };
 
-  console.log("[App Proxy] Request path:", path);
-  console.log("[App Proxy] Full URL:", url.toString());
+  // 详细日志
+  console.log("=".repeat(60));
+  console.log("[App Proxy] INCOMING REQUEST");
+  console.log("[App Proxy] Full URL:", request.url);
+  console.log("[App Proxy] Method:", request.method);
+  console.log("[App Proxy] Path:", path);
+  console.log("[App Proxy] Query params:", Object.fromEntries(url.searchParams));
+  console.log("=".repeat(60));
 
   // 处理推荐请求: /recommendations
   if (path === "/recommendations" || path.startsWith("/recommendations")) {
@@ -27,10 +33,26 @@ export async function loader({ request }) {
 
   // 健康检查
   if (path === "/health" || path === "") {
-    return new Response(
-      JSON.stringify({ status: "ok", service: "CartWhisperAI" }),
-      { status: 200, headers }
-    );
+    try {
+      const backendHealth = await healthCheck();
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          service: "CartWhisperAI",
+          backend: backendHealth
+        }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          service: "CartWhisperAI",
+          backend: { status: "error", message: error.message }
+        }),
+        { status: 200, headers }
+      );
+    }
   }
 
   return new Response(
@@ -46,7 +68,6 @@ async function handleRecommendations(request, headers) {
   try {
     const url = new URL(request.url);
 
-    // 从查询参数获取数据
     const productId = url.searchParams.get("product_id");
     const shop = url.searchParams.get("shop");
     const limit = parseInt(url.searchParams.get("limit") || "3", 10);
@@ -54,6 +75,7 @@ async function handleRecommendations(request, headers) {
     console.log("[App Proxy] Recommendations request:", { productId, shop, limit });
 
     if (!productId) {
+      console.error("[App Proxy] Missing product_id");
       return new Response(
         JSON.stringify({ success: false, error: "Missing product_id parameter" }),
         { status: 400, headers }
@@ -61,31 +83,45 @@ async function handleRecommendations(request, headers) {
     }
 
     if (!shop) {
+      console.error("[App Proxy] Missing shop");
       return new Response(
         JSON.stringify({ success: false, error: "Missing shop parameter" }),
         { status: 400, headers }
       );
     }
 
-    // 获取推荐
-    const recommendations = await getRecommendationsByNumericId(shop, productId, limit);
+    // 获取 API Key
+    console.log("[App Proxy] Getting API key for shop:", shop);
+    let apiKey;
+    try {
+      apiKey = await getApiKey(shop);
+      console.log("[App Proxy] API key obtained successfully");
+    } catch (error) {
+      console.error("[App Proxy] Failed to get API key:", error.message, error.stack);
+      throw new Error(`Failed to get API key: ${error.message}`);
+    }
+
+    // 从后端获取推荐
+    console.log("[App Proxy] Fetching recommendations from backend...");
+    let result;
+    try {
+      result = await getRecommendations(apiKey, productId, limit);
+      console.log("[App Proxy] Backend response:", result);
+    } catch (error) {
+      console.error("[App Proxy] Failed to get recommendations from backend:", error.message, error.stack);
+      throw new Error(`Failed to get recommendations: ${error.message}`);
+    }
 
     // 格式化返回数据
-    const formattedRecommendations = recommendations.map((rec) => {
-      const numericId = rec.id.replace("gid://shopify/Product/", "");
-      return {
-        id: rec.id,
-        numericId,
-        handle: rec.handle,
-        title: rec.title,
-        price: rec.price,
-        category: rec.category,
-        vendor: rec.vendor,
-        image: rec.image,
-        similarity: rec.similarity,
-        reasoning: rec.reasoning,
-      };
-    });
+    const formattedRecommendations = (result.recommendations || []).map((rec) => ({
+      id: `gid://shopify/Product/${rec.id}`,
+      numericId: rec.id,
+      handle: rec.handle,
+      title: rec.title,
+      price: rec.price,
+      image: rec.image,
+      reasoning: rec.reason,
+    }));
 
     console.log("[App Proxy] Found", formattedRecommendations.length, "recommendations");
 
@@ -100,15 +136,16 @@ async function handleRecommendations(request, headers) {
       { status: 200, headers }
     );
   } catch (error) {
-    console.error("[App Proxy] Error:", error);
+    console.error("[App Proxy] Error:", error.message);
+    console.error("[App Proxy] Stack trace:", error.stack);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: error.message, stack: error.stack }),
       { status: 500, headers }
     );
   }
 }
 
-// 处理 POST 请求 (部分主题可能用 POST)
+// 处理 POST 请求
 export async function action({ request }) {
   return loader({ request });
 }

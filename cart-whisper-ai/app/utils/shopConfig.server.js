@@ -1,0 +1,121 @@
+/**
+ * 商店配置管理
+ * 存储和管理商店的 API Key
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { registerShop } from './backendApi.server';
+
+// 获取当前文件所在目录
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// data 目录应该在项目根目录下（app的父目录）
+const DATA_DIR = path.join(__dirname, '..', '..', 'data');
+const CONFIG_FILE = path.join(DATA_DIR, 'shop-config.json');
+
+console.log('[ShopConfig] DATA_DIR:', DATA_DIR);
+console.log('[ShopConfig] CONFIG_FILE:', CONFIG_FILE);
+
+// 确保 data 目录存在
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    console.log('[ShopConfig] Creating DATA_DIR:', DATA_DIR);
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (error) {
+  console.error('[ShopConfig] Failed to create DATA_DIR:', error.message);
+}
+
+/**
+ * 读取商店配置
+ * @returns {Object} 配置对象 { [domain]: { apiKey, registeredAt } }
+ */
+function readConfig() {
+  try {
+    console.log('[ShopConfig] Reading config from:', CONFIG_FILE);
+    if (fs.existsSync(CONFIG_FILE)) {
+      const content = fs.readFileSync(CONFIG_FILE, 'utf-8');
+      console.log('[ShopConfig] Config file content length:', content.length);
+      const config = JSON.parse(content);
+      console.log('[ShopConfig] Config keys:', Object.keys(config));
+      return config;
+    } else {
+      console.log('[ShopConfig] Config file does not exist');
+    }
+  } catch (e) {
+    console.error('[ShopConfig] Failed to read shop config:', e.message);
+    console.error('[ShopConfig] Stack:', e.stack);
+  }
+  return {};
+}
+
+/**
+ * 保存商店配置
+ * @param {Object} config - 配置对象
+ */
+function saveConfig(config) {
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+}
+
+/**
+ * 获取商店的 API Key（如果没有则自动注册）
+ * @param {string} domain - 商店域名
+ * @returns {Promise<string>} API Key
+ */
+export async function getApiKey(domain) {
+  try {
+    console.log(`[ShopConfig] getApiKey called for domain: ${domain}`);
+    const config = readConfig();
+
+    // 检查是否已有配置
+    if (config[domain]?.apiKey) {
+      console.log(`[ShopConfig] Using cached API key for ${domain}`);
+      return config[domain].apiKey;
+    }
+
+    // 没有配置，需要注册
+    console.log(`[ShopConfig] No cached API key found, registering shop: ${domain}`);
+    const result = await registerShop(domain);
+    console.log(`[ShopConfig] Register result:`, result);
+
+    if (!result.success || !result.apiKey) {
+      throw new Error('Failed to register shop: ' + JSON.stringify(result));
+    }
+
+    // 保存配置
+    config[domain] = {
+      apiKey: result.apiKey,
+      registeredAt: new Date().toISOString(),
+      isNew: result.isNew,
+    };
+    saveConfig(config);
+
+    console.log(`[ShopConfig] Shop registered: ${domain}, isNew: ${result.isNew}`);
+    return result.apiKey;
+  } catch (error) {
+    console.error(`[ShopConfig] Error in getApiKey:`, error.message);
+    console.error(`[ShopConfig] Stack:`, error.stack);
+    throw error;
+  }
+}
+
+/**
+ * 清除商店配置（用于调试）
+ * @param {string} domain - 商店域名
+ */
+export function clearApiKey(domain) {
+  const config = readConfig();
+  delete config[domain];
+  saveConfig(config);
+}
+
+/**
+ * 获取所有商店配置
+ * @returns {Object} 所有配置
+ */
+export function getAllConfigs() {
+  return readConfig();
+}
