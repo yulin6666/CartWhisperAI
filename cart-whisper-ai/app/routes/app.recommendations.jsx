@@ -212,16 +212,16 @@ export default function RecommendationsPage() {
           >
             <thead>
               <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>
+                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px', width: '25%' }}>
                   Source Product
                 </th>
-                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>
+                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px', width: '25%' }}>
                   Recommended Product
                 </th>
-                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>
+                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px', width: '35%' }}>
                   Reason
                 </th>
-                <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>
+                <th style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px', width: '15%' }}>
                   Created
                 </th>
               </tr>
@@ -236,12 +236,78 @@ export default function RecommendationsPage() {
                   }}
                 >
                   <td style={{ padding: '12px 15px', fontSize: '14px' }}>
-                    <div style={{ fontWeight: '500' }}>{rec.sourceTitle}</div>
-                    <div style={{ fontSize: '12px', color: '#999' }}>ID: {rec.sourceProductId}</div>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                      {rec.sourceImage ? (
+                        <img
+                          src={rec.sourceImage}
+                          alt={rec.sourceTitle}
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '4px',
+                            objectFit: 'cover',
+                            backgroundColor: '#f5f5f5',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '4px',
+                            backgroundColor: '#e9ecef',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#999',
+                            fontSize: '24px',
+                          }}
+                        >
+                          📦
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontWeight: '500', marginBottom: '4px' }}>{rec.sourceTitle}</div>
+                        <div style={{ fontSize: '12px', color: '#999' }}>ID: {rec.sourceProductId}</div>
+                      </div>
+                    </div>
                   </td>
                   <td style={{ padding: '12px 15px', fontSize: '14px' }}>
-                    <div style={{ fontWeight: '500' }}>{rec.targetTitle}</div>
-                    <div style={{ fontSize: '12px', color: '#999' }}>ID: {rec.targetProductId}</div>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                      {rec.targetImage ? (
+                        <img
+                          src={rec.targetImage}
+                          alt={rec.targetTitle}
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '4px',
+                            objectFit: 'cover',
+                            backgroundColor: '#f5f5f5',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '4px',
+                            backgroundColor: '#e9ecef',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#999',
+                            fontSize: '24px',
+                          }}
+                        >
+                          📦
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontWeight: '500', marginBottom: '4px' }}>{rec.targetTitle}</div>
+                        <div style={{ fontSize: '12px', color: '#999' }}>ID: {rec.targetProductId}</div>
+                      </div>
+                    </div>
                   </td>
                   <td style={{ padding: '12px 15px', fontSize: '14px', color: '#666' }}>
                     {(() => {

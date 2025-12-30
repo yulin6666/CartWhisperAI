@@ -142,6 +142,44 @@ export default function ScanPage() {
         </Link>
       </div>
 
+      {/* 扫描进度条 */}
+      {isScanning && (
+        <div style={{ marginBottom: '30px' }}>
+          <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#007bff' }}>Syncing in progress...</span>
+            <span style={{ fontSize: '12px', color: '#999' }}>Please wait, this may take a few minutes</span>
+          </div>
+          <div
+            style={{
+              width: '100%',
+              height: '8px',
+              backgroundColor: '#e9ecef',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                background: 'linear-gradient(90deg, #007bff, #0056b3)',
+                borderRadius: '4px',
+                animation: 'pulse 2s ease-in-out infinite',
+                width: '100%',
+              }}
+            >
+              <style>{`
+                @keyframes pulse {
+                  0% { opacity: 0.6; }
+                  50% { opacity: 1; }
+                  100% { opacity: 0.6; }
+                }
+              `}</style>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 扫描结果 */}
       {fetcher.data && (
         <div
@@ -155,27 +193,36 @@ export default function ScanPage() {
         >
           {fetcher.data.success ? (
             <>
-              <h3 style={{ color: '#155724', margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span>✅</span> Sync Completed!
+              <h3 style={{ color: '#155724', margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px' }}>
+                <span style={{ fontSize: '28px' }}>✅</span> Sync Completed!
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' }}>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '6px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#155724' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px' }}>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
+                    📦
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>
                     {fetcher.data.productsCount}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>Products Synced</div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Products Synced</div>
                 </div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '6px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#155724' }}>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
+                    ⭐
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>
                     {fetcher.data.recommendationsCount}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>Recommendations</div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Recommendations</div>
                 </div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '6px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#155724' }}>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
+                    ⏱️
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>
                     {fetcher.data.duration}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>Duration</div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Duration</div>
                 </div>
               </div>
             </>

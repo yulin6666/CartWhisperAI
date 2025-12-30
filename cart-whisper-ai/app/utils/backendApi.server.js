@@ -36,21 +36,30 @@ export async function registerShop(domain) {
  * @returns {Promise<{success: boolean, products: number, recommendations: number}>}
  */
 export async function syncProducts(apiKey, products, regenerate = false) {
-  const response = await fetch(`${BACKEND_URL}/api/products/sync`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': apiKey,
-    },
-    body: JSON.stringify({ products, regenerate }),
-  });
+  // 设置 300 秒（5分钟）超时
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000);
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `Sync failed: ${response.status}`);
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/products/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      body: JSON.stringify({ products, regenerate }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || `Sync failed: ${response.status}`);
+    }
+
+    return response.json();
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json();
 }
 
 /**
