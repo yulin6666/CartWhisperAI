@@ -244,7 +244,21 @@ export default function RecommendationsPage() {
                     <div style={{ fontSize: '12px', color: '#999' }}>ID: {rec.targetProductId}</div>
                   </td>
                   <td style={{ padding: '12px 15px', fontSize: '14px', color: '#666' }}>
-                    {rec.reason || '—'}
+                    {(() => {
+                      const parts = (rec.reason || '—').split('|');
+                      return (
+                        <div>
+                          <div style={{ fontWeight: '500', marginBottom: '4px' }}>
+                            {parts[0] || '—'}
+                          </div>
+                          {parts[1] && (
+                            <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
+                              {parts[1]}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: '12px 15px', fontSize: '12px', color: '#999' }}>
                     {new Date(rec.createdAt).toLocaleDateString()}
