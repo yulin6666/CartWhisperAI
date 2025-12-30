@@ -36,9 +36,9 @@ export async function registerShop(domain) {
  * @returns {Promise<{success: boolean, products: number, recommendations: number}>}
  */
 export async function syncProducts(apiKey, products, regenerate = false) {
-  // 设置 300 秒（5分钟）超时
+  // 设置 1800 秒（30分钟）超时
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 300000);
+  const timeoutId = setTimeout(() => controller.abort(), 1800000);
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/products/sync`, {

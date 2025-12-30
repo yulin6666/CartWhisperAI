@@ -147,7 +147,7 @@ export default function ScanPage() {
         <div style={{ marginBottom: '30px' }}>
           <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#007bff' }}>Syncing in progress...</span>
-            <span style={{ fontSize: '12px', color: '#999' }}>Please wait, this may take a few minutes</span>
+            <span style={{ fontSize: '12px', color: '#999' }}>Please wait, this may take up to 30 minutes</span>
           </div>
           <div
             style={{
