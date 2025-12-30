@@ -32,16 +32,17 @@ export async function registerShop(domain) {
  * 同步商品到后端（会自动生成推荐）
  * @param {string} apiKey - API Key
  * @param {Array} products - 商品数组
+ * @param {boolean} regenerate - 是否重新生成所有推荐（默认 false）
  * @returns {Promise<{success: boolean, products: number, recommendations: number}>}
  */
-export async function syncProducts(apiKey, products) {
+export async function syncProducts(apiKey, products, regenerate = false) {
   const response = await fetch(`${BACKEND_URL}/api/products/sync`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': apiKey,
     },
-    body: JSON.stringify({ products }),
+    body: JSON.stringify({ products, regenerate }),
   });
 
   if (!response.ok) {

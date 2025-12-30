@@ -141,10 +141,10 @@ export async function action({ request }) {
       };
     }
 
-    // 4. 同步到后端（后端会自动生成推荐）
+    // 4. 同步到后端（后端会自动重新生成所有推荐）
     console.log('🚀 Syncing to backend...');
-    const syncResult = await syncProducts(apiKey, products);
-    console.log(`✅ Sync complete: ${syncResult.products} products, ${syncResult.recommendations} recommendations`);
+    const syncResult = await syncProducts(apiKey, products, true);
+    console.log(`✅ Sync complete: ${syncResult.products} products, ${syncResult.newRecommendations} new recommendations (total: ${syncResult.totalRecommendations})`);
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -152,7 +152,8 @@ export async function action({ request }) {
       success: true,
       message: 'Scan completed successfully',
       productsCount: syncResult.products,
-      recommendationsCount: syncResult.recommendations,
+      recommendationsCount: syncResult.totalRecommendations || syncResult.recommendations,
+      newRecommendationsCount: syncResult.newRecommendations,
       duration: `${duration}s`,
     };
   } catch (error) {
