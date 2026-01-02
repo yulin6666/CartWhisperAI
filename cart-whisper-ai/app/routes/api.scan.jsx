@@ -115,7 +115,16 @@ export async function action({ request }) {
   const startTime = Date.now();
 
   try {
-    console.log('🔄 Starting scan...');
+    // Get mode from request body (if sent as JSON) or default to 'auto'
+    let mode = 'auto';
+    try {
+      const formData = await request.formData();
+      mode = formData.get('mode') || 'auto';
+    } catch {
+      // If not form data, that's fine, use default
+    }
+
+    console.log(`🔄 Starting scan (mode: ${mode})...`);
 
     // 1. Shopify 认证
     const { admin, session } = await authenticate.admin(request);
@@ -136,28 +145,44 @@ export async function action({ request }) {
       return {
         success: true,
         message: 'No products found',
+        mode: 'none',
         productsCount: 0,
         recommendationsCount: 0,
       };
     }
 
-    // 4. 同步到后端（后端会自动重新生成所有推荐）
-    console.log('🚀 Syncing to backend...');
-    const syncResult = await syncProducts(apiKey, products, true);
-    console.log(`✅ Sync complete: ${syncResult.products} products, ${syncResult.newRecommendations} new recommendations (total: ${syncResult.totalRecommendations})`);
+    // 4. 同步到后端（使用指定的模式）
+    console.log(`🚀 Syncing to backend (mode: ${mode})...`);
+    const syncResult = await syncProducts(apiKey, products, mode);
+    console.log(`✅ Sync complete: mode=${syncResult.mode}, ${syncResult.products} products, ${syncResult.newRecommendations} new recommendations (total: ${syncResult.totalRecommendations})`);
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
     return {
       success: true,
       message: 'Scan completed successfully',
+      mode: syncResult.mode,
       productsCount: syncResult.products,
       recommendationsCount: syncResult.totalRecommendations || syncResult.recommendations,
       newRecommendationsCount: syncResult.newRecommendations,
       duration: `${duration}s`,
+      canRefresh: syncResult.canRefresh,
+      nextRefreshAt: syncResult.nextRefreshAt,
     };
   } catch (error) {
     console.error('❌ Scan error:', error);
+
+    // Parse rate limit error
+    const errorParts = (error.message || '').split('|');
+    if (errorParts.length === 3 && errorParts[0].includes('rate limit')) {
+      return {
+        success: false,
+        error: errorParts[0],
+        rateLimited: true,
+        nextRefreshAt: errorParts[1],
+        daysRemaining: parseInt(errorParts[2]),
+      };
+    }
 
     return {
       success: false,

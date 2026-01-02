@@ -1,7 +1,7 @@
-import { useFetcher, useLoaderData, Link } from 'react-router';
-import { useState } from 'react';
+import { useFetcher, useLoaderData, Link, useRevalidator } from 'react-router';
+import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
-import { healthCheck, BACKEND_URL } from '../utils/backendApi.server';
+import { healthCheck, getSyncStatus, BACKEND_URL } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
 
 export const loader = async ({ request }) => {
@@ -11,6 +11,7 @@ export const loader = async ({ request }) => {
   // 检查后端状态
   let backendStatus = { status: 'unknown' };
   let apiKey = null;
+  let syncStatus = null;
 
   try {
     backendStatus = await healthCheck();
@@ -21,8 +22,15 @@ export const loader = async ({ request }) => {
   // 尝试获取 API Key（如果已注册）
   try {
     apiKey = await getApiKey(shop);
+
+    // 获取同步状态
+    if (apiKey) {
+      const statusResult = await getSyncStatus(apiKey);
+      syncStatus = statusResult.syncStatus;
+    }
   } catch (e) {
     // 尚未注册，首次扫描时会自动注册
+    console.log('[Scan] Error getting sync status:', e.message);
   }
 
   return {
@@ -30,14 +38,86 @@ export const loader = async ({ request }) => {
     backendUrl: BACKEND_URL,
     backendStatus,
     isRegistered: !!apiKey,
+    syncStatus,
   };
 };
 
+// Action: Handle plan toggle and reset refresh
+export const action = async ({ request }) => {
+  const formData = await request.formData();
+  const actionType = formData.get('_action');
+  const { session } = await authenticate.admin(request);
+  const shop = session.shop;
+
+  if (actionType === 'togglePlan') {
+    const currentPlan = formData.get('currentPlan');
+    const newPlan = currentPlan === 'pro' ? 'free' : 'pro';
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: newPlan }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update plan');
+      }
+
+      return { success: true, newPlan, action: 'togglePlan' };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  if (actionType === 'resetRefresh') {
+    try {
+      // Reset lastRefreshAt to null via backend API
+      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lastRefreshAt: null }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset refresh time');
+      }
+
+      return { success: true, action: 'resetRefresh' };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  return null;
+};
+
 export default function ScanPage() {
-  const { shop, backendUrl, backendStatus, isRegistered } = useLoaderData();
+  const { shop, backendUrl, backendStatus, isRegistered, syncStatus } = useLoaderData();
   const fetcher = useFetcher();
+  const planFetcher = useFetcher();
+  const revalidator = useRevalidator();
   const isScanning = fetcher.state === 'submitting';
+  const isTogglingPlan = planFetcher.state === 'submitting';
   const [showDetails, setShowDetails] = useState(false);
+
+  // Get current plan (use planFetcher result if available, otherwise use loader data)
+  const currentPlan = planFetcher.data?.newPlan || syncStatus?.plan || 'free';
+
+  // Revalidate after plan toggle to refresh sync status
+  useEffect(() => {
+    if (planFetcher.data?.success) {
+      revalidator.revalidate();
+    }
+  }, [planFetcher.data]);
+
+  // Format date helper
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Never';
+    return new Date(dateStr).toLocaleDateString('zh-CN', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  };
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
@@ -92,9 +172,95 @@ export default function ScanPage() {
         </p>
       </div>
 
+      {/* 同步状态 */}
+      {syncStatus && (
+        <div
+          style={{
+            padding: '15px 20px',
+            marginBottom: '20px',
+            borderRadius: '8px',
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #dee2e6',
+          }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' }}>
+            <div>
+              <div style={{ fontSize: '12px', color: '#666' }}>Products</div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{syncStatus.productCount}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', color: '#666' }}>Recommendations</div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{syncStatus.recommendationCount}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', color: '#666' }}>Last Refresh</div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{formatDate(syncStatus.lastRefreshAt)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', color: '#666' }}>Plan</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  {currentPlan === 'pro' ? '⭐ Pro' : '🆓 Free'}
+                </span>
+                <planFetcher.Form method="post">
+                  <input type="hidden" name="_action" value="togglePlan" />
+                  <input type="hidden" name="currentPlan" value={currentPlan} />
+                  <button
+                    type="submit"
+                    disabled={isTogglingPlan}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      backgroundColor: currentPlan === 'pro' ? '#dc3545' : '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: isTogglingPlan ? 'wait' : 'pointer',
+                      opacity: isTogglingPlan ? 0.7 : 1,
+                    }}
+                    title={`Switch to ${currentPlan === 'pro' ? 'Free' : 'Pro'} (for testing)`}
+                  >
+                    {isTogglingPlan ? '...' : currentPlan === 'pro' ? '↓ Free' : '↑ Pro'}
+                  </button>
+                </planFetcher.Form>
+              </div>
+            </div>
+          </div>
+          {!syncStatus.canRefresh && syncStatus.nextRefreshAt && (
+            <div style={{ marginTop: '10px', padding: '8px 12px', backgroundColor: '#fff3cd', borderRadius: '4px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>
+                ⏰ Next refresh available: {formatDate(syncStatus.nextRefreshAt)}
+                {syncStatus.daysUntilRefresh && ` (${syncStatus.daysUntilRefresh} days)`}
+              </span>
+              <planFetcher.Form method="post" style={{ marginLeft: '10px' }}>
+                <input type="hidden" name="_action" value="resetRefresh" />
+                <button
+                  type="submit"
+                  disabled={isTogglingPlan}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                  title="Reset refresh time (for testing)"
+                >
+                  🔓 Reset
+                </button>
+              </planFetcher.Form>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 扫描按钮 */}
       <div style={{ marginBottom: '30px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+        {/* 智能同步按钮（默认，增量） */}
         <fetcher.Form method="post" action="/api/scan">
+          <input type="hidden" name="mode" value="auto" />
           <button
             type="submit"
             disabled={isScanning || backendStatus.status !== 'ok'}
@@ -117,10 +283,37 @@ export default function ScanPage() {
                 <span className="spinner">⏳</span> Syncing...
               </>
             ) : (
-              <>🚀 Sync Products</>
+              <>🚀 {syncStatus?.initialSyncDone ? 'Sync New Products' : 'Initial Sync'}</>
             )}
           </button>
         </fetcher.Form>
+
+        {/* 强制刷新按钮 */}
+        {syncStatus?.initialSyncDone && (
+          <fetcher.Form method="post" action="/api/scan">
+            <input type="hidden" name="mode" value="refresh" />
+            <button
+              type="submit"
+              disabled={isScanning || backendStatus.status !== 'ok' || !syncStatus?.canRefresh}
+              title={!syncStatus?.canRefresh ? `Next refresh: ${formatDate(syncStatus?.nextRefreshAt)}` : 'Regenerate all recommendations'}
+              style={{
+                padding: '14px 28px',
+                fontSize: '16px',
+                backgroundColor: isScanning || !syncStatus?.canRefresh ? '#ccc' : '#fd7e14',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: isScanning || !syncStatus?.canRefresh ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              🔄 Force Refresh
+            </button>
+          </fetcher.Form>
+        )}
 
         <Link
           to="/app/recommendations"
@@ -187,16 +380,19 @@ export default function ScanPage() {
             padding: '20px',
             marginBottom: '20px',
             borderRadius: '8px',
-            border: fetcher.data.success ? '2px solid #28a745' : '2px solid #dc3545',
-            backgroundColor: fetcher.data.success ? '#d4edda' : '#f8d7da',
+            border: fetcher.data.success ? '2px solid #28a745' : fetcher.data.rateLimited ? '2px solid #ffc107' : '2px solid #dc3545',
+            backgroundColor: fetcher.data.success ? '#d4edda' : fetcher.data.rateLimited ? '#fff3cd' : '#f8d7da',
           }}
         >
           {fetcher.data.success ? (
             <>
               <h3 style={{ color: '#155724', margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px' }}>
                 <span style={{ fontSize: '28px' }}>✅</span> Sync Completed!
+                <span style={{ fontSize: '12px', backgroundColor: '#28a745', color: 'white', padding: '4px 8px', borderRadius: '4px', marginLeft: 'auto' }}>
+                  Mode: {fetcher.data.mode || 'auto'}
+                </span>
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
                 <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
                     📦
@@ -204,7 +400,16 @@ export default function ScanPage() {
                   <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>
                     {fetcher.data.productsCount}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Products Synced</div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Products</div>
+                </div>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
+                    ✨
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>
+                    {fetcher.data.newRecommendationsCount || 0}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>New Recommendations</div>
                 </div>
                 <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
@@ -213,7 +418,7 @@ export default function ScanPage() {
                   <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>
                     {fetcher.data.recommendationsCount}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Recommendations</div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Total Recommendations</div>
                 </div>
                 <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>
@@ -225,6 +430,20 @@ export default function ScanPage() {
                   <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Duration</div>
                 </div>
               </div>
+            </>
+          ) : fetcher.data.rateLimited ? (
+            <>
+              <h3 style={{ color: '#856404', margin: '0 0 10px 0' }}>⏰ Refresh Rate Limited</h3>
+              <p style={{ color: '#856404', margin: '5px 0' }}>
+                You can only force refresh once per {syncStatus?.plan === 'pro' ? 'week' : 'month'}.
+              </p>
+              <p style={{ color: '#856404', margin: '5px 0', fontSize: '14px' }}>
+                Next refresh available: <strong>{formatDate(fetcher.data.nextRefreshAt)}</strong>
+                {fetcher.data.daysRemaining && ` (${fetcher.data.daysRemaining} days)`}
+              </p>
+              <p style={{ color: '#666', margin: '10px 0 0 0', fontSize: '13px' }}>
+                Tip: You can still use "Sync New Products" to add new products incrementally.
+              </p>
             </>
           ) : (
             <>

@@ -32,10 +32,10 @@ export async function registerShop(domain) {
  * 同步商品到后端（会自动生成推荐）
  * @param {string} apiKey - API Key
  * @param {Array} products - 商品数组
- * @param {boolean} regenerate - 是否重新生成所有推荐（默认 false）
- * @returns {Promise<{success: boolean, products: number, recommendations: number}>}
+ * @param {string} mode - 同步模式: 'auto' (默认), 'refresh' (强制刷新)
+ * @returns {Promise<{success: boolean, mode: string, products: number, newRecommendations: number, totalRecommendations: number, canRefresh: boolean, nextRefreshAt: string}>}
  */
-export async function syncProducts(apiKey, products, regenerate = false) {
+export async function syncProducts(apiKey, products, mode = 'auto') {
   // 设置 1800 秒（30分钟）超时
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 1800000);
@@ -47,12 +47,16 @@ export async function syncProducts(apiKey, products, regenerate = false) {
         'Content-Type': 'application/json',
         'X-API-Key': apiKey,
       },
-      body: JSON.stringify({ products, regenerate }),
+      body: JSON.stringify({ products, mode }),
       signal: controller.signal,
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      // Include rate limit info if available
+      if (error.nextRefreshAt) {
+        throw new Error(`${error.error}|${error.nextRefreshAt}|${error.daysRemaining}`);
+      }
       throw new Error(error.error || `Sync failed: ${response.status}`);
     }
 
@@ -60,6 +64,27 @@ export async function syncProducts(apiKey, products, regenerate = false) {
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+/**
+ * 获取商店同步状态
+ * @param {string} apiKey - API Key
+ * @returns {Promise<{syncStatus: {initialSyncDone: boolean, lastRefreshAt: string, productCount: number, recommendationCount: number, plan: string, canRefresh: boolean, nextRefreshAt: string, daysUntilRefresh: number}}>}
+ */
+export async function getSyncStatus(apiKey) {
+  const response = await fetch(`${BACKEND_URL}/api/shops/sync-status`, {
+    method: 'GET',
+    headers: {
+      'X-API-Key': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || `Get sync status failed: ${response.status}`);
+  }
+
+  return response.json();
 }
 
 /**
