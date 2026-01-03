@@ -89,6 +89,25 @@ export const action = async ({ request }) => {
     }
   }
 
+  if (actionType === 'resetApiUsage') {
+    try {
+      // Reset API usage count via backend API
+      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiCallsToday: 0 }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset API usage');
+      }
+
+      return { success: true, action: 'resetApiUsage' };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
   return null;
 };
 
@@ -251,6 +270,54 @@ export default function ScanPage() {
                   🔓 Reset
                 </button>
               </planFetcher.Form>
+            </div>
+          )}
+
+          {/* API 使用量 */}
+          {syncStatus.apiUsage && (
+            <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#f0f0f0', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 'bold' }}>📊 API Usage (Today)</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', color: '#666' }}>
+                    {syncStatus.apiUsage.used.toLocaleString()} / {syncStatus.apiUsage.limit.toLocaleString()}
+                  </span>
+                  <planFetcher.Form method="post">
+                    <input type="hidden" name="_action" value="resetApiUsage" />
+                    <button
+                      type="submit"
+                      disabled={isTogglingPlan}
+                      style={{
+                        padding: '2px 6px',
+                        fontSize: '10px',
+                        backgroundColor: '#6c757d',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                      title="Reset API usage (for testing)"
+                    >
+                      Reset
+                    </button>
+                  </planFetcher.Form>
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div style={{ height: '8px', backgroundColor: '#ddd', borderRadius: '4px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${syncStatus.apiUsage.percentage}%`,
+                    height: '100%',
+                    backgroundColor: syncStatus.apiUsage.percentage > 80 ? '#dc3545' : syncStatus.apiUsage.percentage > 50 ? '#ffc107' : '#28a745',
+                    transition: 'width 0.3s ease',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: '#666' }}>
+                <span>{syncStatus.apiUsage.percentage}% used</span>
+                <span>{syncStatus.apiUsage.remaining.toLocaleString()} remaining</span>
+              </div>
             </div>
           )}
         </div>
