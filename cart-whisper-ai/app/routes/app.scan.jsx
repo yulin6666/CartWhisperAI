@@ -42,37 +42,15 @@ export const loader = async ({ request }) => {
   };
 };
 
-// Action: Handle plan toggle and reset refresh
+// Action: Handle reset refresh (for testing)
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const actionType = formData.get('_action');
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
-  if (actionType === 'togglePlan') {
-    const currentPlan = formData.get('currentPlan');
-    const newPlan = currentPlan === 'pro' ? 'free' : 'pro';
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: newPlan }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update plan');
-      }
-
-      return { success: true, newPlan, action: 'togglePlan' };
-    } catch (e) {
-      return { success: false, error: e.message };
-    }
-  }
-
   if (actionType === 'resetRefresh') {
     try {
-      // Reset lastRefreshAt to null via backend API
       const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -89,46 +67,26 @@ export const action = async ({ request }) => {
     }
   }
 
-  if (actionType === 'resetApiUsage') {
-    try {
-      // Reset API usage count via backend API
-      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiCallsToday: 0 }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to reset API usage');
-      }
-
-      return { success: true, action: 'resetApiUsage' };
-    } catch (e) {
-      return { success: false, error: e.message };
-    }
-  }
-
   return null;
 };
 
 export default function ScanPage() {
   const { shop, backendUrl, backendStatus, isRegistered, syncStatus } = useLoaderData();
   const fetcher = useFetcher();
-  const planFetcher = useFetcher();
+  const resetFetcher = useFetcher();
   const revalidator = useRevalidator();
   const isScanning = fetcher.state === 'submitting';
-  const isTogglingPlan = planFetcher.state === 'submitting';
+  const isResetting = resetFetcher.state === 'submitting';
   const [showDetails, setShowDetails] = useState(false);
 
-  // Get current plan (use planFetcher result if available, otherwise use loader data)
-  const currentPlan = planFetcher.data?.newPlan || syncStatus?.plan || 'free';
+  const currentPlan = syncStatus?.plan || 'free';
 
-  // Revalidate after plan toggle to refresh sync status
+  // Revalidate after reset
   useEffect(() => {
-    if (planFetcher.data?.success) {
+    if (resetFetcher.data?.success) {
       revalidator.revalidate();
     }
-  }, [planFetcher.data]);
+  }, [resetFetcher.data]);
 
   // Format date helper
   const formatDate = (dateStr) => {
@@ -217,31 +175,8 @@ export default function ScanPage() {
             </div>
             <div>
               <div style={{ fontSize: '12px', color: '#666' }}>Plan</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                  {currentPlan === 'pro' ? '⭐ Pro' : '🆓 Free'}
-                </span>
-                <planFetcher.Form method="post">
-                  <input type="hidden" name="_action" value="togglePlan" />
-                  <input type="hidden" name="currentPlan" value={currentPlan} />
-                  <button
-                    type="submit"
-                    disabled={isTogglingPlan}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      backgroundColor: currentPlan === 'pro' ? '#dc3545' : '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: isTogglingPlan ? 'wait' : 'pointer',
-                      opacity: isTogglingPlan ? 0.7 : 1,
-                    }}
-                    title={`Switch to ${currentPlan === 'pro' ? 'Free' : 'Pro'} (for testing)`}
-                  >
-                    {isTogglingPlan ? '...' : currentPlan === 'pro' ? '↓ Free' : '↑ Pro'}
-                  </button>
-                </planFetcher.Form>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                {currentPlan === 'pro' ? '⭐ Pro' : '🆓 Free'}
               </div>
             </div>
           </div>
@@ -251,11 +186,11 @@ export default function ScanPage() {
                 ⏰ Next refresh available: {formatDate(syncStatus.nextRefreshAt)}
                 {syncStatus.daysUntilRefresh && ` (${syncStatus.daysUntilRefresh} days)`}
               </span>
-              <planFetcher.Form method="post" style={{ marginLeft: '10px' }}>
+              <resetFetcher.Form method="post" style={{ marginLeft: '10px' }}>
                 <input type="hidden" name="_action" value="resetRefresh" />
                 <button
                   type="submit"
-                  disabled={isTogglingPlan}
+                  disabled={isResetting}
                   style={{
                     padding: '4px 8px',
                     fontSize: '11px',
@@ -267,57 +202,9 @@ export default function ScanPage() {
                   }}
                   title="Reset refresh time (for testing)"
                 >
-                  🔓 Reset
+                  {isResetting ? '...' : '🔓 Reset'}
                 </button>
-              </planFetcher.Form>
-            </div>
-          )}
-
-          {/* API 使用量 */}
-          {syncStatus.apiUsage && (
-            <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#f0f0f0', borderRadius: '6px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 'bold' }}>📊 API Usage (Today)</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '12px', color: '#666' }}>
-                    {syncStatus.apiUsage.used.toLocaleString()} / {syncStatus.apiUsage.limit.toLocaleString()}
-                  </span>
-                  <planFetcher.Form method="post">
-                    <input type="hidden" name="_action" value="resetApiUsage" />
-                    <button
-                      type="submit"
-                      disabled={isTogglingPlan}
-                      style={{
-                        padding: '2px 6px',
-                        fontSize: '10px',
-                        backgroundColor: '#6c757d',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                      }}
-                      title="Reset API usage (for testing)"
-                    >
-                      Reset
-                    </button>
-                  </planFetcher.Form>
-                </div>
-              </div>
-              {/* Progress bar */}
-              <div style={{ height: '8px', backgroundColor: '#ddd', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    width: `${syncStatus.apiUsage.percentage}%`,
-                    height: '100%',
-                    backgroundColor: syncStatus.apiUsage.percentage > 80 ? '#dc3545' : syncStatus.apiUsage.percentage > 50 ? '#ffc107' : '#28a745',
-                    transition: 'width 0.3s ease',
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: '#666' }}>
-                <span>{syncStatus.apiUsage.percentage}% used</span>
-                <span>{syncStatus.apiUsage.remaining.toLocaleString()} remaining</span>
-              </div>
+              </resetFetcher.Form>
             </div>
           )}
         </div>
@@ -383,7 +270,7 @@ export default function ScanPage() {
         )}
 
         <Link
-          to="/app/recommendations"
+          to="/app/dashboard"
           style={{
             padding: '14px 28px',
             fontSize: '16px',
@@ -398,7 +285,7 @@ export default function ScanPage() {
             gap: '8px',
           }}
         >
-          📊 View Recommendations
+          📊 Dashboard
         </Link>
       </div>
 
