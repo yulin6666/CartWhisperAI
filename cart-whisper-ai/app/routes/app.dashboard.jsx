@@ -1,7 +1,7 @@
 import { useLoaderData, Link, useFetcher, useRevalidator } from 'react-router';
 import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
-import { BACKEND_URL, getSyncStatus } from '../utils/backendApi.server';
+import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
 
 export async function loader({ request }) {
@@ -12,6 +12,7 @@ export async function loader({ request }) {
   let recommendations = [];
   let stats = {};
   let syncStatus = null;
+  let statistics = null;
   let error = null;
 
   try {
@@ -31,6 +32,14 @@ export async function loader({ request }) {
         recommendations = data.recommendations || [];
         stats = data.stats || {};
       }
+
+      // 获取统计数据
+      try {
+        const statsResult = await getStatistics(apiKey);
+        statistics = statsResult.statistics;
+      } catch (e) {
+        console.log('[Dashboard] Error getting statistics:', e.message);
+      }
     }
   } catch (e) {
     error = e.message;
@@ -43,6 +52,7 @@ export async function loader({ request }) {
     recommendations,
     stats,
     syncStatus,
+    statistics,
     error,
   };
 }
@@ -91,7 +101,7 @@ export const action = async ({ request }) => {
 };
 
 export default function DashboardPage() {
-  const { shop, backendUrl, isRegistered, recommendations, stats, syncStatus, error } = useLoaderData();
+  const { shop, backendUrl, isRegistered, recommendations, stats, syncStatus, statistics, error } = useLoaderData();
   const planFetcher = useFetcher();
   const revalidator = useRevalidator();
   const isTogglingPlan = planFetcher.state === 'submitting';
@@ -427,47 +437,131 @@ export default function DashboardPage() {
       {/* Analytics Tab */}
       {activeTab === 'analytics' && (
         <div>
-          <div style={{ backgroundColor: '#fff3cd', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #ffc107' }}>
-            <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>Coming Soon</h3>
-            <p style={{ margin: 0, color: '#856404' }}>
-              Analytics features are under development. In the next phase, you'll be able to track:
+          {/* Summary Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+            <StatCard
+              icon="👁️"
+              label="Total Impressions"
+              value={(statistics?.summary?.totalImpressions || 0).toLocaleString()}
+              color="#1976d2"
+              bgColor="#e3f2fd"
+            />
+            <StatCard
+              icon="👆"
+              label="Total Clicks"
+              value={(statistics?.summary?.totalClicks || 0).toLocaleString()}
+              color="#388e3c"
+              bgColor="#e8f5e9"
+            />
+            <StatCard
+              icon="📊"
+              label="Click-through Rate"
+              value={`${statistics?.summary?.ctr || 0}%`}
+              color="#f57c00"
+              bgColor="#fff3e0"
+            />
+            <StatCard
+              icon="💰"
+              label="Revenue Attribution"
+              value="Coming Soon"
+              color="#9e9e9e"
+              bgColor="#f5f5f5"
+            />
+          </div>
+
+          {/* No Data Message */}
+          {(!statistics?.summary?.totalImpressions || statistics.summary.totalImpressions === 0) && (
+            <div style={{ backgroundColor: '#e3f2fd', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #90caf9' }}>
+              <h3 style={{ margin: '0 0 10px 0', color: '#1565c0' }}>No Tracking Data Yet</h3>
+              <p style={{ margin: 0, color: '#1565c0' }}>
+                Once you integrate the tracking code into your storefront theme, you'll see impressions and clicks data here.
+                See the integration guide below.
+              </p>
+            </div>
+          )}
+
+          {/* Top Performing Recommendations */}
+          {statistics?.topByClicks?.length > 0 && (
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ marginBottom: '15px' }}>Top Recommendations by Clicks</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Source Product</th>
+                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Recommended Product</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>Impressions</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>Clicks</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>CTR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {statistics.topByClicks.map((rec, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '10px 12px', fontSize: '13px' }}>{rec.sourceTitle}</td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px' }}>{rec.targetTitle}</td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px', textAlign: 'center' }}>{rec.impressions}</td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px', textAlign: 'center', fontWeight: 'bold', color: '#388e3c' }}>{rec.clicks}</td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px', textAlign: 'center' }}>{rec.ctr}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Top Source Products */}
+          {statistics?.topSourceProducts?.length > 0 && (
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ marginBottom: '15px' }}>Top Products by Impressions</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>Product</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>Impressions</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>Clicks</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>CTR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {statistics.topSourceProducts.map((product, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '10px 12px', fontSize: '13px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {product.image && (
+                              <img src={product.image} alt="" style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover' }} />
+                            )}
+                            {product.title}
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px', textAlign: 'center', fontWeight: 'bold', color: '#1976d2' }}>{product.impressions}</td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px', textAlign: 'center' }}>{product.clicks}</td>
+                        <td style={{ padding: '10px 12px', fontSize: '13px', textAlign: 'center' }}>{product.ctr}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Integration Info */}
+          <div style={{ backgroundColor: '#e8f5e9', borderRadius: '8px', padding: '20px', marginTop: '20px', border: '1px solid #a5d6a7' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#2e7d32' }}>Automatic Tracking</h3>
+            <p style={{ color: '#2e7d32', margin: 0 }}>
+              Tracking is built into the Cart Recommendations widget. When customers view recommendations or click "Add to Cart",
+              impressions and clicks are automatically recorded. No additional integration needed!
             </p>
           </div>
 
-          {/* Placeholder Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-            <AnalyticsPlaceholder
-              icon="👁️"
-              label="Impressions"
-              description="Total times recommendations were shown to customers"
-              status="Coming in Phase 2"
-            />
-            <AnalyticsPlaceholder
-              icon="👆"
-              label="Clicks"
-              description="Total clicks on recommended products"
-              status="Coming in Phase 2"
-            />
-            <AnalyticsPlaceholder
-              icon="📊"
-              label="Click-through Rate"
-              description="Percentage of impressions that resulted in clicks"
-              status="Coming in Phase 2"
-            />
-            <AnalyticsPlaceholder
-              icon="💰"
-              label="Revenue Attribution"
-              description="Revenue generated from recommendation clicks"
-              status="Coming in Phase 3"
-            />
-          </div>
-
           {/* Development Roadmap */}
-          <div style={{ marginTop: '40px', backgroundColor: '#f8f9fa', borderRadius: '8px', padding: '24px' }}>
+          <div style={{ marginTop: '30px', backgroundColor: '#f8f9fa', borderRadius: '8px', padding: '24px' }}>
             <h3 style={{ margin: '0 0 20px 0' }}>Development Roadmap</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <RoadmapItem phase="Phase 1 (Current)" status="completed" items={['Recommendation list display', 'API usage tracking', 'Plan management']} />
-              <RoadmapItem phase="Phase 2" status="in-progress" items={['Click tracking (frontend events)', 'Basic statistics (impressions, clicks, CTR)']} />
+              <RoadmapItem phase="Phase 1" status="completed" items={['Recommendation list display', 'API usage tracking', 'Plan management']} />
+              <RoadmapItem phase="Phase 2" status="completed" items={['Click tracking API', 'Basic statistics (impressions, clicks, CTR)']} />
               <RoadmapItem phase="Phase 3" status="planned" items={['Revenue attribution', 'A/B testing', 'Advanced analytics dashboard']} />
             </div>
           </div>
@@ -519,17 +613,6 @@ function ReasonCell({ reason }) {
     <div>
       <div style={{ fontWeight: '500', marginBottom: '4px' }}>{parts[0] || '—'}</div>
       {parts[1] && <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>{parts[1]}</div>}
-    </div>
-  );
-}
-
-function AnalyticsPlaceholder({ icon, label, description, status }) {
-  return (
-    <div style={{ padding: '24px', borderRadius: '12px', backgroundColor: '#f5f5f5', border: '2px dashed #ddd', textAlign: 'center' }}>
-      <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.5 }}>{icon}</div>
-      <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>{label}</div>
-      <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px' }}>{description}</div>
-      <div style={{ fontSize: '11px', color: '#007bff', fontWeight: 'bold' }}>{status}</div>
     </div>
   );
 }

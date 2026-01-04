@@ -134,4 +134,25 @@ export async function healthCheck() {
   return response.json();
 }
 
+/**
+ * 获取统计数据
+ * @param {string} apiKey - API Key
+ * @returns {Promise<{statistics: {summary: {totalImpressions, totalClicks, ctr}, topByCtr: Array, topByClicks: Array, topSourceProducts: Array}}>}
+ */
+export async function getStatistics(apiKey) {
+  const response = await fetch(`${BACKEND_URL}/api/statistics`, {
+    method: 'GET',
+    headers: {
+      'X-API-Key': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || `Get statistics failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export { BACKEND_URL };

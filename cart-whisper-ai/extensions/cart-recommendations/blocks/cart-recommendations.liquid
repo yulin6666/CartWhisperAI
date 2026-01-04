@@ -216,8 +216,15 @@
     }
   }
 
+  // 后端 API URL
+  const backendUrl = 'https://cartwhisperaibackend-production.up.railway.app';
+
+  // 当前源商品 ID（用于追踪）
+  let currentSourceProductId = null;
+
   // 从API获取推荐 (通过 App Proxy)
   async function fetchRecommendations(productId) {
+    currentSourceProductId = productId;
     // 使用 App Proxy 路径: /apps/chat-proxy/recommendations
     const proxyUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
     console.log('[CartWhisper] Fetching recommendations:', proxyUrl);
@@ -239,6 +246,37 @@
       console.error('[CartWhisper] Failed to fetch recommendations', error);
       return [];
     }
+  }
+
+  // 追踪展示（当推荐显示时）
+  function trackImpression(sourceProductId, recommendations) {
+    if (!recommendations || recommendations.length === 0) return;
+
+    const targetProductIds = recommendations.map(r => r.id || r.numericId).filter(Boolean);
+    if (targetProductIds.length === 0) return;
+
+    fetch(`${backendUrl}/api/tracking/impression`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shop: shop,
+        sourceProductId: String(sourceProductId),
+        targetProductIds: targetProductIds.map(String)
+      })
+    }).catch(e => console.log('[CartWhisper] Impression tracking failed:', e.message));
+  }
+
+  // 追踪点击（当用户点击 Add to Cart）
+  function trackClick(sourceProductId, targetProductId) {
+    fetch(`${backendUrl}/api/tracking/click`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shop: shop,
+        sourceProductId: String(sourceProductId),
+        targetProductId: String(targetProductId)
+      })
+    }).catch(e => console.log('[CartWhisper] Click tracking failed:', e.message));
   }
 
   // 添加商品到购物车
@@ -287,20 +325,21 @@
     productsList.innerHTML = recommendations.map(rec => {
       const price = formatMoney(rec.price);
       const imageUrl = rec.image || 'https://via.placeholder.com/300x300?text=No+Image';
+      const productId = rec.id || rec.numericId;
 
       return `
         <div class="cart-whisper-product">
-          <a href="/products/${rec.numericId}">
+          <a href="/products/${productId}">
             <img class="cart-whisper-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
           </a>
           <div class="cart-whisper-product-info">
-            <a href="/products/${rec.numericId}" style="text-decoration:none;color:inherit;">
+            <a href="/products/${productId}" style="text-decoration:none;color:inherit;">
               <h4 class="cart-whisper-product-title">${escapeHtml(rec.title)}</h4>
             </a>
             ${rec.reasoning ? `<p class="cart-whisper-product-reasoning">${escapeHtml(rec.reasoning)}</p>` : ''}
             <div class="cart-whisper-product-footer">
               <span class="cart-whisper-product-price">${price}</span>
-              <button class="cart-whisper-add-btn" data-product-id="${rec.numericId}" onclick="cartWhisperAddToCart(this, '${rec.numericId}')">
+              <button class="cart-whisper-add-btn" data-product-id="${productId}" onclick="cartWhisperAddToCart(this, '${productId}')">
                 {{ block.settings.button_text }}
               </button>
             </div>
@@ -311,6 +350,11 @@
 
     loadingEl.style.display = 'none';
     container.style.display = 'block';
+
+    // 自动追踪展示
+    if (currentSourceProductId) {
+      trackImpression(currentSourceProductId, recommendations);
+    }
   }
 
   // 格式化价格
@@ -328,6 +372,11 @@
 
   // 全局添加购物车函数
   window.cartWhisperAddToCart = async function(button, productId) {
+    // 追踪点击
+    if (currentSourceProductId) {
+      trackClick(currentSourceProductId, productId);
+    }
+
     // 先获取商品的第一个variant
     try {
       const response = await fetch(`/products/${productId}.js`);
