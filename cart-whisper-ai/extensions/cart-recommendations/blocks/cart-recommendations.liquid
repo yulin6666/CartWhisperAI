@@ -291,12 +291,12 @@
       return cached;
     }
 
-    // 使用 App Proxy 路径: /apps/chat-proxy/recommendations
-    const proxyUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
-    console.log('[CartWhisper] Fetching recommendations:', proxyUrl);
+    // 直接调用后端公开接口，不需要 App Proxy
+    const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+    console.log('[CartWhisper] Fetching recommendations:', fetchUrl);
 
     try {
-      const response = await fetch(proxyUrl);
+      const response = await fetch(fetchUrl);
       console.log('[CartWhisper] Response status:', response.status);
 
       if (!response.ok) {

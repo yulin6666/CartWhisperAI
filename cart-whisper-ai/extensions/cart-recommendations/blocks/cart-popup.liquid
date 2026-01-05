@@ -471,11 +471,10 @@
 
   // 获取推荐
   async function fetchRecommendations(productId) {
-    // 始终使用 App Proxy 路径，不需要配置 API URL
-    // App Proxy 会自动路由到正确的后端
-    const fetchUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
+    // 直接调用后端公开接口，不需要 App Proxy
+    const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
 
-    console.log('[CartWhisper Popup] Fetching recommendations via App Proxy:', fetchUrl);
+    console.log('[CartWhisper Popup] Fetching recommendations:', fetchUrl);
 
     try {
       const response = await fetch(fetchUrl, {
