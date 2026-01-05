@@ -385,6 +385,12 @@
   const limit = parseInt(popup.dataset.limit, 10) || 3;
   const productsContainer = document.getElementById('cart-whisper-popup-products');
 
+  // 后端 API URL（用于追踪）
+  const backendUrl = 'https://cartwhisperaibackend-production.up.railway.app';
+
+  // 当前源商品 ID（触发 popup 的商品）
+  let currentSourceProductId = null;
+
   // 调试信息
   console.log('[CartWhisper] === DEBUG INFO ===');
   console.log('[CartWhisper] Shop:', shop);
@@ -413,6 +419,57 @@
       cartWhisperClosePopup();
     }
   });
+
+  // 追踪展示（当推荐显示时）
+  function trackImpression(sourceProductId, recommendations) {
+    if (!recommendations || recommendations.length === 0) return;
+
+    const targetProductIds = recommendations.map(r => {
+      if (r.numericId) return String(r.numericId);
+      if (r.id) return String(r.id).replace('gid://shopify/Product/', '');
+      return null;
+    }).filter(Boolean);
+
+    if (targetProductIds.length === 0) return;
+
+    const payload = {
+      shop: shop,
+      sourceProductId: String(sourceProductId),
+      targetProductIds: targetProductIds
+    };
+    console.log('[CartWhisper Popup] Tracking impression:', payload);
+
+    fetch(`${backendUrl}/api/tracking/impression`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => console.log('[CartWhisper Popup] Impression result:', data))
+    .catch(e => console.log('[CartWhisper Popup] Impression tracking failed:', e.message));
+  }
+
+  // 追踪点击（当用户点击 Add）
+  function trackClick(sourceProductId, targetProductId) {
+    const cleanSourceId = String(sourceProductId).replace('gid://shopify/Product/', '');
+    const cleanTargetId = String(targetProductId).replace('gid://shopify/Product/', '');
+
+    const payload = {
+      shop: shop,
+      sourceProductId: cleanSourceId,
+      targetProductId: cleanTargetId
+    };
+    console.log('[CartWhisper Popup] Tracking click:', payload);
+
+    fetch(`${backendUrl}/api/tracking/click`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => console.log('[CartWhisper Popup] Click result:', data))
+    .catch(e => console.log('[CartWhisper Popup] Click tracking failed:', e.message));
+  }
 
   // 获取推荐
   async function fetchRecommendations(productId) {
@@ -456,8 +513,14 @@
   }
 
   // 添加到购物车
-  window.cartWhisperPopupAdd = async function(button, handle) {
-    console.log('[CartWhisper] Add button clicked, handle:', handle);
+  window.cartWhisperPopupAdd = async function(button, handle, numericId) {
+    console.log('[CartWhisper Popup] Add button clicked, handle:', handle, 'numericId:', numericId);
+
+    // 追踪点击
+    if (currentSourceProductId && numericId) {
+      trackClick(currentSourceProductId, numericId);
+    }
+
     button.disabled = true;
     button.textContent = '{{ block.settings.adding_text }}';
 
@@ -512,6 +575,8 @@
       const imageUrl = rec.image || 'https://via.placeholder.com/80x80?text=No+Image';
       const productUrl = rec.handle ? `/products/${rec.handle}` : `/products/${rec.numericId}`;
       const addHandle = rec.handle || rec.numericId;
+      // 用于追踪的数字 ID
+      const trackingId = rec.numericId || (rec.id ? rec.id.replace('gid://shopify/Product/', '') : '');
 
       return `
         <div class="cart-whisper-popup-product">
@@ -525,7 +590,7 @@
             </a>
             <div class="cart-whisper-popup-product-bottom">
               <span class="cart-whisper-popup-product-price">${price}</span>
-              <button class="cart-whisper-popup-add-btn" onclick="event.stopPropagation(); cartWhisperPopupAdd(this, '${addHandle}')">
+              <button class="cart-whisper-popup-add-btn" onclick="event.stopPropagation(); cartWhisperPopupAdd(this, '${addHandle}', '${trackingId}')">
                 {{ block.settings.button_text }}
               </button>
             </div>
@@ -533,6 +598,11 @@
         </div>
       `;
     }).join('');
+
+    // 追踪展示
+    if (currentSourceProductId) {
+      trackImpression(currentSourceProductId, recommendations);
+    }
   }
 
   function formatMoney(price) {
@@ -549,9 +619,12 @@
 
   // 显示弹窗
   async function showPopup(productId) {
-    console.log('[CartWhisper] showPopup called with productId:', productId);
+    console.log('[CartWhisper Popup] showPopup called with productId:', productId);
 
-    console.log('[CartWhisper] Showing popup...');
+    // 保存源商品 ID 用于追踪
+    currentSourceProductId = productId;
+
+    console.log('[CartWhisper Popup] Showing popup...');
     productsContainer.innerHTML = '<p class="cart-whisper-popup-loading">{{ block.settings.loading_text }}</p>';
     popup.style.display = 'flex';
 
@@ -560,7 +633,7 @@
     });
 
     const recommendations = await fetchRecommendations(productId);
-    console.log('[CartWhisper] Got recommendations for popup:', recommendations);
+    console.log('[CartWhisper Popup] Got recommendations for popup:', recommendations);
     renderRecommendations(recommendations);
   }
 
