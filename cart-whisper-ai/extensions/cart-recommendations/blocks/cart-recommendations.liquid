@@ -222,9 +222,77 @@
   // 当前源商品 ID（用于追踪）
   let currentSourceProductId = null;
 
-  // 从API获取推荐 (通过 App Proxy)
+  // 缓存配置
+  const CACHE_KEY_PREFIX = 'cw_rec_';
+  const CACHE_TTL = 30 * 60 * 1000; // 30 分钟缓存
+
+  // 从缓存获取推荐
+  function getCachedRecommendations(productId) {
+    try {
+      const key = CACHE_KEY_PREFIX + productId;
+      const cached = localStorage.getItem(key);
+      if (!cached) return null;
+
+      const { data, timestamp } = JSON.parse(cached);
+      // 检查是否过期
+      if (Date.now() - timestamp > CACHE_TTL) {
+        localStorage.removeItem(key);
+        return null;
+      }
+
+      console.log('[CartWhisper] Using cached recommendations for product:', productId);
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // 保存推荐到缓存
+  function cacheRecommendations(productId, recommendations) {
+    try {
+      const key = CACHE_KEY_PREFIX + productId;
+      localStorage.setItem(key, JSON.stringify({
+        data: recommendations,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // localStorage 可能已满，清理旧缓存
+      clearOldCache();
+    }
+  }
+
+  // 清理过期缓存
+  function clearOldCache() {
+    try {
+      const keys = Object.keys(localStorage).filter(k => k.startsWith(CACHE_KEY_PREFIX));
+      keys.forEach(key => {
+        try {
+          const { timestamp } = JSON.parse(localStorage.getItem(key));
+          if (Date.now() - timestamp > CACHE_TTL) {
+            localStorage.removeItem(key);
+          }
+        } catch (e) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {}
+  }
+
+  // 标记是否从缓存加载（用于决定是否追踪展示）
+  let loadedFromCache = false;
+
+  // 从API获取推荐 (通过 App Proxy)，带缓存
   async function fetchRecommendations(productId) {
     currentSourceProductId = productId;
+    loadedFromCache = false;
+
+    // 先检查缓存
+    const cached = getCachedRecommendations(productId);
+    if (cached) {
+      loadedFromCache = true;
+      return cached;
+    }
+
     // 使用 App Proxy 路径: /apps/chat-proxy/recommendations
     const proxyUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
     console.log('[CartWhisper] Fetching recommendations:', proxyUrl);
@@ -240,8 +308,15 @@
       }
 
       const data = await response.json();
-      console.log('[CartWhisper] Got recommendations:', data);
-      return data.recommendations || [];
+      const recommendations = data.recommendations || [];
+      console.log('[CartWhisper] Got recommendations:', recommendations.length);
+
+      // 保存到缓存
+      if (recommendations.length > 0) {
+        cacheRecommendations(productId, recommendations);
+      }
+
+      return recommendations;
     } catch (error) {
       console.error('[CartWhisper] Failed to fetch recommendations', error);
       return [];
@@ -252,31 +327,53 @@
   function trackImpression(sourceProductId, recommendations) {
     if (!recommendations || recommendations.length === 0) return;
 
-    const targetProductIds = recommendations.map(r => r.id || r.numericId).filter(Boolean);
+    // 优先使用 numericId，确保是纯数字 ID
+    const targetProductIds = recommendations.map(r => {
+      if (r.numericId) return String(r.numericId);
+      if (r.id) return String(r.id).replace('gid://shopify/Product/', '');
+      return null;
+    }).filter(Boolean);
+
     if (targetProductIds.length === 0) return;
+
+    const payload = {
+      shop: shop,
+      sourceProductId: String(sourceProductId),
+      targetProductIds: targetProductIds
+    };
+    console.log('[CartWhisper] Tracking impression:', payload);
 
     fetch(`${backendUrl}/api/tracking/impression`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        shop: shop,
-        sourceProductId: String(sourceProductId),
-        targetProductIds: targetProductIds.map(String)
-      })
-    }).catch(e => console.log('[CartWhisper] Impression tracking failed:', e.message));
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => console.log('[CartWhisper] Impression result:', data))
+    .catch(e => console.log('[CartWhisper] Impression tracking failed:', e.message));
   }
 
   // 追踪点击（当用户点击 Add to Cart）
   function trackClick(sourceProductId, targetProductId) {
+    // 清理 ID，确保是纯数字格式
+    const cleanSourceId = String(sourceProductId).replace('gid://shopify/Product/', '');
+    const cleanTargetId = String(targetProductId).replace('gid://shopify/Product/', '');
+
+    const payload = {
+      shop: shop,
+      sourceProductId: cleanSourceId,
+      targetProductId: cleanTargetId
+    };
+    console.log('[CartWhisper] Tracking click:', payload);
+
     fetch(`${backendUrl}/api/tracking/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        shop: shop,
-        sourceProductId: String(sourceProductId),
-        targetProductId: String(targetProductId)
-      })
-    }).catch(e => console.log('[CartWhisper] Click tracking failed:', e.message));
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => console.log('[CartWhisper] Click result:', data))
+    .catch(e => console.log('[CartWhisper] Click tracking failed:', e.message));
   }
 
   // 添加商品到购物车
@@ -325,21 +422,24 @@
     productsList.innerHTML = recommendations.map(rec => {
       const price = formatMoney(rec.price);
       const imageUrl = rec.image || 'https://via.placeholder.com/300x300?text=No+Image';
-      const productId = rec.id || rec.numericId;
+      // 用 numericId 进行追踪（纯数字 ID）
+      const trackingId = rec.numericId || (rec.id ? rec.id.replace('gid://shopify/Product/', '') : '');
+      // 用 handle 构建产品链接
+      const productUrl = rec.handle ? `/products/${rec.handle}` : `/products/${trackingId}`;
 
       return `
         <div class="cart-whisper-product">
-          <a href="/products/${productId}">
+          <a href="${productUrl}">
             <img class="cart-whisper-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
           </a>
           <div class="cart-whisper-product-info">
-            <a href="/products/${productId}" style="text-decoration:none;color:inherit;">
+            <a href="${productUrl}" style="text-decoration:none;color:inherit;">
               <h4 class="cart-whisper-product-title">${escapeHtml(rec.title)}</h4>
             </a>
             ${rec.reasoning ? `<p class="cart-whisper-product-reasoning">${escapeHtml(rec.reasoning)}</p>` : ''}
             <div class="cart-whisper-product-footer">
               <span class="cart-whisper-product-price">${price}</span>
-              <button class="cart-whisper-add-btn" data-product-id="${productId}" onclick="cartWhisperAddToCart(this, '${productId}')">
+              <button class="cart-whisper-add-btn" data-product-id="${trackingId}" data-handle="${rec.handle || ''}" onclick="cartWhisperAddToCart(this, '${trackingId}', '${rec.handle || ''}')">
                 {{ block.settings.button_text }}
               </button>
             </div>
@@ -351,8 +451,8 @@
     loadingEl.style.display = 'none';
     container.style.display = 'block';
 
-    // 自动追踪展示
-    if (currentSourceProductId) {
+    // 自动追踪展示（仅非缓存数据才追踪，避免重复计数）
+    if (currentSourceProductId && !loadedFromCache) {
       trackImpression(currentSourceProductId, recommendations);
     }
   }
@@ -371,22 +471,33 @@
   }
 
   // 全局添加购物车函数
-  window.cartWhisperAddToCart = async function(button, productId) {
-    // 追踪点击
+  window.cartWhisperAddToCart = async function(button, productId, handle) {
+    console.log('[CartWhisper] Add to cart clicked:', { productId, handle, sourceProductId: currentSourceProductId });
+
+    // 追踪点击（使用数字 ID）
     if (currentSourceProductId) {
       trackClick(currentSourceProductId, productId);
     }
 
-    // 先获取商品的第一个variant
+    // 使用 handle 获取商品的第一个 variant
+    const productPath = handle || productId;
     try {
-      const response = await fetch(`/products/${productId}.js`);
+      const response = await fetch(`/products/${productPath}.js`);
+      if (!response.ok) {
+        throw new Error(`Product not found: ${response.status}`);
+      }
       const product = await response.json();
       const variantId = product.variants[0]?.id;
+      console.log('[CartWhisper] Got variant:', variantId);
       if (variantId) {
         await addToCart(variantId, button);
       }
     } catch (error) {
-      console.error('CartWhisper: Failed to get product variant', error);
+      console.error('[CartWhisper] Failed to get product variant:', error);
+      button.textContent = 'Error';
+      setTimeout(() => {
+        button.textContent = '{{ block.settings.button_text }}';
+      }, 2000);
     }
   };
 
