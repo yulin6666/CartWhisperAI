@@ -6,7 +6,6 @@
 <div id="cart-whisper-recommendations"
      class="cart-whisper-container"
      data-shop="{{ shop.permanent_domain }}"
-     data-api-url="{{ block.settings.api_url }}"
      data-limit="{{ block.settings.limit }}"
      style="display: none;">
 
@@ -199,7 +198,6 @@
   if (!container) return;
 
   const shop = container.dataset.shop;
-  const apiUrl = container.dataset.apiUrl || '';
   const limit = parseInt(container.dataset.limit, 10) || 3;
   const productsList = document.getElementById('cart-whisper-products-list');
   const loadingEl = document.getElementById('cart-whisper-loading');
@@ -503,12 +501,6 @@
 
   // 主函数
   async function init() {
-    if (!apiUrl) {
-      console.warn('CartWhisper: API URL not configured');
-      container.style.display = 'none';
-      return;
-    }
-
     const cartItems = await getCartItems();
     if (cartItems.length === 0) {
       container.style.display = 'none';
@@ -540,12 +532,6 @@
   "name": "Cart Recommendations",
   "target": "section",
   "settings": [
-    {
-      "type": "text",
-      "id": "api_url",
-      "label": "API URL",
-      "info": "Your CartWhisperAI app URL (e.g., https://your-app.fly.dev)"
-    },
     {
       "type": "text",
       "id": "title",

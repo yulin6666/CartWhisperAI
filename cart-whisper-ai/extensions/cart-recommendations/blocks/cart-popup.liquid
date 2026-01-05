@@ -8,7 +8,6 @@
      class="cart-whisper-popup-overlay"
      data-shop="{{ shop.permanent_domain }}"
      data-limit="{{ block.settings.limit }}"
-     data-api-url="{{ block.settings.api_url }}"
      style="display: none;">
 
   <div class="cart-whisper-popup-modal">
@@ -381,7 +380,6 @@
   if (!popup) return;
 
   const shop = popup.dataset.shop;
-  const apiUrl = popup.dataset.apiUrl || '';
   const limit = parseInt(popup.dataset.limit, 10) || 3;
   const productsContainer = document.getElementById('cart-whisper-popup-products');
 
@@ -392,11 +390,11 @@
   let currentSourceProductId = null;
 
   // 调试信息
-  console.log('[CartWhisper] === DEBUG INFO ===');
-  console.log('[CartWhisper] Shop:', shop);
-  console.log('[CartWhisper] API URL configured:', apiUrl);
-  console.log('[CartWhisper] Limit:', limit);
-  console.log('[CartWhisper] =================');
+  console.log('[CartWhisper Popup] === DEBUG INFO ===');
+  console.log('[CartWhisper Popup] Shop:', shop);
+  console.log('[CartWhisper Popup] Limit:', limit);
+  console.log('[CartWhisper Popup] Using App Proxy for recommendations');
+  console.log('[CartWhisper Popup] =================');
 
   // 关闭弹窗
   window.cartWhisperClosePopup = function() {
@@ -473,22 +471,11 @@
 
   // 获取推荐
   async function fetchRecommendations(productId) {
-    // 构建 API URL
-    // 注意：如果 apiUrl 为空，会尝试 App Proxy 路径
-    let fetchUrl;
-    const effectiveApiUrl = apiUrl || '';
+    // 始终使用 App Proxy 路径，不需要配置 API URL
+    // App Proxy 会自动路由到正确的后端
+    const fetchUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
 
-    console.log('[CartWhisper] Building URL with apiUrl:', effectiveApiUrl, 'productId:', productId);
-
-    if (effectiveApiUrl && effectiveApiUrl.length > 0) {
-      // 直接调用应用 API
-      fetchUrl = `${effectiveApiUrl}/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    } else {
-      // 尝试 App Proxy
-      fetchUrl = `/apps/chat-proxy/recommendations?product_id=${productId}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
-    }
-
-    console.log('[CartWhisper] Final fetch URL:', fetchUrl);
+    console.log('[CartWhisper Popup] Fetching recommendations via App Proxy:', fetchUrl);
 
     try {
       const response = await fetch(fetchUrl, {
@@ -649,12 +636,6 @@
   "name": "Cart Popup",
   "target": "body",
   "settings": [
-    {
-      "type": "text",
-      "id": "api_url",
-      "label": "API URL",
-      "info": "Your CartWhisperAI app URL (e.g., https://your-app.fly.dev)"
-    },
     {
       "type": "range",
       "id": "limit",
