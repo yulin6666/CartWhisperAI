@@ -2,7 +2,7 @@
 
 client_id = "e95aeb94d3693728c99a07cf63cfe74f"
 name = "CartWhisperAI"
-application_url = "https://example.com"
+application_url = "https://cartwhisperai-production.up.railway.app"
 embedded = true
 
 [build]
@@ -25,9 +25,9 @@ api_version = "2026-01"
 scopes = "write_products,read_products,read_orders,read_customers"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://cartwhisperai-production.up.railway.app/auth/callback" ]
 
 [app_proxy]
-url = "https://example.com/api/proxy"
+url = "https://cartwhisperai-production.up.railway.app/api/proxy"
 subpath = "chat-proxy"
 prefix = "apps"
