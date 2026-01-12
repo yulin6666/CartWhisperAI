@@ -619,10 +619,11 @@ function ProductCell({ image, title, id }) {
 
 function ReasonCell({ reason }) {
   const parts = (reason || '—').split('|');
+  // Display English only (parts[1]), fallback to parts[0] if no English
+  const displayText = parts[1] || parts[0] || '—';
   return (
     <div>
-      <div style={{ fontWeight: '500', marginBottom: '4px' }}>{parts[0] || '—'}</div>
-      {parts[1] && <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>{parts[1]}</div>}
+      <div style={{ fontWeight: '500' }}>{displayText}</div>
     </div>
   );
 }
