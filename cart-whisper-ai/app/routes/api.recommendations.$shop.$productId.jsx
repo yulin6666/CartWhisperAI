@@ -59,6 +59,8 @@ export async function loader({ params, request }) {
         shop,
         count: formattedRecommendations.length,
         recommendations: formattedRecommendations,
+        fromCache: result.fromCache || false, // 标识是否来自缓存
+        cacheWarning: result.cacheWarning, // 缓存警告信息
       }),
       { status: 200, headers }
     );

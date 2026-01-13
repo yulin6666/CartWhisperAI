@@ -30,6 +30,14 @@
     <div class="cart-whisper-popup-divider"></div>
 
     <div class="cart-whisper-popup-recommendations">
+      <!-- 缓存状态提示 -->
+      <div id="cart-whisper-cache-warning" class="cart-whisper-cache-warning" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>Showing cached recommendations</span>
+      </div>
+
       <div class="cart-whisper-popup-products" id="cart-whisper-popup-products">
         <!-- Products loaded dynamically -->
       </div>
@@ -278,6 +286,23 @@
     color: #666;
   }
 
+  .cart-whisper-cache-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    background: #fff3e0;
+    border: 1px solid #ffb74d;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #e65100;
+  }
+
+  .cart-whisper-cache-warning svg {
+    flex-shrink: 0;
+  }
+
   @media (max-width: 500px) {
     .cart-whisper-popup-modal {
       max-height: 100vh;
@@ -469,33 +494,69 @@
     .catch(e => console.log('[CartWhisper Popup] Click tracking failed:', e.message));
   }
 
-  // 获取推荐
+  // 获取推荐（带重试和降级）
   async function fetchRecommendations(productId) {
     // 直接调用后端公开接口，不需要 App Proxy
     const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
 
     console.log('[CartWhisper Popup] Fetching recommendations:', fetchUrl);
 
-    try {
-      const response = await fetch(fetchUrl, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
-      console.log('[CartWhisper] Response status:', response.status);
+    const maxRetries = 2;
 
-      if (!response.ok) {
-        const text = await response.text();
-        console.error('[CartWhisper] Error response:', text);
-        throw new Error('API request failed');
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+
+        console.log(`[CartWhisper] Attempt ${attempt + 1}/${maxRetries + 1}`);
+
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        console.log('[CartWhisper] Response status:', response.status);
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('[CartWhisper] Error response:', text);
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('[CartWhisper] Got recommendations:', data);
+
+        // 显示缓存警告（如果是缓存数据）
+        const warningEl = document.getElementById('cart-whisper-cache-warning');
+        if (data.fromCache && warningEl) {
+          warningEl.style.display = 'flex';
+          console.log('[CartWhisper] Showing cached data warning');
+        } else if (warningEl) {
+          warningEl.style.display = 'none';
+        }
+
+        return data.recommendations || [];
+
+      } catch (error) {
+        const errorMsg = error.name === 'AbortError' ? 'Request timeout' : error.message;
+        console.error(`[CartWhisper] Attempt ${attempt + 1}/${maxRetries + 1} failed:`, errorMsg);
+
+        // 最后一次失败，返回空并显示友好提示
+        if (attempt === maxRetries) {
+          console.error('[CartWhisper] All retries failed, showing empty recommendations');
+          return [];
+        }
+
+        // 等待后重试（指数退避）
+        const delay = Math.min(1000 * Math.pow(2, attempt), 3000);
+        console.log(`[CartWhisper] Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
-
-      const data = await response.json();
-      console.log('[CartWhisper] Got recommendations:', data);
-      return data.recommendations || [];
-    } catch (error) {
-      console.error('[CartWhisper] Failed to fetch recommendations', error);
-      return [];
     }
+
+    return [];
   }
 
   // 添加到购物车

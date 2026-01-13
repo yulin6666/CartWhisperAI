@@ -3,6 +3,8 @@
  * 所有与后端的通信都通过这个模块
  */
 
+import { getCachedRecommendations, setCachedRecommendations } from './recommendationCache.server.js';
+
 // 后端 API 配置
 const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
 
@@ -88,41 +90,92 @@ export async function getSyncStatus(apiKey) {
 }
 
 /**
- * 获取商品推荐
+ * 获取商品推荐（带重试和缓存降级）
  * @param {string} apiKey - API Key
  * @param {string} productId - 商品ID
  * @param {number} limit - 返回数量
- * @returns {Promise<{productId: string, recommendations: Array}>}
+ * @param {number} retries - 重试次数
+ * @returns {Promise<{productId: string, recommendations: Array, fromCache?: boolean}>}
  */
-export async function getRecommendations(apiKey, productId, limit = 3) {
+export async function getRecommendations(apiKey, productId, limit = 3, retries = 2) {
   const url = `${BACKEND_URL}/api/recommendations/${productId}?limit=${limit}`;
-  console.log('[BackendAPI] Fetching recommendations from:', url);
-  console.log('[BackendAPI] Using API key:', apiKey?.slice(0, 10) + '...');
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'X-API-Key': apiKey,
-      },
-    });
+  // 尝试从缓存获取
+  const cached = getCachedRecommendations(productId, limit);
 
-    console.log('[BackendAPI] Response status:', response.status);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error('[BackendAPI] Error response:', error);
-      throw new Error(error.error || `Get recommendations failed: ${response.status}`);
+    try {
+      console.log(`[BackendAPI] Attempt ${attempt + 1}/${retries + 1}: Fetching from ${url}`);
+      console.log('[BackendAPI] Using API key:', apiKey?.slice(0, 10) + '...');
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'X-API-Key': apiKey },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      console.log('[BackendAPI] Response status:', response.status);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[BackendAPI] Error response:', error);
+        throw new Error(error.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('[BackendAPI] Success! Got', data.recommendations?.length || 0, 'recommendations');
+
+      // 成功时更新缓存
+      if (data.recommendations?.length > 0) {
+        setCachedRecommendations(productId, limit, data.recommendations);
+      }
+
+      return { ...data, fromCache: false };
+
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      const errorMsg = error.name === 'AbortError' ? 'Request timeout' : error.message;
+      console.error(`[BackendAPI] Attempt ${attempt + 1} failed:`, errorMsg);
+
+      // 最后一次重试失败
+      if (attempt === retries) {
+        console.error('[BackendAPI] All retries failed');
+
+        // 尝试使用缓存降级
+        if (cached) {
+          console.warn('[BackendAPI] ⚠️ Using cached recommendations as fallback');
+          return {
+            productId,
+            recommendations: cached,
+            fromCache: true,
+            cacheWarning: 'Backend temporarily unavailable, showing cached results',
+          };
+        }
+
+        // 没有缓存，返回空结果
+        console.warn('[BackendAPI] ⚠️ No cache available, returning empty recommendations');
+        return {
+          productId,
+          recommendations: [],
+          fromCache: false,
+          error: 'Service temporarily unavailable',
+        };
+      }
+
+      // 指数退避：等待后重试
+      const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+      console.log(`[BackendAPI] Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
-
-    const data = await response.json();
-    console.log('[BackendAPI] Got recommendations:', data.recommendations?.length || 0);
-    return data;
-  } catch (error) {
-    console.error('[BackendAPI] Error in getRecommendations:', error.message);
-    console.error('[BackendAPI] Stack:', error.stack);
-    throw error;
   }
+
+  // 理论上不会到这里，但为了类型安全
+  return { productId, recommendations: [], fromCache: false };
 }
 
 /**
