@@ -625,13 +625,19 @@
       // 用于追踪的数字 ID
       const trackingId = rec.numericId || (rec.id ? rec.id.replace('gid://shopify/Product/', '') : '');
 
+      // 过滤推荐理由：如果包含中文|英文格式，只保留英文部分
+      let reasoning = rec.reasoning || '';
+      if (reasoning.includes('|')) {
+        reasoning = reasoning.split('|')[1].trim();
+      }
+
       return `
         <div class="cart-whisper-popup-product">
           <a href="${productUrl}">
             <img class="cart-whisper-popup-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
           </a>
           <div class="cart-whisper-popup-product-info">
-            ${rec.reasoning ? `<p class="cart-whisper-popup-product-reason">${escapeHtml(rec.reasoning)}</p>` : ''}
+            ${reasoning ? `<p class="cart-whisper-popup-product-reason">${escapeHtml(reasoning)}</p>` : ''}
             <a href="${productUrl}" style="text-decoration:none;color:inherit;">
               <h4 class="cart-whisper-popup-product-title">${escapeHtml(rec.title)}</h4>
             </a>
