@@ -33,6 +33,36 @@ model Session {
   refreshTokenExpires DateTime?
 }
 
+// 订阅信息表 - 存储Shopify订阅状态
+model Subscription {
+  id                    String    @id @default(cuid())
+  shop                  String    @unique // 店铺域名
+
+  // 订阅信息
+  plan                  String    @default("free") // free, pro
+  status                String    @default("active") // active, cancelled, expired
+
+  // Shopify订阅ID（仅Pro版本有）
+  shopifySubscriptionId String?   @unique
+  shopifyChargeId       String?
+
+  // 测试模式标记
+  isTestMode            Boolean   @default(false)
+
+  // 订阅时间
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  trialEndsAt           DateTime?
+  cancelledAt           DateTime?
+
+  // 时间戳
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([shop, status])
+  @@index([plan])
+}
+
 // 商品推荐匹配表 - 存储商品A对应推荐商品B的信息
 model ProductRecommendation {
   id                  String    @id @default(cuid())

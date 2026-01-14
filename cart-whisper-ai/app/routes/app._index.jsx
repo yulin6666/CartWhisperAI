@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
+import { getSubscription, PLANS } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
+  const url = new URL(request.url);
 
   let apiKey = null;
   let recommendations = [];
@@ -14,8 +16,12 @@ export async function loader({ request }) {
   let syncStatus = null;
   let statistics = null;
   let error = null;
+  let subscription = null;
 
   try {
+    // 获取订阅信息
+    subscription = await getSubscription(shop);
+
     apiKey = await getApiKey(shop);
 
     if (apiKey) {
@@ -53,34 +59,22 @@ export async function loader({ request }) {
     stats,
     syncStatus,
     statistics,
+    subscription,
     error,
+    // 查询参数用于显示通知
+    upgraded: url.searchParams.get('upgraded') === 'true',
+    upgradeFailed: url.searchParams.get('upgrade_failed') === 'true',
+    cancelled: url.searchParams.get('cancelled') === 'true',
+    isTestMode: process.env.NODE_ENV === 'development',
   };
 }
 
-// Action: Handle plan toggle and reset actions
+// Action: Handle reset API usage
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const actionType = formData.get('_action');
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
-
-  if (actionType === 'togglePlan') {
-    const currentPlan = formData.get('currentPlan');
-    const newPlan = currentPlan === 'pro' ? 'free' : 'pro';
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: newPlan }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update plan');
-      return { success: true, newPlan, action: 'togglePlan' };
-    } catch (e) {
-      return { success: false, error: e.message };
-    }
-  }
 
   if (actionType === 'resetApiUsage') {
     try {
@@ -101,17 +95,35 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
-  const { shop, backendUrl, isRegistered, recommendations, stats, syncStatus, statistics, error } = useLoaderData();
+  const {
+    shop,
+    backendUrl,
+    isRegistered,
+    recommendations,
+    stats,
+    syncStatus,
+    statistics,
+    subscription,
+    error,
+    upgraded,
+    upgradeFailed,
+    cancelled,
+    isTestMode,
+  } = useLoaderData();
+
   const planFetcher = useFetcher();
+  const billingFetcher = useFetcher();
   const revalidator = useRevalidator();
-  const isTogglingPlan = planFetcher.state === 'submitting';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('sourceProductId');
   const [activeTab, setActiveTab] = useState('overview');
+  const [showNotification, setShowNotification] = useState(null);
 
-  // Get current plan
-  const currentPlan = planFetcher.data?.newPlan || syncStatus?.plan || 'free';
+  // Get current plan from subscription
+  const currentPlan = subscription?.plan || 'free';
+  const isPro = currentPlan === 'pro' && subscription?.status === 'active';
+  const planFeatures = isPro ? PLANS.PRO.features : PLANS.FREE.features;
 
   // Revalidate after action
   useEffect(() => {
@@ -120,12 +132,37 @@ export default function Index() {
     }
   }, [planFetcher.data]);
 
+  // Show notifications
+  useEffect(() => {
+    if (upgraded) {
+      setShowNotification({ type: 'success', message: 'Successfully upgraded to Pro Plan!' });
+    } else if (upgradeFailed) {
+      setShowNotification({ type: 'error', message: 'Upgrade failed. Please try again.' });
+    } else if (cancelled) {
+      setShowNotification({ type: 'info', message: 'Subscription cancelled. You are now on the Free Plan.' });
+    }
+  }, [upgraded, upgradeFailed, cancelled]);
+
   // Format date helper
   const formatDate = (dateStr) => {
     if (!dateStr) return 'Never';
     return new Date(dateStr).toLocaleDateString('zh-CN', {
       year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
+  };
+
+  const handleUpgrade = () => {
+    billingFetcher.submit(
+      { action: 'upgrade' },
+      { method: 'post', action: '/app/billing' }
+    );
+  };
+
+  const handleTestToggle = () => {
+    billingFetcher.submit(
+      { action: 'toggle_test' },
+      { method: 'post', action: '/app/billing' }
+    );
   };
 
   if (!isRegistered) {
@@ -185,6 +222,37 @@ export default function Index() {
         Manage your product recommendations and monitor performance.
       </p>
 
+      {/* Notifications */}
+      {showNotification && (
+        <div
+          style={{
+            padding: '15px 20px',
+            marginBottom: '20px',
+            borderRadius: '8px',
+            backgroundColor: showNotification.type === 'success' ? '#d4edda' : showNotification.type === 'error' ? '#f8d7da' : '#d1ecf1',
+            color: showNotification.type === 'success' ? '#155724' : showNotification.type === 'error' ? '#721c24' : '#0c5460',
+            border: `1px solid ${showNotification.type === 'success' ? '#c3e6cb' : showNotification.type === 'error' ? '#f5c6cb' : '#bee5eb'}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>{showNotification.message}</span>
+          <button
+            onClick={() => setShowNotification(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '18px',
+              cursor: 'pointer',
+              color: 'inherit',
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div style={{ display: 'flex', gap: '0', marginBottom: '30px', borderBottom: '2px solid #e0e0e0' }}>
         {[
@@ -235,29 +303,68 @@ export default function Index() {
             <StatCard
               icon="⭐"
               label="Plan"
-              value={currentPlan.toUpperCase()}
-              color={currentPlan === 'pro' ? '#f57c00' : '#388e3c'}
-              bgColor={currentPlan === 'pro' ? '#fff3e0' : '#e8f5e9'}
+              value={
+                <div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold' }}>
+                    {currentPlan.toUpperCase()}
+                  </div>
+                  {subscription?.isTestMode && (
+                    <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
+                      (Test Mode)
+                    </div>
+                  )}
+                </div>
+              }
+              color={isPro ? '#f57c00' : '#388e3c'}
+              bgColor={isPro ? '#fff3e0' : '#e8f5e9'}
               extra={
-                <planFetcher.Form method="post" style={{ marginTop: '8px' }}>
-                  <input type="hidden" name="_action" value="togglePlan" />
-                  <input type="hidden" name="currentPlan" value={currentPlan} />
-                  <button
-                    type="submit"
-                    disabled={isTogglingPlan}
-                    style={{
-                      padding: '4px 12px',
-                      fontSize: '11px',
-                      backgroundColor: currentPlan === 'pro' ? '#dc3545' : '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {isTogglingPlan ? '...' : `Switch to ${currentPlan === 'pro' ? 'Free' : 'Pro'}`}
-                  </button>
-                </planFetcher.Form>
+                <div style={{ marginTop: '8px' }}>
+                  {!isPro ? (
+                    <button
+                      onClick={handleUpgrade}
+                      disabled={billingFetcher.state === 'submitting'}
+                      style={{
+                        padding: '6px 16px',
+                        fontSize: '12px',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {billingFetcher.state === 'submitting' ? 'Processing...' : '⬆️ Upgrade to Pro'}
+                    </button>
+                  ) : (
+                    <div style={{ fontSize: '11px', color: '#666' }}>
+                      <div>✓ All features unlocked</div>
+                      {subscription?.currentPeriodEnd && (
+                        <div style={{ marginTop: '4px' }}>
+                          Renews: {formatDate(subscription.currentPeriodEnd)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isTestMode && (
+                    <button
+                      onClick={handleTestToggle}
+                      disabled={billingFetcher.state === 'submitting'}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '10px',
+                        backgroundColor: '#6c757d',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginTop: '6px',
+                      }}
+                    >
+                      🧪 Test: Switch to {isPro ? 'Free' : 'Pro'}
+                    </button>
+                  )}
+                </div>
               }
             />
             <StatCard
