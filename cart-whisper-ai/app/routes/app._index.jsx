@@ -383,7 +383,7 @@ export default function Index() {
                 <input type="hidden" name="_action" value="resetApiUsage" />
                 <button
                   type="submit"
-                  disabled={isTogglingPlan}
+                  disabled={planFetcher.state === 'submitting'}
                   style={{
                     padding: '6px 12px',
                     fontSize: '12px',
