@@ -29,15 +29,7 @@
 
     <div class="cart-whisper-popup-divider"></div>
 
-    <div class="cart-whisper-popup-recommendations">
-      <!-- 缓存状态提示 -->
-      <div id="cart-whisper-cache-warning" class="cart-whisper-cache-warning" style="display: none;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-        <span>Showing cached recommendations</span>
-      </div>
-
+    <div class="cart-whisper-popup-recommendations"> 
       <div class="cart-whisper-popup-products" id="cart-whisper-popup-products">
         <!-- Products loaded dynamically -->
       </div>
@@ -418,7 +410,8 @@
   console.log('[CartWhisper Popup] === DEBUG INFO ===');
   console.log('[CartWhisper Popup] Shop:', shop);
   console.log('[CartWhisper Popup] Limit:', limit);
-  console.log('[CartWhisper Popup] Using App Proxy for recommendations');
+  console.log('[CartWhisper Popup] Using direct backend connection');
+  console.log('[CartWhisper Popup] Backend URL:', backendUrl);
   console.log('[CartWhisper Popup] =================');
 
   // 关闭弹窗
@@ -442,6 +435,54 @@
       cartWhisperClosePopup();
     }
   });
+
+  // ===== localStorage 缓存管理器 =====
+  const CACHE_PREFIX = 'cartwhisper_rec_';
+  const CACHE_TTL = 3600000; // 1小时（毫秒）
+
+  // 从 localStorage 获取缓存
+  function getLocalCache(productId) {
+    try {
+      const key = CACHE_PREFIX + productId + '_' + limit;
+      const cached = localStorage.getItem(key);
+      if (!cached) {
+        console.log('[CartWhisper Cache] No local cache for product', productId);
+        return null;
+      }
+
+      const data = JSON.parse(cached);
+      const age = Date.now() - data.timestamp;
+
+      if (age > CACHE_TTL) {
+        console.log('[CartWhisper Cache] Cache expired (age:', Math.round(age/1000), 's)');
+        localStorage.removeItem(key);
+        return null;
+      }
+
+      console.log('[CartWhisper Cache] ✓ Cache hit! (age:', Math.round(age/1000), 's)');
+      return data.recommendations;
+    } catch (e) {
+      console.error('[CartWhisper Cache] Error reading cache:', e);
+      return null;
+    }
+  }
+
+  // 保存到 localStorage
+  function setLocalCache(productId, recommendations) {
+    try {
+      const key = CACHE_PREFIX + productId + '_' + limit;
+      const data = {
+        recommendations: recommendations,
+        timestamp: Date.now(),
+        productId: productId,
+        limit: limit
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+      console.log('[CartWhisper Cache] ✓ Cached', recommendations.length, 'recommendations');
+    } catch (e) {
+      console.error('[CartWhisper Cache] Error saving cache:', e);
+    }
+  }
 
   // 追踪展示（当推荐显示时）
   function trackImpression(sourceProductId, recommendations) {
@@ -496,10 +537,19 @@
 
   // 获取推荐（带重试和降级）
   async function fetchRecommendations(productId) {
-    // 直接调用后端公开接口，不需要 App Proxy
-    const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+    // 1. 先检查本地缓存
+    const cached = getLocalCache(productId);
+    if (cached && cached.length > 0) {
+      console.log('[CartWhisper] Using local cache, skipping server request');
+      // 显示缓存警告
+      const warningEl = document.getElementById('cart-whisper-cache-warning');
+      if (warningEl) warningEl.style.display = 'flex';
+      return cached;
+    }
 
-    console.log('[CartWhisper Popup] Fetching recommendations:', fetchUrl);
+    // 2. 没有缓存，直接从后端获取
+    const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+    console.log('[CartWhisper Popup] No cache, fetching from backend:', fetchUrl);
 
     const maxRetries = 2;
 
@@ -528,16 +578,18 @@
         const data = await response.json();
         console.log('[CartWhisper] Got recommendations:', data);
 
-        // 显示缓存警告（如果是缓存数据）
-        const warningEl = document.getElementById('cart-whisper-cache-warning');
-        if (data.fromCache && warningEl) {
-          warningEl.style.display = 'flex';
-          console.log('[CartWhisper] Showing cached data warning');
-        } else if (warningEl) {
-          warningEl.style.display = 'none';
+        const recommendations = data.recommendations || [];
+
+        // 3. 保存到本地缓存
+        if (recommendations.length > 0) {
+          setLocalCache(productId, recommendations);
         }
 
-        return data.recommendations || [];
+        // 隐藏缓存警告（这是新数据）
+        const warningEl = document.getElementById('cart-whisper-cache-warning');
+        if (warningEl) warningEl.style.display = 'none';
+
+        return recommendations;
 
       } catch (error) {
         const errorMsg = error.name === 'AbortError' ? 'Request timeout' : error.message;

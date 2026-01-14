@@ -291,9 +291,9 @@
       return cached;
     }
 
-    // 直接调用后端公开接口，不需要 App Proxy
+    // 直接调用后端公开接口
     const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper] Fetching recommendations:', fetchUrl);
+    console.log('[CartWhisper] Fetching recommendations from backend:', fetchUrl);
 
     try {
       const response = await fetch(fetchUrl);

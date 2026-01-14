@@ -132,6 +132,8 @@ async function handleRecommendations(request, headers) {
         shop,
         count: formattedRecommendations.length,
         recommendations: formattedRecommendations,
+        fromCache: result.fromCache || false,
+        cacheWarning: result.cacheWarning,
       }),
       { status: 200, headers }
     );
