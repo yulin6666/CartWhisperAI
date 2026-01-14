@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
-import { getSubscription, PLANS } from '../utils/billing.server';
+import { getSubscription } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
@@ -123,7 +123,6 @@ export default function Index() {
   // Get current plan from subscription
   const currentPlan = subscription?.plan || 'free';
   const isPro = currentPlan === 'pro' && subscription?.status === 'active';
-  const planFeatures = isPro ? PLANS.PRO.features : PLANS.FREE.features;
 
   // Revalidate after action
   useEffect(() => {
