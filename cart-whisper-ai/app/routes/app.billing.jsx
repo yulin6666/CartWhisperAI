@@ -3,7 +3,7 @@
  * 处理订阅创建、升级、降级
  */
 
-import { json, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import { authenticate } from '../shopify.server';
 import { createSubscription, getSubscription, togglePlanTestMode } from '../utils/billing.server';
 
@@ -13,10 +13,10 @@ export async function loader({ request }) {
 
   const subscription = await getSubscription(shop);
 
-  return json({
+  return {
     subscription,
     isTestMode: process.env.NODE_ENV === 'development',
-  });
+  };
 }
 
 export async function action({ request }) {
@@ -37,17 +37,17 @@ export async function action({ request }) {
     if (action === 'toggle_test') {
       // 测试模式：切换计划
       if (process.env.NODE_ENV !== 'development') {
-        return json({ error: 'Test mode only available in development' }, { status: 403 });
+        return Response.json({ error: 'Test mode only available in development' }, { status: 403 });
       }
 
       const newPlan = await togglePlanTestMode(shop);
-      return json({ success: true, newPlan });
+      return { success: true, newPlan };
     }
 
-    return json({ error: 'Invalid action' }, { status: 400 });
+    return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     console.error('[Billing] Action error:', error);
-    return json({ error: error.message }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }
 
