@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
-import { getSubscription } from '../utils/billing.server';
+import { getSubscription, getPlanFeatures } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
@@ -17,10 +17,12 @@ export async function loader({ request }) {
   let statistics = null;
   let error = null;
   let subscription = null;
+  let planFeatures = null;
 
   try {
     // 获取订阅信息
     subscription = await getSubscription(shop);
+    planFeatures = await getPlanFeatures(shop);
 
     apiKey = await getApiKey(shop);
 
@@ -60,6 +62,7 @@ export async function loader({ request }) {
     syncStatus,
     statistics,
     subscription,
+    planFeatures,
     error,
     // 查询参数用于显示通知
     upgraded: url.searchParams.get('upgraded') === 'true',
@@ -104,6 +107,7 @@ export default function Index() {
     syncStatus,
     statistics,
     subscription,
+    planFeatures,
     error,
     upgraded,
     upgradeFailed,
@@ -125,6 +129,7 @@ export default function Index() {
   const isPro = currentPlan === 'pro' && subscription?.status === 'active';
   const isMax = currentPlan === 'max' && subscription?.status === 'active';
   const isPaid = (isPro || isMax) && subscription?.status === 'active';
+  const hasAdvancedAnalytics = planFeatures?.analytics === 'advanced';
 
   // Revalidate after action
   useEffect(() => {
@@ -423,63 +428,6 @@ export default function Index() {
             />
           </div>
 
-          {/* API Usage Section */}
-          <div style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', padding: '24px', marginBottom: '30px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px' }}>API Usage (Today)</h2>
-              <planFetcher.Form method="post">
-                <input type="hidden" name="_action" value="resetApiUsage" />
-                <button
-                  type="submit"
-                  disabled={planFetcher.state === 'submitting'}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Reset (Test)
-                </button>
-              </planFetcher.Form>
-            </div>
-
-            {syncStatus?.apiUsage ? (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 'bold' }}>
-                    {syncStatus.apiUsage.used.toLocaleString()}
-                  </span>
-                  <span style={{ fontSize: '14px', color: '#666' }}>
-                    / {syncStatus.apiUsage.limit.toLocaleString()} calls
-                  </span>
-                </div>
-                <div style={{ height: '12px', backgroundColor: '#e0e0e0', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
-                  <div
-                    style={{
-                      width: `${syncStatus.apiUsage.percentage}%`,
-                      height: '100%',
-                      backgroundColor: syncStatus.apiUsage.percentage > 80 ? '#dc3545' : syncStatus.apiUsage.percentage > 50 ? '#ffc107' : '#28a745',
-                      transition: 'width 0.3s ease',
-                    }}
-                  />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#666' }}>
-                  <span>{syncStatus.apiUsage.percentage}% used</span>
-                  <span>{syncStatus.apiUsage.remaining.toLocaleString()} remaining</span>
-                </div>
-                <div style={{ marginTop: '12px', fontSize: '12px', color: '#999' }}>
-                  Resets at: {formatDate(syncStatus.apiUsage.resetsAt)}
-                </div>
-              </>
-            ) : (
-              <p style={{ color: '#999' }}>No usage data available</p>
-            )}
-          </div>
-
           {/* Quick Actions */}
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <Link
@@ -627,13 +575,34 @@ export default function Index() {
               color="#388e3c"
               bgColor="#e8f5e9"
             />
-            <StatCard
-              icon="📊"
-              label="Click-through Rate"
-              value={`${statistics?.summary?.ctr || 0}%`}
-              color="#f57c00"
-              bgColor="#fff3e0"
-            />
+            {/* CTR - Locked for Free Users */}
+            <div style={{ position: 'relative' }}>
+              <StatCard
+                icon="📊"
+                label="Click-through Rate"
+                value={hasAdvancedAnalytics ? `${statistics?.summary?.ctr || 0}%` : '••••'}
+                color="#f57c00"
+                bgColor="#fff3e0"
+              />
+              {!hasAdvancedAnalytics && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                }}>
+                  🔒
+                </div>
+              )}
+            </div>
             <StatCard
               icon="💰"
               label="Revenue Attribution"
@@ -656,9 +625,9 @@ export default function Index() {
 
           {/* Top Performing Recommendations */}
           {statistics?.topByClicks?.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
+            <div style={{ marginBottom: '30px', position: 'relative' }}>
               <h3 style={{ marginBottom: '15px' }}>Top Recommendations by Clicks</h3>
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowX: 'auto', filter: !hasAdvancedAnalytics ? 'blur(8px)' : 'none', pointerEvents: !hasAdvancedAnalytics ? 'none' : 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
@@ -682,14 +651,32 @@ export default function Index() {
                   </tbody>
                 </table>
               </div>
+              {!hasAdvancedAnalytics && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'white',
+                  padding: '20px 30px',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  textAlign: 'center',
+                  zIndex: 10,
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔒</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>PRO Feature</div>
+                  <div style={{ fontSize: '14px', color: '#666' }}>Upgrade to view detailed analytics</div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Top Source Products */}
           {statistics?.topSourceProducts?.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
+            <div style={{ marginBottom: '30px', position: 'relative' }}>
               <h3 style={{ marginBottom: '15px' }}>Top Products by Impressions</h3>
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowX: 'auto', filter: !hasAdvancedAnalytics ? 'blur(8px)' : 'none', pointerEvents: !hasAdvancedAnalytics ? 'none' : 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
@@ -718,6 +705,24 @@ export default function Index() {
                   </tbody>
                 </table>
               </div>
+              {!hasAdvancedAnalytics && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'white',
+                  padding: '20px 30px',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  textAlign: 'center',
+                  zIndex: 10,
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔒</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>PRO Feature</div>
+                  <div style={{ fontSize: '14px', color: '#666' }}>Upgrade to view detailed analytics</div>
+                </div>
+              )}
             </div>
           )}
 
