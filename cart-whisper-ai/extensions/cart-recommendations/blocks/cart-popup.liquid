@@ -42,6 +42,11 @@
         {{ block.settings.checkout_text }}
       </a>
     </div>
+
+    <!-- Watermark (shown for free users) -->
+    <div id="cart-whisper-watermark" class="cart-whisper-watermark" style="display: none;">
+      <span>🤖 Powered by <a href="https://cartwhisper.ai" target="_blank" rel="noopener">CartWhisper AI</a></span>
+    </div>
   </div>
 </div>
 
@@ -292,6 +297,24 @@
 
   .cart-whisper-cache-warning svg {
     flex-shrink: 0;
+  }
+
+  .cart-whisper-watermark {
+    padding: 12px 24px;
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .cart-whisper-watermark a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .cart-whisper-watermark a:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 500px) {
@@ -579,6 +602,7 @@
 
         let recommendations = data.recommendations || [];
         const maxRecommendations = data.maxRecommendations || 1;
+        const showWatermark = data.showWatermark !== false; // 默认显示水印
 
         // 🔥 前端双重检查：确保不超过订阅计划限制
         if (recommendations.length > maxRecommendations) {
@@ -587,6 +611,13 @@
         }
 
         console.log(`[CartWhisper] Final recommendations count: ${recommendations.length} (max: ${maxRecommendations})`);
+        console.log(`[CartWhisper] Show watermark: ${showWatermark}`);
+
+        // 显示/隐藏水印
+        const watermarkEl = document.getElementById('cart-whisper-watermark');
+        if (watermarkEl) {
+          watermarkEl.style.display = showWatermark ? 'block' : 'none';
+        }
 
         // 3. 保存到本地缓存
         if (recommendations.length > 0) {
