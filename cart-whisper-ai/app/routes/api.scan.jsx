@@ -139,7 +139,7 @@ export async function action({ request }) {
 
     // 3. 从 Shopify 获取所有商品
     console.log('📦 Fetching products from Shopify...');
-    const products = await getAllProducts(admin);
+    let products = await getAllProducts(admin);
     console.log(`✅ Got ${products.length} products`);
 
     if (products.length === 0) {
