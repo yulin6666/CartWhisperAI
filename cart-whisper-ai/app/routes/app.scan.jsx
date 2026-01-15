@@ -346,6 +346,48 @@ export default function ScanPage() {
                   Mode: {fetcher.data.mode || 'auto'}
                 </span>
               </h3>
+
+              {/* Upgrade Banner for Partial Sync */}
+              {fetcher.data.partialSync && (
+                <div style={{
+                  backgroundColor: '#fff3e0',
+                  borderRadius: '8px',
+                  padding: '16px 20px',
+                  marginBottom: '20px',
+                  border: '2px solid #ff9800',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '15px'
+                }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', color: '#e65100', fontSize: '16px' }}>
+                      ⚠️ Product Limit Reached
+                    </h4>
+                    <p style={{ margin: 0, color: '#e65100', fontSize: '14px' }}>
+                      Synced {fetcher.data.maxProducts} of {fetcher.data.actualProducts} products.
+                      Your {fetcher.data.currentPlan?.toUpperCase()} plan allows up to {fetcher.data.maxProducts} products.
+                      Upgrade to sync all your products!
+                    </p>
+                  </div>
+                  <Link
+                    to="/app/billing"
+                    style={{
+                      padding: '10px 24px',
+                      backgroundColor: '#ff9800',
+                      color: 'white',
+                      borderRadius: '6px',
+                      textDecoration: 'none',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    ⬆️ Upgrade Now
+                  </Link>
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
                 <div style={{ backgroundColor: 'rgba(255,255,255,0.7)', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#155724', marginBottom: '8px' }}>

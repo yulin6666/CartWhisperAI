@@ -157,17 +157,13 @@ export async function action({ request }) {
     const currentPlan = await getCurrentPlan(shop);
     const maxProducts = planFeatures.maxProducts;
 
+    let partialSync = false;
+    let originalProductCount = products.length;
+
     if (maxProducts !== Infinity && products.length > maxProducts) {
-      console.log(`⚠️ Product limit exceeded: ${products.length} > ${maxProducts} (${currentPlan} plan)`);
-      return {
-        success: false,
-        error: `Product limit exceeded. Your ${currentPlan} plan allows up to ${maxProducts} products, but you have ${products.length} products.`,
-        limitExceeded: true,
-        currentPlan: currentPlan,
-        maxProducts: maxProducts,
-        actualProducts: products.length,
-        upgradeRequired: true,
-      };
+      console.log(`⚠️ Product limit exceeded: ${products.length} > ${maxProducts} (${currentPlan} plan), syncing first ${maxProducts} products`);
+      products = products.slice(0, maxProducts);
+      partialSync = true;
     }
 
     // 4. 同步到后端（使用指定的模式）
@@ -179,7 +175,7 @@ export async function action({ request }) {
 
     return {
       success: true,
-      message: 'Scan completed successfully',
+      message: partialSync ? `Synced ${maxProducts} of ${originalProductCount} products` : 'Scan completed successfully',
       mode: syncResult.mode,
       productsCount: syncResult.products,
       recommendationsCount: syncResult.totalRecommendations || syncResult.recommendations,
@@ -187,6 +183,12 @@ export async function action({ request }) {
       duration: `${duration}s`,
       canRefresh: syncResult.canRefresh,
       nextRefreshAt: syncResult.nextRefreshAt,
+      partialSync: partialSync,
+      limitExceeded: partialSync,
+      currentPlan: currentPlan,
+      maxProducts: maxProducts,
+      actualProducts: originalProductCount,
+      upgradeRequired: partialSync,
     };
   } catch (error) {
     console.error('❌ Scan error:', error);
