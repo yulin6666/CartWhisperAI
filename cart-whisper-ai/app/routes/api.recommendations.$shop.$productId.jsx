@@ -59,7 +59,7 @@ export async function loader({ params, request }) {
     const result = await getRecommendations(apiKey, numericProductId, limit);
 
     // 格式化返回数据
-    const formattedRecommendations = (result.recommendations || []).map((rec) => {
+    let formattedRecommendations = (result.recommendations || []).map((rec) => {
       // 处理推荐理由：如果包含中文|英文格式，只保留英文部分
       let reasoning = rec.reason || '';
       if (reasoning.includes('|')) {
@@ -77,6 +77,12 @@ export async function loader({ params, request }) {
       };
     });
 
+    // 🔥 重要：再次确保不超过订阅计划允许的数量
+    if (formattedRecommendations.length > maxRecommendations) {
+      console.log(`[API Recommendations] Trimming from ${formattedRecommendations.length} to ${maxRecommendations}`);
+      formattedRecommendations = formattedRecommendations.slice(0, maxRecommendations);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -84,6 +90,7 @@ export async function loader({ params, request }) {
         shop,
         count: formattedRecommendations.length,
         recommendations: formattedRecommendations,
+        maxRecommendations: maxRecommendations, // 🔥 返回计划允许的最大推荐数
         fromCache: result.fromCache || false, // 标识是否来自缓存
         cacheWarning: result.cacheWarning, // 缓存警告信息
         showWatermark: showWatermark, // 是否显示水印

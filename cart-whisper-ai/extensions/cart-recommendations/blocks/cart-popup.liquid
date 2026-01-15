@@ -577,7 +577,16 @@
         const data = await response.json();
         console.log('[CartWhisper] Got recommendations:', data);
 
-        const recommendations = data.recommendations || [];
+        let recommendations = data.recommendations || [];
+        const maxRecommendations = data.maxRecommendations || 1;
+
+        // 🔥 前端双重检查：确保不超过订阅计划限制
+        if (recommendations.length > maxRecommendations) {
+          console.log(`[CartWhisper] Front-end trimming from ${recommendations.length} to ${maxRecommendations}`);
+          recommendations = recommendations.slice(0, maxRecommendations);
+        }
+
+        console.log(`[CartWhisper] Final recommendations count: ${recommendations.length} (max: ${maxRecommendations})`);
 
         // 3. 保存到本地缓存
         if (recommendations.length > 0) {
