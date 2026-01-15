@@ -608,11 +608,9 @@ export default function Index() {
                             fontWeight: '500',
                             fontSize: '13px',
                             color: '#333',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            lineHeight: '1.4',
+                            wordBreak: 'break-word',
                           }}
-                          title={product.title}
                         >
                           {product.title}
                         </div>
