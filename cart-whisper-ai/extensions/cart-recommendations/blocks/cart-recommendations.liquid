@@ -6,7 +6,6 @@
 <div id="cart-whisper-recommendations"
      class="cart-whisper-container"
      data-shop="{{ shop.permanent_domain }}"
-     data-limit="{{ block.settings.limit }}"
      style="display: none;">
 
   <div class="cart-whisper-header">
@@ -198,7 +197,7 @@
   if (!container) return;
 
   const shop = container.dataset.shop;
-  const limit = parseInt(container.dataset.limit, 10) || 1;
+  const limit = 6; // 请求最大数量，后端会根据订阅计划限制实际返回数量
   const productsList = document.getElementById('cart-whisper-products-list');
   const loadingEl = document.getElementById('cart-whisper-loading');
 
@@ -543,15 +542,6 @@
       "id": "subtitle",
       "label": "Subtitle",
       "default": "Based on what's in your cart"
-    },
-    {
-      "type": "range",
-      "id": "limit",
-      "label": "Number of recommendations",
-      "min": 1,
-      "max": 6,
-      "step": 1,
-      "default": 1
     },
     {
       "type": "header",

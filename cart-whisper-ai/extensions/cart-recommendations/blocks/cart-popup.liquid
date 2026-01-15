@@ -7,7 +7,6 @@
 <div id="cart-whisper-popup"
      class="cart-whisper-popup-overlay"
      data-shop="{{ shop.permanent_domain }}"
-     data-limit="{{ block.settings.limit }}"
      style="display: none;">
 
   <div class="cart-whisper-popup-modal">
@@ -397,7 +396,7 @@
   if (!popup) return;
 
   const shop = popup.dataset.shop;
-  const limit = parseInt(popup.dataset.limit, 10) || 1;
+  const limit = 6; // 请求最大数量，后端会根据订阅计划限制实际返回数量
   const productsContainer = document.getElementById('cart-whisper-popup-products');
 
   // 后端 API URL（用于追踪）
@@ -754,15 +753,6 @@
   "name": "Cart Popup",
   "target": "body",
   "settings": [
-    {
-      "type": "range",
-      "id": "limit",
-      "label": "Number of recommendations",
-      "min": 1,
-      "max": 4,
-      "step": 1,
-      "default": 1
-    },
     {
       "type": "header",
       "content": "Success Message"

@@ -20,7 +20,7 @@ function getCacheKey(productId, limit) {
  * @param {number} limit - 推荐数量
  * @returns {Array|null} 缓存的推荐数组或null
  */
-export function getCachedRecommendations(productId, limit = 3) {
+export function getCachedRecommendations(productId, limit = 1) {
   const key = getCacheKey(productId, limit);
   const cached = cache.get(key);
 
