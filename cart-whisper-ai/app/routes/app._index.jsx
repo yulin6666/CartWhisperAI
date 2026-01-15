@@ -123,6 +123,8 @@ export default function Index() {
   // Get current plan from subscription
   const currentPlan = subscription?.plan || 'free';
   const isPro = currentPlan === 'pro' && subscription?.status === 'active';
+  const isMax = currentPlan === 'max' && subscription?.status === 'active';
+  const isPaid = (isPro || isMax) && subscription?.status === 'active';
 
   // Revalidate after action
   useEffect(() => {
@@ -150,9 +152,9 @@ export default function Index() {
     });
   };
 
-  const handleUpgrade = () => {
+  const handleUpgrade = (plan = 'PRO') => {
     billingFetcher.submit(
-      { action: 'upgrade' },
+      { action: 'upgrade', plan },
       { method: 'post', action: '/app/billing' }
     );
   };
@@ -314,27 +316,73 @@ export default function Index() {
                   )}
                 </div>
               }
-              color={isPro ? '#f57c00' : '#388e3c'}
-              bgColor={isPro ? '#fff3e0' : '#e8f5e9'}
+              color={isMax ? '#9c27b0' : (isPro ? '#f57c00' : '#388e3c')}
+              bgColor={isMax ? '#f3e5f5' : (isPro ? '#fff3e0' : '#e8f5e9')}
               extra={
                 <div style={{ marginTop: '8px' }}>
-                  {!isPro ? (
-                    <button
-                      onClick={handleUpgrade}
-                      disabled={billingFetcher.state === 'submitting'}
-                      style={{
-                        padding: '6px 16px',
-                        fontSize: '12px',
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {billingFetcher.state === 'submitting' ? 'Processing...' : '⬆️ Upgrade to Pro'}
-                    </button>
+                  {!isPaid ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <button
+                        onClick={() => handleUpgrade('PRO')}
+                        disabled={billingFetcher.state === 'submitting'}
+                        style={{
+                          padding: '6px 16px',
+                          fontSize: '12px',
+                          backgroundColor: '#ff9800',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {billingFetcher.state === 'submitting' ? 'Processing...' : '⬆️ Upgrade to PRO'}
+                      </button>
+                      <button
+                        onClick={() => handleUpgrade('MAX')}
+                        disabled={billingFetcher.state === 'submitting'}
+                        style={{
+                          padding: '6px 16px',
+                          fontSize: '12px',
+                          backgroundColor: '#9c27b0',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {billingFetcher.state === 'submitting' ? 'Processing...' : '⬆️ Upgrade to MAX'}
+                      </button>
+                    </div>
+                  ) : isPro ? (
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#666' }}>
+                        <div>✓ PRO features unlocked</div>
+                        {subscription?.currentPeriodEnd && (
+                          <div style={{ marginTop: '4px' }}>
+                            Renews: {formatDate(subscription.currentPeriodEnd)}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleUpgrade('MAX')}
+                        disabled={billingFetcher.state === 'submitting'}
+                        style={{
+                          padding: '4px 12px',
+                          fontSize: '11px',
+                          backgroundColor: '#9c27b0',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          marginTop: '6px',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        ⬆️ Upgrade to MAX
+                      </button>
+                    </div>
                   ) : (
                     <div style={{ fontSize: '11px', color: '#666' }}>
                       <div>✓ All features unlocked</div>
@@ -360,7 +408,7 @@ export default function Index() {
                         marginTop: '6px',
                       }}
                     >
-                      🧪 Test: Switch to {isPro ? 'Free' : 'Pro'}
+                      🧪 Test: Cycle Plan
                     </button>
                   )}
                 </div>

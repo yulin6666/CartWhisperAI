@@ -1,6 +1,7 @@
 import { authenticate } from '../shopify.server';
 import { getApiKey } from '../utils/shopConfig.server';
 import { syncProducts } from '../utils/backendApi.server';
+import { getPlanFeatures, getCurrentPlan } from '../utils/billing.server';
 
 // GraphQL 查询获取所有产品
 const PRODUCTS_QUERY = `
@@ -148,6 +149,24 @@ export async function action({ request }) {
         mode: 'none',
         productsCount: 0,
         recommendationsCount: 0,
+      };
+    }
+
+    // 3.5 检查商品数量限制
+    const planFeatures = await getPlanFeatures(shop);
+    const currentPlan = await getCurrentPlan(shop);
+    const maxProducts = planFeatures.maxProducts;
+
+    if (maxProducts !== Infinity && products.length > maxProducts) {
+      console.log(`⚠️ Product limit exceeded: ${products.length} > ${maxProducts} (${currentPlan} plan)`);
+      return {
+        success: false,
+        error: `Product limit exceeded. Your ${currentPlan} plan allows up to ${maxProducts} products, but you have ${products.length} products.`,
+        limitExceeded: true,
+        currentPlan: currentPlan,
+        maxProducts: maxProducts,
+        actualProducts: products.length,
+        upgradeRequired: true,
       };
     }
 

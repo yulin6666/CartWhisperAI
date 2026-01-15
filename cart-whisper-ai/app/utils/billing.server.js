@@ -17,22 +17,41 @@ export const PLANS = {
       apiCallsPerDay: 5000,
       manualRefreshPerMonth: 1,
       editableReasons: false,
-      analytics: true,
+      analytics: 'basic', // 只有曝光和点击数
+      showWatermark: true, // 显示水印
     },
   },
   PRO: {
     name: 'Pro Plan',
-    price: 29.99,
+    price: 19.99,
+    interval: 'EVERY_30_DAYS',
+    trialDays: 7,
+    features: {
+      maxProducts: 2000,
+      recommendationsPerProduct: 3,
+      apiCallsPerDay: 50000,
+      manualRefreshPerMonth: 4,
+      editableReasons: true,
+      analytics: 'advanced', // 包含转化率和Top推荐
+      prioritySupport: true,
+      showWatermark: false, // 不显示水印
+    },
+  },
+  MAX: {
+    name: 'Max Plan',
+    price: 49.99,
     interval: 'EVERY_30_DAYS',
     trialDays: 7,
     features: {
       maxProducts: Infinity,
-      recommendationsPerProduct: 2,
-      apiCallsPerDay: 50000,
-      manualRefreshPerMonth: 4,
+      recommendationsPerProduct: 3,
+      apiCallsPerDay: 100000,
+      manualRefreshPerMonth: 10,
       editableReasons: true,
-      analytics: true,
+      analytics: 'advanced', // 包含转化率和Top推荐
       prioritySupport: true,
+      premiumSupport: true,
+      showWatermark: false, // 不显示水印
     },
   },
 };
@@ -68,12 +87,44 @@ export async function hasProPlan(shop) {
 }
 
 /**
+ * 检查商店是否有Max订阅
+ */
+export async function hasMaxPlan(shop) {
+  const subscription = await getSubscription(shop);
+  return subscription.plan === 'max' && subscription.status === 'active';
+}
+
+/**
+ * 获取当前计划级别
+ */
+export async function getCurrentPlan(shop) {
+  const subscription = await getSubscription(shop);
+  if (subscription.status !== 'active') {
+    return 'FREE';
+  }
+  return subscription.plan.toUpperCase();
+}
+
+/**
+ * 检查是否有付费计划（PRO或MAX）
+ */
+export async function hasPaidPlan(shop) {
+  const subscription = await getSubscription(shop);
+  return (subscription.plan === 'pro' || subscription.plan === 'max') && subscription.status === 'active';
+}
+
+/**
  * 获取计划的功能限制
  */
 export async function getPlanFeatures(shop) {
   const subscription = await getSubscription(shop);
-  const isPro = subscription.plan === 'pro' && subscription.status === 'active';
-  return isPro ? PLANS.PRO.features : PLANS.FREE.features;
+
+  if (subscription.status !== 'active') {
+    return PLANS.FREE.features;
+  }
+
+  const plan = subscription.plan.toUpperCase();
+  return PLANS[plan]?.features || PLANS.FREE.features;
 }
 
 /**
@@ -264,6 +315,7 @@ export async function cancelSubscription(admin, shop) {
 
 /**
  * 测试模式：手动切换计划（仅开发环境）
+ * 循环切换：free -> pro -> max -> free
  */
 export async function togglePlanTestMode(shop) {
   if (process.env.NODE_ENV !== 'development') {
@@ -271,7 +323,16 @@ export async function togglePlanTestMode(shop) {
   }
 
   const subscription = await getSubscription(shop);
-  const newPlan = subscription.plan === 'pro' ? 'free' : 'pro';
+  let newPlan;
+
+  // 循环切换计划
+  if (subscription.plan === 'free') {
+    newPlan = 'pro';
+  } else if (subscription.plan === 'pro') {
+    newPlan = 'max';
+  } else {
+    newPlan = 'free';
+  }
 
   await prisma.subscription.update({
     where: { shop },

@@ -27,8 +27,11 @@ export async function action({ request }) {
 
   try {
     if (action === 'upgrade') {
-      // 创建Pro订阅
-      const { confirmationUrl } = await createSubscription(admin, shop, 'PRO');
+      // 获取要升级的计划（PRO或MAX）
+      const plan = formData.get('plan') || 'PRO';
+
+      // 创建订阅
+      const { confirmationUrl } = await createSubscription(admin, shop, plan);
 
       // 重定向到Shopify支付确认页面
       return redirect(confirmationUrl);

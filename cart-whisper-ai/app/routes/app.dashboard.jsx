@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
+import { getPlanFeatures, getCurrentPlan } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
@@ -14,9 +15,15 @@ export async function loader({ request }) {
   let syncStatus = null;
   let statistics = null;
   let error = null;
+  let currentPlan = 'FREE';
+  let planFeatures = null;
 
   try {
     apiKey = await getApiKey(shop);
+
+    // 获取订阅计划信息
+    currentPlan = await getCurrentPlan(shop);
+    planFeatures = await getPlanFeatures(shop);
 
     if (apiKey) {
       // 获取同步状态（包含 API 使用量）
@@ -54,6 +61,8 @@ export async function loader({ request }) {
     syncStatus,
     statistics,
     error,
+    currentPlan,
+    planFeatures,
   };
 }
 
@@ -101,7 +110,7 @@ export const action = async ({ request }) => {
 };
 
 export default function DashboardPage() {
-  const { shop, backendUrl, isRegistered, recommendations, stats, syncStatus, statistics, error } = useLoaderData();
+  const { shop, backendUrl, isRegistered, recommendations, stats, syncStatus, statistics, error, currentPlan: loaderPlan, planFeatures } = useLoaderData();
   const planFetcher = useFetcher();
   const revalidator = useRevalidator();
   const isTogglingPlan = planFetcher.state === 'submitting';
@@ -111,7 +120,8 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Get current plan
-  const currentPlan = planFetcher.data?.newPlan || syncStatus?.plan || 'free';
+  const currentPlan = planFetcher.data?.newPlan || loaderPlan?.toLowerCase() || syncStatus?.plan || 'free';
+  const hasAdvancedAnalytics = planFeatures?.analytics === 'advanced';
 
   // Revalidate after action
   useEffect(() => {
@@ -216,8 +226,8 @@ export default function DashboardPage() {
               icon="⭐"
               label="Plan"
               value={currentPlan.toUpperCase()}
-              color={currentPlan === 'pro' ? '#f57c00' : '#388e3c'}
-              bgColor={currentPlan === 'pro' ? '#fff3e0' : '#e8f5e9'}
+              color={currentPlan === 'max' ? '#9c27b0' : (currentPlan === 'pro' ? '#f57c00' : '#388e3c')}
+              bgColor={currentPlan === 'max' ? '#f3e5f5' : (currentPlan === 'pro' ? '#fff3e0' : '#e8f5e9')}
               extra={
                 <planFetcher.Form method="post" style={{ marginTop: '8px' }}>
                   <input type="hidden" name="_action" value="togglePlan" />
@@ -228,14 +238,14 @@ export default function DashboardPage() {
                     style={{
                       padding: '4px 12px',
                       fontSize: '11px',
-                      backgroundColor: currentPlan === 'pro' ? '#dc3545' : '#28a745',
+                      backgroundColor: '#6c757d',
                       color: 'white',
                       border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
                     }}
                   >
-                    {isTogglingPlan ? '...' : `Switch to ${currentPlan === 'pro' ? 'Free' : 'Pro'}`}
+                    {isTogglingPlan ? '...' : `🧪 Test: Cycle Plan`}
                   </button>
                 </planFetcher.Form>
               }
@@ -437,6 +447,30 @@ export default function DashboardPage() {
       {/* Analytics Tab */}
       {activeTab === 'analytics' && (
         <div>
+          {/* Upgrade Banner for Free Users */}
+          {!hasAdvancedAnalytics && (
+            <div style={{ backgroundColor: '#fff3e0', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #ffb74d' }}>
+              <h3 style={{ margin: '0 0 10px 0', color: '#e65100' }}>🔒 Unlock Advanced Analytics</h3>
+              <p style={{ margin: '0 0 15px 0', color: '#e65100' }}>
+                Upgrade to PRO or MAX plan to access Click-through Rate, Top Recommendations, and Top Products analytics.
+              </p>
+              <Link
+                to="/app/billing"
+                style={{
+                  display: 'inline-block',
+                  padding: '10px 20px',
+                  backgroundColor: '#ff9800',
+                  color: 'white',
+                  borderRadius: '6px',
+                  textDecoration: 'none',
+                  fontWeight: 'bold',
+                }}
+              >
+                Upgrade Now
+              </Link>
+            </div>
+          )}
+
           {/* Summary Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
             <StatCard
@@ -453,13 +487,34 @@ export default function DashboardPage() {
               color="#388e3c"
               bgColor="#e8f5e9"
             />
-            <StatCard
-              icon="📊"
-              label="Click-through Rate"
-              value={`${statistics?.summary?.ctr || 0}%`}
-              color="#f57c00"
-              bgColor="#fff3e0"
-            />
+            {/* CTR - Locked for Free Users */}
+            <div style={{ position: 'relative' }}>
+              <StatCard
+                icon="📊"
+                label="Click-through Rate"
+                value={hasAdvancedAnalytics ? `${statistics?.summary?.ctr || 0}%` : '••••'}
+                color="#f57c00"
+                bgColor="#fff3e0"
+              />
+              {!hasAdvancedAnalytics && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                }}>
+                  🔒
+                </div>
+              )}
+            </div>
             <StatCard
               icon="💰"
               label="Revenue Attribution"
@@ -482,9 +537,9 @@ export default function DashboardPage() {
 
           {/* Top Performing Recommendations */}
           {statistics?.topByClicks?.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
+            <div style={{ marginBottom: '30px', position: 'relative' }}>
               <h3 style={{ marginBottom: '15px' }}>Top Recommendations by Clicks</h3>
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowX: 'auto', filter: !hasAdvancedAnalytics ? 'blur(8px)' : 'none', pointerEvents: !hasAdvancedAnalytics ? 'none' : 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
@@ -508,14 +563,32 @@ export default function DashboardPage() {
                   </tbody>
                 </table>
               </div>
+              {!hasAdvancedAnalytics && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'white',
+                  padding: '20px 30px',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  textAlign: 'center',
+                  zIndex: 10,
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔒</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>PRO Feature</div>
+                  <div style={{ fontSize: '14px', color: '#666' }}>Upgrade to view detailed analytics</div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Top Source Products */}
           {statistics?.topSourceProducts?.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
+            <div style={{ marginBottom: '30px', position: 'relative' }}>
               <h3 style={{ marginBottom: '15px' }}>Top Products by Impressions</h3>
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowX: 'auto', filter: !hasAdvancedAnalytics ? 'blur(8px)' : 'none', pointerEvents: !hasAdvancedAnalytics ? 'none' : 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
@@ -544,6 +617,24 @@ export default function DashboardPage() {
                   </tbody>
                 </table>
               </div>
+              {!hasAdvancedAnalytics && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'white',
+                  padding: '20px 30px',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  textAlign: 'center',
+                  zIndex: 10,
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔒</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>PRO Feature</div>
+                  <div style={{ fontSize: '14px', color: '#666' }}>Upgrade to view detailed analytics</div>
+                </div>
+              )}
             </div>
           )}
 

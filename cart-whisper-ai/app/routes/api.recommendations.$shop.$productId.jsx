@@ -1,5 +1,6 @@
 import { getApiKey } from "../utils/shopConfig.server";
 import { getRecommendations } from "../utils/backendApi.server";
+import { getPlanFeatures } from "../utils/billing.server";
 
 /**
  * 公开的推荐API端点
@@ -27,7 +28,15 @@ export async function loader({ params, request }) {
 
     // 解析 query 参数
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get("limit") || "3", 10);
+    let limit = parseInt(url.searchParams.get("limit") || "3", 10);
+
+    // 获取订阅计划并限制推荐数量
+    const planFeatures = await getPlanFeatures(shop);
+    const maxRecommendations = planFeatures.recommendationsPerProduct || 1;
+    const showWatermark = planFeatures.showWatermark !== false; // 默认显示水印
+
+    // 确保limit不超过计划允许的最大值
+    limit = Math.min(limit, maxRecommendations);
 
     // 获取 API Key
     const apiKey = await getApiKey(shop);
@@ -69,6 +78,7 @@ export async function loader({ params, request }) {
         recommendations: formattedRecommendations,
         fromCache: result.fromCache || false, // 标识是否来自缓存
         cacheWarning: result.cacheWarning, // 缓存警告信息
+        showWatermark: showWatermark, // 是否显示水印
       }),
       { status: 200, headers }
     );
