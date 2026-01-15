@@ -6,6 +6,7 @@ EXPOSE 3000
 WORKDIR /app
 
 ENV NODE_ENV=production
+# Force rebuild: 2026-01-15
 
 COPY package.json package-lock.json* ./
 
