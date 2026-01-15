@@ -18,8 +18,6 @@ export async function loader({ request }) {
   let error = null;
   let subscription = null;
   let planFeatures = null;
-  let totalShopifyProducts = 0;
-  let unsyncedProducts = [];
 
   try {
     // 获取订阅信息
@@ -50,109 +48,6 @@ export async function loader({ request }) {
       } catch (e) {
         console.log('[Dashboard] Error getting statistics:', e.message);
       }
-
-      // 获取 Shopify 总商品数和未同步商品
-      try {
-        // 从已有的 recommendations 中提取已同步的商品ID
-        // recommendations 包含 sourceProductId，这些都是已同步的商品
-        const syncedProductIds = new Set(recommendations.map(rec => rec.sourceProductId));
-
-        // 获取 Shopify 总商品数
-        const COUNT_QUERY = `
-          query GetProductCount {
-            productsCount {
-              count
-            }
-          }
-        `;
-        const countResponse = await admin.graphql(COUNT_QUERY);
-        const countData = await countResponse.json();
-        totalShopifyProducts = countData.data?.productsCount?.count || 0;
-
-        // 如果有未同步的商品，获取一些样本
-        const syncedCount = syncStatus?.productCount || 0;
-        const maxProducts = planFeatures?.maxProducts || 50;
-
-        if (totalShopifyProducts > syncedCount && syncedCount >= maxProducts) {
-          // 分页获取 Shopify 商品，找到未同步的
-          const PRODUCTS_QUERY = `
-            query GetProducts($first: Int!, $after: String) {
-              products(first: $first, after: $after, query: "status:active") {
-                edges {
-                  node {
-                    id
-                    title
-                    handle
-                    images(first: 1) {
-                      edges {
-                        node {
-                          url
-                        }
-                      }
-                    }
-                  }
-                  cursor
-                }
-                pageInfo {
-                  hasNextPage
-                }
-              }
-            }
-          `;
-
-          let hasNextPage = true;
-          let cursor = null;
-          const tempUnsyncedProducts = [];
-
-          // 最多检查 200 个商品，找到 5 个未同步的就停止
-          while (hasNextPage && tempUnsyncedProducts.length < 5) {
-            const response = await admin.graphql(PRODUCTS_QUERY, {
-              variables: {
-                first: 50,
-                after: cursor,
-              },
-            });
-
-            const data = await response.json();
-
-            if (data.data?.products?.edges) {
-              for (const edge of data.data.products.edges) {
-                const productId = edge.node.id;
-                // 检查这个商品是否在后端同步列表中
-                if (!syncedProductIds.has(productId)) {
-                  tempUnsyncedProducts.push({
-                    id: productId,
-                    title: edge.node.title,
-                    handle: edge.node.handle,
-                    image: edge.node.images.edges[0]?.node?.url || null,
-                  });
-
-                  if (tempUnsyncedProducts.length >= 5) {
-                    break;
-                  }
-                }
-              }
-
-              hasNextPage = data.data.products.pageInfo.hasNextPage && tempUnsyncedProducts.length < 5;
-              if (hasNextPage && data.data.products.edges.length > 0) {
-                cursor = data.data.products.edges[data.data.products.edges.length - 1].cursor;
-              }
-            } else {
-              break;
-            }
-
-            // 安全限制：最多检查 4 页（200个商品）
-            if (cursor && tempUnsyncedProducts.length < 5) {
-              const cursorNum = parseInt(cursor.match(/\d+/)?.[0] || '0');
-              if (cursorNum > 200) break;
-            }
-          }
-
-          unsyncedProducts = tempUnsyncedProducts;
-        }
-      } catch (e) {
-        console.log('[Dashboard] Error getting product count:', e.message);
-      }
     }
   } catch (e) {
     error = e.message;
@@ -168,8 +63,6 @@ export async function loader({ request }) {
     statistics,
     subscription,
     planFeatures,
-    totalShopifyProducts,
-    unsyncedProducts,
     error,
     // 查询参数用于显示通知
     upgraded: url.searchParams.get('upgraded') === 'true',
@@ -215,8 +108,6 @@ export default function Index() {
     statistics,
     subscription,
     planFeatures,
-    totalShopifyProducts,
-    unsyncedProducts,
     error,
     upgraded,
     upgradeFailed,
@@ -373,7 +264,6 @@ export default function Index() {
         {[
           { id: 'overview', label: 'Overview', icon: '📊' },
           { id: 'recommendations', label: 'Recommendations', icon: '🎯' },
-          { id: 'analytics', label: 'Analytics', icon: '📈' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -538,7 +428,7 @@ export default function Index() {
           </div>
 
           {/* Quick Actions */}
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '30px' }}>
             <Link
               to="/app/scan"
               style={{
@@ -570,212 +460,9 @@ export default function Index() {
             </button>
           </div>
 
-          {/* Unsynced Products Section */}
-          {unsyncedProducts.length > 0 && (
-            <div style={{
-              marginTop: '30px',
-              backgroundColor: '#fff3e0',
-              borderRadius: '12px',
-              padding: '24px',
-              border: '2px solid #ff9800',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 8px 0', color: '#e65100', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '24px' }}>📦</span>
-                    Unsynced Products
-                  </h3>
-                  <p style={{ margin: 0, color: '#e65100', fontSize: '14px' }}>
-                    You have {totalShopifyProducts - (syncStatus?.productCount || 0)} products that haven't been synced yet.
-                    Upgrade to PRO or MAX to sync all your products and generate more recommendations!
-                  </p>
-                </div>
-                <Link
-                  to="/app/billing"
-                  style={{
-                    padding: '10px 24px',
-                    backgroundColor: '#ff9800',
-                    color: 'white',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    marginLeft: '20px',
-                  }}
-                >
-                  ⬆️ Upgrade Now
-                </Link>
-              </div>
+          {/* Analytics Section - Moved from Analytics tab */}
+          <h2 style={{ marginBottom: '20px', fontSize: '20px' }}>Analytics</h2>
 
-              {/* Sample Unsynced Products */}
-              <div style={{ marginTop: '16px' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#e65100', fontSize: '14px', fontWeight: 'bold' }}>
-                  Sample Unsynced Products:
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-                  {unsyncedProducts.map((product, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        backgroundColor: 'white',
-                        borderRadius: '8px',
-                        padding: '12px',
-                        border: '1px solid #ffb74d',
-                        display: 'flex',
-                        gap: '12px',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {product.image ? (
-                        <img
-                          src={product.image}
-                          alt={product.title}
-                          style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '6px',
-                            objectFit: 'cover',
-                            backgroundColor: '#f5f5f5',
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '6px',
-                            backgroundColor: '#f5f5f5',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '24px',
-                          }}
-                        >
-                          📦
-                        </div>
-                      )}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontWeight: '500',
-                            fontSize: '13px',
-                            color: '#333',
-                            lineHeight: '1.4',
-                            wordBreak: 'break-word',
-                          }}
-                        >
-                          {product.title}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ margin: '12px 0 0 0', fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
-                  ...and {totalShopifyProducts - (syncStatus?.productCount || 0) - unsyncedProducts.length} more products
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Recommendations Tab */}
-      {activeTab === 'recommendations' && (
-        <div>
-          {/* Search and Sort */}
-          <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Search</label>
-              <input
-                type="text"
-                placeholder="Search by product name or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '14px',
-                }}
-              />
-            </div>
-            <div style={{ minWidth: '200px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Sort by</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '14px',
-                }}
-              >
-                <option value="sourceProductId">Source Product ID</option>
-                <option value="sourceTitle">Source Product Title</option>
-                <option value="targetTitle">Target Product Title</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Recommendations Table */}
-          {sortedRecommendations.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f5f5f5', borderRadius: '8px', color: '#999' }}>
-              {recommendations.length === 0 ? (
-                <>
-                  <p style={{ fontSize: '16px', marginBottom: '10px' }}>No recommendations yet</p>
-                  <p style={{ fontSize: '14px' }}>
-                    Sync products at <Link to="/app/scan" style={{ color: '#1a73e8' }}>Sync Products</Link> to generate recommendations
-                  </p>
-                </>
-              ) : (
-                <p>No results match your search</p>
-              )}
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Source Product</th>
-                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Recommended Product</th>
-                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Reason</th>
-                    <th style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px' }}>Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedRecommendations.map((rec, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #eee', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
-                      <td style={{ padding: '12px 15px', fontSize: '14px' }}>
-                        <ProductCell image={rec.sourceImage} title={rec.sourceTitle} id={rec.sourceProductId} />
-                      </td>
-                      <td style={{ padding: '12px 15px', fontSize: '14px' }}>
-                        <ProductCell image={rec.targetImage} title={rec.targetTitle} id={rec.targetProductId} />
-                      </td>
-                      <td style={{ padding: '12px 15px', fontSize: '14px', color: '#666' }}>
-                        <ReasonCell reason={rec.reason} />
-                      </td>
-                      <td style={{ padding: '12px 15px', fontSize: '12px', color: '#999', textAlign: 'center' }}>
-                        {new Date(rec.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div style={{ marginTop: '15px', fontSize: '12px', color: '#999', textAlign: 'right' }}>
-                Showing {sortedRecommendations.length} of {recommendations.length} recommendations
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Analytics Tab */}
-      {activeTab === 'analytics' && (
-        <div>
           {/* Upgrade Banner for Free Users */}
           {!hasAdvancedAnalytics && (
             <div style={{ backgroundColor: '#fff3e0', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #ffb74d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -937,6 +624,99 @@ export default function Index() {
               impressions and clicks are automatically recorded. No additional integration needed!
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Recommendations Tab */}
+      {activeTab === 'recommendations' && (
+        <div>
+          {/* Search and Sort */}
+          <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Search</label>
+              <input
+                type="text"
+                placeholder="Search by product name or ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  fontSize: '14px',
+                }}
+              />
+            </div>
+            <div style={{ minWidth: '200px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Sort by</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  fontSize: '14px',
+                }}
+              >
+                <option value="sourceProductId">Source Product ID</option>
+                <option value="sourceTitle">Source Product Title</option>
+                <option value="targetTitle">Target Product Title</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Recommendations Table */}
+          {sortedRecommendations.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f5f5f5', borderRadius: '8px', color: '#999' }}>
+              {recommendations.length === 0 ? (
+                <>
+                  <p style={{ fontSize: '16px', marginBottom: '10px' }}>No recommendations yet</p>
+                  <p style={{ fontSize: '14px' }}>
+                    Sync products at <Link to="/app/scan" style={{ color: '#1a73e8' }}>Sync Products</Link> to generate recommendations
+                  </p>
+                </>
+              ) : (
+                <p>No results match your search</p>
+              )}
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Source Product</th>
+                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Recommended Product</th>
+                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Reason</th>
+                    <th style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px' }}>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedRecommendations.map((rec, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #eee', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                      <td style={{ padding: '12px 15px', fontSize: '14px' }}>
+                        <ProductCell image={rec.sourceImage} title={rec.sourceTitle} id={rec.sourceProductId} />
+                      </td>
+                      <td style={{ padding: '12px 15px', fontSize: '14px' }}>
+                        <ProductCell image={rec.targetImage} title={rec.targetTitle} id={rec.targetProductId} />
+                      </td>
+                      <td style={{ padding: '12px 15px', fontSize: '14px', color: '#666' }}>
+                        <ReasonCell reason={rec.reason} />
+                      </td>
+                      <td style={{ padding: '12px 15px', fontSize: '12px', color: '#999', textAlign: 'center' }}>
+                        {new Date(rec.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: '15px', fontSize: '12px', color: '#999', textAlign: 'right' }}>
+                Showing {sortedRecommendations.length} of {recommendations.length} recommendations
+              </div>
+            </div>
+          )}
         </div>
       )}
 
