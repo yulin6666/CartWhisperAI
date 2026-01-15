@@ -259,63 +259,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* API Usage Section */}
-          <div style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', padding: '24px', marginBottom: '30px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px' }}>API Usage (Today)</h2>
-              <planFetcher.Form method="post">
-                <input type="hidden" name="_action" value="resetApiUsage" />
-                <button
-                  type="submit"
-                  disabled={isTogglingPlan}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Reset (Test)
-                </button>
-              </planFetcher.Form>
-            </div>
-
-            {syncStatus?.apiUsage ? (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 'bold' }}>
-                    {syncStatus.apiUsage.used.toLocaleString()}
-                  </span>
-                  <span style={{ fontSize: '14px', color: '#666' }}>
-                    / {syncStatus.apiUsage.limit.toLocaleString()} calls
-                  </span>
-                </div>
-                <div style={{ height: '12px', backgroundColor: '#e0e0e0', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
-                  <div
-                    style={{
-                      width: `${syncStatus.apiUsage.percentage}%`,
-                      height: '100%',
-                      backgroundColor: syncStatus.apiUsage.percentage > 80 ? '#dc3545' : syncStatus.apiUsage.percentage > 50 ? '#ffc107' : '#28a745',
-                      transition: 'width 0.3s ease',
-                    }}
-                  />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#666' }}>
-                  <span>{syncStatus.apiUsage.percentage}% used</span>
-                  <span>{syncStatus.apiUsage.remaining.toLocaleString()} remaining</span>
-                </div>
-                <div style={{ marginTop: '12px', fontSize: '12px', color: '#999' }}>
-                  Resets at: {formatDate(syncStatus.apiUsage.resetsAt)}
-                </div>
-              </>
-            ) : (
-              <p style={{ color: '#999' }}>No usage data available</p>
-            )}
-          </div>
-
           {/* Quick Actions */}
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <Link
