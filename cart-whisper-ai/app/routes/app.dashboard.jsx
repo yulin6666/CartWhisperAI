@@ -392,21 +392,25 @@ export default function DashboardPage() {
         <div>
           {/* Upgrade Banner for Free Users */}
           {!hasAdvancedAnalytics && (
-            <div style={{ backgroundColor: '#fff3e0', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #ffb74d' }}>
-              <h3 style={{ margin: '0 0 10px 0', color: '#e65100' }}>🔒 Unlock Advanced Analytics</h3>
-              <p style={{ margin: '0 0 15px 0', color: '#e65100' }}>
-                Upgrade to PRO or MAX plan to access Click-through Rate, Top Recommendations, and Top Products analytics.
-              </p>
+            <div style={{ backgroundColor: '#fff3e0', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #ffb74d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: '0 0 8px 0', color: '#e65100', fontSize: '16px' }}>🔒 Unlock Advanced Analytics</h3>
+                <p style={{ margin: 0, color: '#e65100', fontSize: '14px' }}>
+                  Upgrade to PRO or MAX plan to access Click-through Rate, Top Recommendations, and Top Products analytics.
+                </p>
+              </div>
               <Link
                 to="/app/billing"
                 style={{
-                  display: 'inline-block',
-                  padding: '10px 20px',
+                  padding: '10px 24px',
                   backgroundColor: '#ff9800',
                   color: 'white',
                   borderRadius: '6px',
                   textDecoration: 'none',
                   fontWeight: 'bold',
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                  marginLeft: '20px',
                 }}
               >
                 Upgrade Now
@@ -446,16 +450,10 @@ export default function DashboardPage() {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(4px)',
                   borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px',
-                }}>
-                  🔒
-                </div>
+                  pointerEvents: 'none',
+                }} />
               )}
             </div>
             <StatCard
@@ -480,7 +478,7 @@ export default function DashboardPage() {
 
           {/* Top Performing Recommendations */}
           {statistics?.topByClicks?.length > 0 && (
-            <div style={{ marginBottom: '30px', position: 'relative' }}>
+            <div style={{ marginBottom: '30px' }}>
               <h3 style={{ marginBottom: '15px' }}>Top Recommendations by Clicks</h3>
               <div style={{ overflowX: 'auto', filter: !hasAdvancedAnalytics ? 'blur(8px)' : 'none', pointerEvents: !hasAdvancedAnalytics ? 'none' : 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
@@ -506,30 +504,12 @@ export default function DashboardPage() {
                   </tbody>
                 </table>
               </div>
-              {!hasAdvancedAnalytics && (
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  backgroundColor: 'white',
-                  padding: '20px 30px',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  textAlign: 'center',
-                  zIndex: 10,
-                }}>
-                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔒</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>PRO Feature</div>
-                  <div style={{ fontSize: '14px', color: '#666' }}>Upgrade to view detailed analytics</div>
-                </div>
-              )}
             </div>
           )}
 
           {/* Top Source Products */}
           {statistics?.topSourceProducts?.length > 0 && (
-            <div style={{ marginBottom: '30px', position: 'relative' }}>
+            <div style={{ marginBottom: '30px' }}>
               <h3 style={{ marginBottom: '15px' }}>Top Products by Impressions</h3>
               <div style={{ overflowX: 'auto', filter: !hasAdvancedAnalytics ? 'blur(8px)' : 'none', pointerEvents: !hasAdvancedAnalytics ? 'none' : 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px' }}>
@@ -560,24 +540,6 @@ export default function DashboardPage() {
                   </tbody>
                 </table>
               </div>
-              {!hasAdvancedAnalytics && (
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  backgroundColor: 'white',
-                  padding: '20px 30px',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  textAlign: 'center',
-                  zIndex: 10,
-                }}>
-                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔒</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>PRO Feature</div>
-                  <div style={{ fontSize: '14px', color: '#666' }}>Upgrade to view detailed analytics</div>
-                </div>
-              )}
             </div>
           )}
 
