@@ -6,7 +6,7 @@ import { getApiKey } from '../utils/shopConfig.server';
 import { getSubscription, getPlanFeatures } from '../utils/billing.server';
 
 export async function loader({ request }) {
-  const { session } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
   const url = new URL(request.url);
 
@@ -18,6 +18,8 @@ export async function loader({ request }) {
   let error = null;
   let subscription = null;
   let planFeatures = null;
+  let totalShopifyProducts = 0;
+  let unsyncedProducts = [];
 
   try {
     // 获取订阅信息
@@ -48,6 +50,56 @@ export async function loader({ request }) {
       } catch (e) {
         console.log('[Dashboard] Error getting statistics:', e.message);
       }
+
+      // 获取 Shopify 总商品数和未同步商品
+      try {
+        const PRODUCT_COUNT_QUERY = `
+          query GetProductCount {
+            productsCount {
+              count
+            }
+            products(first: 10, query: "status:active", sortKey: CREATED_AT, reverse: true) {
+              edges {
+                node {
+                  id
+                  title
+                  handle
+                  images(first: 1) {
+                    edges {
+                      node {
+                        url
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        const response = await admin.graphql(PRODUCT_COUNT_QUERY);
+        const data = await response.json();
+
+        if (data.data) {
+          totalShopifyProducts = data.data.productsCount?.count || 0;
+
+          // 如果有未同步的商品，获取一些样本
+          const syncedCount = syncStatus?.productCount || 0;
+          const maxProducts = planFeatures?.maxProducts || 50;
+
+          if (totalShopifyProducts > syncedCount && syncedCount >= maxProducts) {
+            // 获取最新的商品作为未同步商品样本
+            unsyncedProducts = data.data.products.edges.slice(0, 5).map(edge => ({
+              id: edge.node.id,
+              title: edge.node.title,
+              handle: edge.node.handle,
+              image: edge.node.images.edges[0]?.node?.url || null,
+            }));
+          }
+        }
+      } catch (e) {
+        console.log('[Dashboard] Error getting product count:', e.message);
+      }
     }
   } catch (e) {
     error = e.message;
@@ -63,6 +115,8 @@ export async function loader({ request }) {
     statistics,
     subscription,
     planFeatures,
+    totalShopifyProducts,
+    unsyncedProducts,
     error,
     // 查询参数用于显示通知
     upgraded: url.searchParams.get('upgraded') === 'true',
@@ -108,6 +162,8 @@ export default function Index() {
     statistics,
     subscription,
     planFeatures,
+    totalShopifyProducts,
+    unsyncedProducts,
     error,
     upgraded,
     upgradeFailed,
@@ -460,6 +516,116 @@ export default function Index() {
               View Recommendations
             </button>
           </div>
+
+          {/* Unsynced Products Section */}
+          {unsyncedProducts.length > 0 && (
+            <div style={{
+              marginTop: '30px',
+              backgroundColor: '#fff3e0',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '2px solid #ff9800',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 8px 0', color: '#e65100', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '24px' }}>📦</span>
+                    Unsynced Products
+                  </h3>
+                  <p style={{ margin: 0, color: '#e65100', fontSize: '14px' }}>
+                    You have {totalShopifyProducts - (syncStatus?.productCount || 0)} products that haven't been synced yet.
+                    Upgrade to PRO or MAX to sync all your products and generate more recommendations!
+                  </p>
+                </div>
+                <Link
+                  to="/app/billing"
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: '#ff9800',
+                    color: 'white',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    marginLeft: '20px',
+                  }}
+                >
+                  ⬆️ Upgrade Now
+                </Link>
+              </div>
+
+              {/* Sample Unsynced Products */}
+              <div style={{ marginTop: '16px' }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#e65100', fontSize: '14px', fontWeight: 'bold' }}>
+                  Sample Unsynced Products:
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                  {unsyncedProducts.map((product, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        border: '1px solid #ffb74d',
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '6px',
+                            objectFit: 'cover',
+                            backgroundColor: '#f5f5f5',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '6px',
+                            backgroundColor: '#f5f5f5',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '24px',
+                          }}
+                        >
+                          📦
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontWeight: '500',
+                            fontSize: '13px',
+                            color: '#333',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                          title={product.title}
+                        >
+                          {product.title}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ margin: '12px 0 0 0', fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+                  ...and {totalShopifyProducts - (syncStatus?.productCount || 0) - unsyncedProducts.length} more products
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
