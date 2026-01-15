@@ -397,7 +397,7 @@
   if (!popup) return;
 
   const shop = popup.dataset.shop;
-  const limit = parseInt(popup.dataset.limit, 10) || 3;
+  const limit = parseInt(popup.dataset.limit, 10) || 1;
   const productsContainer = document.getElementById('cart-whisper-popup-products');
 
   // 后端 API URL（用于追踪）
@@ -761,7 +761,7 @@
       "min": 1,
       "max": 4,
       "step": 1,
-      "default": 2
+      "default": 1
     },
     {
       "type": "header",

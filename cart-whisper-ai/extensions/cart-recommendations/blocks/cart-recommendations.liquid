@@ -198,7 +198,7 @@
   if (!container) return;
 
   const shop = container.dataset.shop;
-  const limit = parseInt(container.dataset.limit, 10) || 3;
+  const limit = parseInt(container.dataset.limit, 10) || 1;
   const productsList = document.getElementById('cart-whisper-products-list');
   const loadingEl = document.getElementById('cart-whisper-loading');
 
@@ -551,7 +551,7 @@
       "min": 1,
       "max": 6,
       "step": 1,
-      "default": 3
+      "default": 1
     },
     {
       "type": "header",

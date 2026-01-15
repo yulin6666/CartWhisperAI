@@ -28,15 +28,23 @@ export async function loader({ params, request }) {
 
     // 解析 query 参数
     const url = new URL(request.url);
-    let limit = parseInt(url.searchParams.get("limit") || "3", 10);
+    let limit = parseInt(url.searchParams.get("limit") || "1", 10);
 
     // 获取订阅计划并限制推荐数量
     const planFeatures = await getPlanFeatures(shop);
     const maxRecommendations = planFeatures.recommendationsPerProduct || 1;
     const showWatermark = planFeatures.showWatermark !== false; // 默认显示水印
 
+    // 调试日志
+    console.log('[API Recommendations] Shop:', shop);
+    console.log('[API Recommendations] Plan features:', planFeatures);
+    console.log('[API Recommendations] Max recommendations:', maxRecommendations);
+    console.log('[API Recommendations] Requested limit:', limit);
+
     // 确保limit不超过计划允许的最大值
     limit = Math.min(limit, maxRecommendations);
+
+    console.log('[API Recommendations] Final limit:', limit);
 
     // 获取 API Key
     const apiKey = await getApiKey(shop);
