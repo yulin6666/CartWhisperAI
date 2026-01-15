@@ -53,49 +53,102 @@ export async function loader({ request }) {
 
       // 获取 Shopify 总商品数和未同步商品
       try {
-        const PRODUCT_COUNT_QUERY = `
+        // 从已有的 recommendations 中提取已同步的商品ID
+        // recommendations 包含 sourceProductId，这些都是已同步的商品
+        const syncedProductIds = new Set(recommendations.map(rec => rec.sourceProductId));
+
+        // 获取 Shopify 总商品数
+        const COUNT_QUERY = `
           query GetProductCount {
             productsCount {
               count
             }
-            products(first: 10, query: "status:active", sortKey: CREATED_AT, reverse: true) {
-              edges {
-                node {
-                  id
-                  title
-                  handle
-                  images(first: 1) {
-                    edges {
-                      node {
-                        url
+          }
+        `;
+        const countResponse = await admin.graphql(COUNT_QUERY);
+        const countData = await countResponse.json();
+        totalShopifyProducts = countData.data?.productsCount?.count || 0;
+
+        // 如果有未同步的商品，获取一些样本
+        const syncedCount = syncStatus?.productCount || 0;
+        const maxProducts = planFeatures?.maxProducts || 50;
+
+        if (totalShopifyProducts > syncedCount && syncedCount >= maxProducts) {
+          // 分页获取 Shopify 商品，找到未同步的
+          const PRODUCTS_QUERY = `
+            query GetProducts($first: Int!, $after: String) {
+              products(first: $first, after: $after, query: "status:active") {
+                edges {
+                  node {
+                    id
+                    title
+                    handle
+                    images(first: 1) {
+                      edges {
+                        node {
+                          url
+                        }
                       }
                     }
                   }
+                  cursor
+                }
+                pageInfo {
+                  hasNextPage
                 }
               }
             }
+          `;
+
+          let hasNextPage = true;
+          let cursor = null;
+          const tempUnsyncedProducts = [];
+
+          // 最多检查 200 个商品，找到 5 个未同步的就停止
+          while (hasNextPage && tempUnsyncedProducts.length < 5) {
+            const response = await admin.graphql(PRODUCTS_QUERY, {
+              variables: {
+                first: 50,
+                after: cursor,
+              },
+            });
+
+            const data = await response.json();
+
+            if (data.data?.products?.edges) {
+              for (const edge of data.data.products.edges) {
+                const productId = edge.node.id;
+                // 检查这个商品是否在后端同步列表中
+                if (!syncedProductIds.has(productId)) {
+                  tempUnsyncedProducts.push({
+                    id: productId,
+                    title: edge.node.title,
+                    handle: edge.node.handle,
+                    image: edge.node.images.edges[0]?.node?.url || null,
+                  });
+
+                  if (tempUnsyncedProducts.length >= 5) {
+                    break;
+                  }
+                }
+              }
+
+              hasNextPage = data.data.products.pageInfo.hasNextPage && tempUnsyncedProducts.length < 5;
+              if (hasNextPage && data.data.products.edges.length > 0) {
+                cursor = data.data.products.edges[data.data.products.edges.length - 1].cursor;
+              }
+            } else {
+              break;
+            }
+
+            // 安全限制：最多检查 4 页（200个商品）
+            if (cursor && tempUnsyncedProducts.length < 5) {
+              const cursorNum = parseInt(cursor.match(/\d+/)?.[0] || '0');
+              if (cursorNum > 200) break;
+            }
           }
-        `;
 
-        const response = await admin.graphql(PRODUCT_COUNT_QUERY);
-        const data = await response.json();
-
-        if (data.data) {
-          totalShopifyProducts = data.data.productsCount?.count || 0;
-
-          // 如果有未同步的商品，获取一些样本
-          const syncedCount = syncStatus?.productCount || 0;
-          const maxProducts = planFeatures?.maxProducts || 50;
-
-          if (totalShopifyProducts > syncedCount && syncedCount >= maxProducts) {
-            // 获取最新的商品作为未同步商品样本
-            unsyncedProducts = data.data.products.edges.slice(0, 5).map(edge => ({
-              id: edge.node.id,
-              title: edge.node.title,
-              handle: edge.node.handle,
-              image: edge.node.images.edges[0]?.node?.url || null,
-            }));
-          }
+          unsyncedProducts = tempUnsyncedProducts;
         }
       } catch (e) {
         console.log('[Dashboard] Error getting product count:', e.message);
