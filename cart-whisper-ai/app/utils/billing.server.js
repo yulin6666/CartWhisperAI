@@ -329,6 +329,38 @@ export async function cancelSubscription(admin, shop) {
 }
 
 /**
+ * 开发测试模式：直接升级到指定计划（跳过Shopify Billing API）
+ * 用于应用未公开发布时的测试
+ */
+export async function directUpgrade(shop, plan = 'PRO') {
+  console.log('[directUpgrade] Upgrading shop:', shop, 'to plan:', plan);
+
+  const planLower = plan.toLowerCase();
+
+  await prisma.subscription.upsert({
+    where: { shop },
+    create: {
+      shop,
+      plan: planLower,
+      status: 'active',
+      isTestMode: true,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后
+    },
+    update: {
+      plan: planLower,
+      status: 'active',
+      isTestMode: true,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后
+    },
+  });
+
+  console.log('[directUpgrade] Successfully upgraded to:', planLower);
+  return planLower;
+}
+
+/**
  * 测试模式：手动切换计划（仅开发环境）
  * 循环切换：free -> pro -> max -> free
  */

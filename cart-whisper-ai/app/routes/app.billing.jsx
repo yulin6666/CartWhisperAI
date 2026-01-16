@@ -35,7 +35,15 @@ export async function action({ request }) {
       const plan = formData.get('plan') || 'PRO';
       console.log('[Billing] Creating subscription for plan:', plan);
 
-      // 创建订阅
+      // 开发测试模式：直接更新数据库，跳过Shopify Billing API
+      if (process.env.SHOPIFY_TEST_MODE === 'true') {
+        console.log('[Billing] Test mode: Directly updating subscription in database');
+        const { directUpgrade } = await import('../utils/billing.server.js');
+        await directUpgrade(shop, plan);
+        return redirect('/app?upgraded=true');
+      }
+
+      // 生产模式：创建真实的Shopify订阅
       const result = await createSubscription(admin, shop, plan);
       console.log('[Billing] Subscription created, confirmationUrl:', result.confirmationUrl);
 
