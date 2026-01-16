@@ -20,37 +20,53 @@ export async function loader({ request }) {
 }
 
 export async function action({ request }) {
-  const { admin, session } = await authenticate.admin(request);
-  const shop = session.shop;
-  const formData = await request.formData();
-  const action = formData.get('action');
+  console.log('[Billing] Received request:', request.method, request.url);
 
   try {
-    if (action === 'upgrade') {
+    const { admin, session } = await authenticate.admin(request);
+    const shop = session.shop;
+    const formData = await request.formData();
+    const actionType = formData.get('action');
+
+    console.log('[Billing] Action:', actionType, 'Shop:', shop);
+
+    if (actionType === 'upgrade') {
       // 获取要升级的计划（PRO或MAX）
       const plan = formData.get('plan') || 'PRO';
+      console.log('[Billing] Creating subscription for plan:', plan);
 
       // 创建订阅
-      const { confirmationUrl } = await createSubscription(admin, shop, plan);
+      const result = await createSubscription(admin, shop, plan);
+      console.log('[Billing] Subscription created, confirmationUrl:', result.confirmationUrl);
 
       // 重定向到Shopify支付确认页面
-      return redirect(confirmationUrl);
+      return redirect(result.confirmationUrl);
     }
 
-    if (action === 'toggle_test') {
+    if (actionType === 'toggle_test') {
       // 测试模式：切换计划
       if (process.env.NODE_ENV !== 'development') {
+        console.warn('[Billing] Test mode attempted outside development');
         return Response.json({ error: 'Test mode only available in development' }, { status: 403 });
       }
 
+      console.log('[Billing] Toggling test plan for:', shop);
       const newPlan = await togglePlanTestMode(shop);
+      console.log('[Billing] New plan:', newPlan);
       return { success: true, newPlan };
     }
 
+    console.warn('[Billing] Invalid action:', actionType);
     return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
-    console.error('[Billing] Action error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[Billing] Action error:', error.message);
+    console.error('[Billing] Stack:', error.stack);
+    console.error('[Billing] Full error:', JSON.stringify(error, null, 2));
+    return Response.json({
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
