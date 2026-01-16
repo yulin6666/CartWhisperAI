@@ -422,7 +422,10 @@
   const limit = 6; // 请求最大数量，后端会根据订阅计划限制实际返回数量
   const productsContainer = document.getElementById('cart-whisper-popup-products');
 
-  // 后端 API URL（用于追踪）
+  // Shopify App API URL（推荐接口）
+  const appUrl = 'https://cartwhisperai-production.up.railway.app';
+
+  // Railway 后端 API URL（仅用于追踪）
   const backendUrl = 'https://cartwhisperaibackend-production.up.railway.app';
 
   // 当前源商品 ID（触发 popup 的商品）
@@ -558,9 +561,9 @@
 
   // 获取推荐，每次都先获取最新的订阅级别
   async function fetchRecommendations(productId) {
-    // 🔥 关键改动：每次都先调用API获取最新的maxRecommendations和showWatermark
-    const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper Popup] Fetching subscription info from backend:', fetchUrl);
+    // 🔥 调用 Shopify 应用的 API（有正确的订阅检查逻辑）
+    const fetchUrl = `${appUrl}/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+    console.log('[CartWhisper Popup] Fetching recommendations from Shopify App:', fetchUrl);
 
     const maxRetries = 2;
 

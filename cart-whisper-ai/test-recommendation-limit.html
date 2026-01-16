@@ -147,7 +147,7 @@
       result.innerHTML = '<div class="result">请求中...</div>';
 
       try {
-        const url = `https://cartwhisperaibackend-production.up.railway.app/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+        const url = `https://cartwhisperai-production.up.railway.app/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
 
         const response = await fetch(url);
         const data = await response.json();

@@ -237,7 +237,10 @@
     }
   }
 
-  // 后端 API URL
+  // Shopify App API URL（推荐接口）
+  const appUrl = 'https://cartwhisperai-production.up.railway.app';
+
+  // Railway 后端 API URL（仅用于追踪）
   const backendUrl = 'https://cartwhisperaibackend-production.up.railway.app';
 
   // 当前源商品 ID（用于追踪）
@@ -308,9 +311,9 @@
     currentSourceProductId = productId;
     loadedFromCache = false;
 
-    // 🔥 关键改动：每次都先调用API获取最新的maxRecommendations和showWatermark
-    const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper] Fetching subscription info from backend:', fetchUrl);
+    // 🔥 调用 Shopify 应用的 API（有正确的订阅检查逻辑）
+    const fetchUrl = `${appUrl}/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
+    console.log('[CartWhisper] Fetching recommendations from Shopify App:', fetchUrl);
 
     try {
       const response = await fetch(fetchUrl);
