@@ -138,14 +138,25 @@ export default function Index() {
     }
   }, [planFetcher.data]);
 
-  // Show notifications
+  // Revalidate after billing action (upgrade/downgrade)
+  useEffect(() => {
+    if (billingFetcher.state === 'idle' && billingFetcher.data) {
+      // Billing action completed, reload data
+      revalidator.revalidate();
+    }
+  }, [billingFetcher.state, billingFetcher.data]);
+
+  // Show notifications and revalidate on upgrade
   useEffect(() => {
     if (upgraded) {
       setShowNotification({ type: 'success', message: 'Successfully upgraded to Pro Plan!' });
+      // Force revalidate to get updated subscription data
+      revalidator.revalidate();
     } else if (upgradeFailed) {
       setShowNotification({ type: 'error', message: 'Upgrade failed. Please try again.' });
     } else if (cancelled) {
       setShowNotification({ type: 'info', message: 'Subscription cancelled. You are now on the Free Plan.' });
+      revalidator.revalidate();
     }
   }, [upgraded, upgradeFailed, cancelled]);
 

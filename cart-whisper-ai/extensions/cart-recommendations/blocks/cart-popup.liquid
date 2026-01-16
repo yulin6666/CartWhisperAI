@@ -460,15 +460,17 @@
 
   // ===== localStorage 缓存管理器 =====
   const CACHE_PREFIX = 'cartwhisper_rec_';
+  const CACHE_PLAN_KEY = 'cartwhisper_plan_level'; // 存储当前订阅级别
   const CACHE_TTL = 3600000; // 1小时（毫秒）
 
   // 从 localStorage 获取缓存
-  function getLocalCache(productId) {
+  function getLocalCache(productId, maxRecommendations) {
     try {
-      const key = CACHE_PREFIX + productId + '_' + limit;
+      // 缓存key包含订阅级别，确保不同级别使用不同缓存
+      const key = CACHE_PREFIX + productId + '_' + maxRecommendations;
       const cached = localStorage.getItem(key);
       if (!cached) {
-        console.log('[CartWhisper Cache] No local cache for product', productId);
+        console.log('[CartWhisper Cache] No local cache for product', productId, 'plan level:', maxRecommendations);
         return null;
       }
 
@@ -481,7 +483,7 @@
         return null;
       }
 
-      console.log('[CartWhisper Cache] ✓ Cache hit! (age:', Math.round(age/1000), 's)');
+      console.log('[CartWhisper Cache] ✓ Cache hit! (age:', Math.round(age/1000), 's) plan level:', maxRecommendations);
       return data.recommendations;
     } catch (e) {
       console.error('[CartWhisper Cache] Error reading cache:', e);
@@ -490,19 +492,40 @@
   }
 
   // 保存到 localStorage
-  function setLocalCache(productId, recommendations) {
+  function setLocalCache(productId, recommendations, maxRecommendations) {
     try {
-      const key = CACHE_PREFIX + productId + '_' + limit;
+      // 缓存key包含订阅级别
+      const key = CACHE_PREFIX + productId + '_' + maxRecommendations;
       const data = {
         recommendations: recommendations,
         timestamp: Date.now(),
         productId: productId,
-        limit: limit
+        maxRecommendations: maxRecommendations
       };
       localStorage.setItem(key, JSON.stringify(data));
-      console.log('[CartWhisper Cache] ✓ Cached', recommendations.length, 'recommendations');
+      console.log('[CartWhisper Cache] ✓ Cached', recommendations.length, 'recommendations for plan level:', maxRecommendations);
     } catch (e) {
       console.error('[CartWhisper Cache] Error saving cache:', e);
+    }
+  }
+
+  // 检查订阅级别是否变化，如果变化则清除所有推荐缓存
+  function checkAndClearCacheOnPlanChange(maxRecommendations) {
+    try {
+      const savedPlanLevel = localStorage.getItem(CACHE_PLAN_KEY);
+      const currentPlanLevel = String(maxRecommendations);
+
+      if (savedPlanLevel && savedPlanLevel !== currentPlanLevel) {
+        console.log('[CartWhisper Popup] Plan level changed from', savedPlanLevel, 'to', currentPlanLevel, '- clearing all caches');
+        // 清除所有推荐缓存
+        const keys = Object.keys(localStorage).filter(k => k.startsWith(CACHE_PREFIX));
+        keys.forEach(key => localStorage.removeItem(key));
+      }
+
+      // 保存当前订阅级别
+      localStorage.setItem(CACHE_PLAN_KEY, currentPlanLevel);
+    } catch (e) {
+      console.error('[CartWhisper Popup] Failed to check plan change:', e);
     }
   }
 
@@ -559,19 +582,9 @@
 
   // 获取推荐（带重试和降级）
   async function fetchRecommendations(productId) {
-    // 1. 先检查本地缓存
-    const cached = getLocalCache(productId);
-    if (cached && cached.length > 0) {
-      console.log('[CartWhisper] Using local cache, skipping server request');
-      // 显示缓存警告
-      const warningEl = document.getElementById('cart-whisper-cache-warning');
-      if (warningEl) warningEl.style.display = 'flex';
-      return cached;
-    }
-
-    // 2. 没有缓存，直接从后端获取
+    // 1. 先从后端获取最新数据以检查订阅级别
     const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper Popup] No cache, fetching from backend:', fetchUrl);
+    console.log('[CartWhisper Popup] Fetching from backend to check plan:', fetchUrl);
 
     const maxRetries = 2;
 
@@ -604,6 +617,24 @@
         const maxRecommendations = data.maxRecommendations || 1;
         const showWatermark = data.showWatermark !== false; // 默认显示水印
 
+        // 🔥 检查订阅级别变化，如果变化则清除旧缓存
+        checkAndClearCacheOnPlanChange(maxRecommendations);
+
+        // 🔥 检查缓存（在确认订阅级别后）
+        const cached = getLocalCache(productId, maxRecommendations);
+        if (cached && cached.length > 0) {
+          console.log('[CartWhisper] Using cached data after plan check');
+          // 即使使用缓存，也要更新水印显示
+          const watermarkEl = document.getElementById('cart-whisper-watermark');
+          if (watermarkEl) {
+            watermarkEl.style.display = showWatermark ? 'block' : 'none';
+          }
+          // 显示缓存警告
+          const warningEl = document.getElementById('cart-whisper-cache-warning');
+          if (warningEl) warningEl.style.display = 'flex';
+          return cached;
+        }
+
         // 🔥 前端双重检查：确保不超过订阅计划限制
         if (recommendations.length > maxRecommendations) {
           console.log(`[CartWhisper] Front-end trimming from ${recommendations.length} to ${maxRecommendations}`);
@@ -619,9 +650,9 @@
           watermarkEl.style.display = showWatermark ? 'block' : 'none';
         }
 
-        // 3. 保存到本地缓存
+        // 保存到本地缓存（包含订阅级别）
         if (recommendations.length > 0) {
-          setLocalCache(productId, recommendations);
+          setLocalCache(productId, recommendations, maxRecommendations);
         }
 
         // 隐藏缓存警告（这是新数据）
