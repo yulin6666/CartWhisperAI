@@ -90,3 +90,12 @@
 
 **结论：**
 现在的方案既保留了你“给用户最好 AI 体验”的初衷（因为所有推荐最终都是 AI 算的），又通过**商品规模、数据透明度、处理优先级**完美区分了价格梯度。Max 版的存在会让你的 Pro 版卖得更好。
+
+
+
+Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('cartwhisper_rec_')) {
+      localStorage.removeItem(key);
+      console.log('已删除:', key);
+    }
+  });

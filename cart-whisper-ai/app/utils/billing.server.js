@@ -131,11 +131,17 @@ export async function getPlanFeatures(shop) {
  * 创建Shopify订阅
  */
 export async function createSubscription(admin, shop, plan = 'PRO') {
+  console.log('[createSubscription] Starting for plan:', plan, 'shop:', shop);
+
   const planConfig = PLANS[plan];
 
   if (!planConfig || plan === 'FREE') {
+    console.error('[createSubscription] Invalid plan:', plan);
     throw new Error('Invalid plan');
   }
+
+  console.log('[createSubscription] Plan config:', planConfig);
+  console.log('[createSubscription] Return URL:', `${process.env.SHOPIFY_APP_URL}/app/billing/callback`);
 
   // 创建订阅
   const response = await admin.graphql(
@@ -182,11 +188,20 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
 
   const result = await response.json();
 
+  console.log('[createSubscription] GraphQL response:', JSON.stringify(result, null, 2));
+
+  if (result.errors) {
+    console.error('[createSubscription] GraphQL errors:', result.errors);
+    throw new Error(result.errors[0].message);
+  }
+
   if (result.data.appSubscriptionCreate.userErrors.length > 0) {
+    console.error('[createSubscription] User errors:', result.data.appSubscriptionCreate.userErrors);
     throw new Error(result.data.appSubscriptionCreate.userErrors[0].message);
   }
 
   const { appSubscription, confirmationUrl } = result.data.appSubscriptionCreate;
+  console.log('[createSubscription] Confirmation URL:', confirmationUrl);
 
   // 保存订阅信息（待确认状态）
   await prisma.subscription.upsert({
