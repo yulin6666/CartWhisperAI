@@ -1,5 +1,4 @@
 
-免费/付费版本功能设计
 所有商品都必须是预获取
 审核不必要的权限 (建议移除 write_products, read_orders, read_customers 如果没用到)
 : 文档+知识库

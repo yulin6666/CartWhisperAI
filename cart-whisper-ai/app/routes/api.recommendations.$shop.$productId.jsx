@@ -60,12 +60,6 @@ export async function loader({ params, request }) {
 
     // 格式化返回数据
     let formattedRecommendations = (result.recommendations || []).map((rec) => {
-      // 处理推荐理由：如果包含中文|英文格式，只保留英文部分
-      let reasoning = rec.reason || '';
-      if (reasoning.includes('|')) {
-        reasoning = reasoning.split('|')[1].trim();
-      }
-
       return {
         id: `gid://shopify/Product/${rec.id}`,
         numericId: rec.id,
@@ -73,7 +67,7 @@ export async function loader({ params, request }) {
         title: rec.title,
         price: rec.price,
         image: rec.image,
-        reasoning: reasoning,
+        reasoning: rec.reason || '',
       };
     });
 
