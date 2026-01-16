@@ -283,11 +283,22 @@ export async function confirmSubscription(admin, shop) {
 export async function cancelSubscription(admin, shop) {
   const subscription = await getSubscription(shop);
 
-  if (!subscription.shopifySubscriptionId) {
-    throw new Error('No active subscription found');
+  // 测试模式：直接降级，不调用Shopify API
+  if (subscription.isTestMode || !subscription.shopifySubscriptionId) {
+    console.log('[cancelSubscription] Test mode or no Shopify subscription - direct downgrade');
+    await prisma.subscription.update({
+      where: { shop },
+      data: {
+        plan: 'free',
+        status: 'active', // 保持active状态，只是降级到free
+        cancelledAt: new Date(),
+        isTestMode: subscription.isTestMode, // 保持测试模式标记
+      },
+    });
+    return true;
   }
 
-  // 取消Shopify订阅
+  // 生产模式：取消Shopify订阅
   const response = await admin.graphql(
     `#graphql
       mutation AppSubscriptionCancel($id: ID!) {

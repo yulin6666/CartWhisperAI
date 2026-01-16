@@ -175,11 +175,13 @@ export default function Index() {
     );
   };
 
-  const handleTestToggle = () => {
-    billingFetcher.submit(
-      { action: 'toggle_test' },
-      { method: 'post', action: '/app/billing' }
-    );
+  const handleCancelSubscription = () => {
+    if (confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free Plan.')) {
+      billingFetcher.submit(
+        {},
+        { method: 'post', action: '/app/billing/cancel' }
+      );
+    }
   };
 
   if (!isRegistered) {
@@ -234,10 +236,32 @@ export default function Index() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ marginBottom: '10px' }}>CartWhisper AI Dashboard</h1>
-      <p style={{ color: '#666', marginBottom: '30px' }}>
-        Manage your product recommendations and monitor performance.
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
+        <div>
+          <h1 style={{ marginBottom: '10px' }}>CartWhisper AI Dashboard</h1>
+          <p style={{ color: '#666', marginBottom: '0' }}>
+            Manage your product recommendations and monitor performance.
+          </p>
+        </div>
+        {isTestMode && (
+          <Link
+            to="/app/test"
+            style={{
+              padding: '8px 16px',
+              fontSize: '12px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              whiteSpace: 'nowrap',
+            }}
+            title="Test & Debug Console"
+          >
+            🧪 Test Console
+          </Link>
+        )}
+      </div>
 
       {/* Notifications */}
       {showNotification && (
@@ -380,51 +404,73 @@ export default function Index() {
                           </div>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleUpgrade('MAX')}
-                        disabled={billingFetcher.state === 'submitting'}
-                        style={{
-                          padding: '4px 12px',
-                          fontSize: '11px',
-                          backgroundColor: '#9c27b0',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          marginTop: '6px',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        ⬆️ Upgrade to MAX
-                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '6px' }}>
+                        <button
+                          onClick={() => handleUpgrade('MAX')}
+                          disabled={billingFetcher.state === 'submitting'}
+                          style={{
+                            padding: '4px 12px',
+                            fontSize: '11px',
+                            backgroundColor: '#9c27b0',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          ⬆️ Upgrade to MAX
+                        </button>
+                        {!subscription?.isTestMode && (
+                          <button
+                            onClick={handleCancelSubscription}
+                            disabled={billingFetcher.state === 'submitting'}
+                            style={{
+                              padding: '4px 12px',
+                              fontSize: '11px',
+                              backgroundColor: '#dc3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontWeight: 'normal',
+                            }}
+                          >
+                            Cancel Subscription
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
-                    <div style={{ fontSize: '11px', color: '#666' }}>
-                      <div>✓ All features unlocked</div>
-                      {subscription?.currentPeriodEnd && (
-                        <div style={{ marginTop: '4px' }}>
-                          Renews: {formatDate(subscription.currentPeriodEnd)}
-                        </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#666' }}>
+                        <div>✓ All features unlocked</div>
+                        {subscription?.currentPeriodEnd && (
+                          <div style={{ marginTop: '4px' }}>
+                            Renews: {formatDate(subscription.currentPeriodEnd)}
+                          </div>
+                        )}
+                      </div>
+                      {!subscription?.isTestMode && (
+                        <button
+                          onClick={handleCancelSubscription}
+                          disabled={billingFetcher.state === 'submitting'}
+                          style={{
+                            padding: '4px 12px',
+                            fontSize: '11px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            marginTop: '6px',
+                            fontWeight: 'normal',
+                          }}
+                        >
+                          Cancel Subscription
+                        </button>
                       )}
                     </div>
-                  )}
-                  {isTestMode && (
-                    <button
-                      onClick={handleTestToggle}
-                      disabled={billingFetcher.state === 'submitting'}
-                      style={{
-                        padding: '4px 12px',
-                        fontSize: '10px',
-                        backgroundColor: '#6c757d',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginTop: '6px',
-                      }}
-                    >
-                      🧪 Test: Cycle Plan
-                    </button>
                   )}
                 </div>
               }

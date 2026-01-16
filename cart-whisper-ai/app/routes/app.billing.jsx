@@ -5,7 +5,7 @@
 
 import { redirect } from 'react-router';
 import { authenticate } from '../shopify.server';
-import { createSubscription, getSubscription, togglePlanTestMode } from '../utils/billing.server';
+import { createSubscription, getSubscription } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
@@ -51,18 +51,6 @@ export async function action({ request }) {
       return redirect(result.confirmationUrl);
     }
 
-    if (actionType === 'toggle_test') {
-      // 测试模式：切换计划
-      if (process.env.NODE_ENV !== 'development') {
-        console.warn('[Billing] Test mode attempted outside development');
-        return Response.json({ error: 'Test mode only available in development' }, { status: 403 });
-      }
-
-      console.log('[Billing] Toggling test plan for:', shop);
-      const newPlan = await togglePlanTestMode(shop);
-      console.log('[Billing] New plan:', newPlan);
-      return { success: true, newPlan };
-    }
 
     console.warn('[Billing] Invalid action:', actionType);
     return Response.json({ error: 'Invalid action' }, { status: 400 });
