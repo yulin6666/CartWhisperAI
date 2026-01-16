@@ -245,14 +245,12 @@
 
   // 缓存配置
   const CACHE_KEY_PREFIX = 'cw_rec_';
-  const CACHE_PLAN_KEY = 'cw_plan_level'; // 存储当前订阅级别
   const CACHE_TTL = 30 * 60 * 1000; // 30 分钟缓存
 
-  // 从缓存获取推荐
-  function getCachedRecommendations(productId, maxRecommendations) {
+  // 从缓存获取推荐（完整列表，不限制数量）
+  function getCachedRecommendations(productId) {
     try {
-      // 缓存key包含订阅级别，确保不同级别使用不同缓存
-      const key = CACHE_KEY_PREFIX + productId + '_' + maxRecommendations;
+      const key = CACHE_KEY_PREFIX + productId;
       const cached = localStorage.getItem(key);
       if (!cached) return null;
 
@@ -263,22 +261,22 @@
         return null;
       }
 
-      console.log('[CartWhisper] Using cached recommendations for product:', productId, 'plan level:', maxRecommendations);
+      console.log('[CartWhisper] Cache hit for product:', productId, '- got', data.length, 'recommendations');
       return data;
     } catch (e) {
       return null;
     }
   }
 
-  // 保存推荐到缓存
-  function cacheRecommendations(productId, recommendations, maxRecommendations) {
+  // 保存推荐到缓存（存储完整列表）
+  function cacheRecommendations(productId, recommendations) {
     try {
-      // 缓存key包含订阅级别
-      const key = CACHE_KEY_PREFIX + productId + '_' + maxRecommendations;
+      const key = CACHE_KEY_PREFIX + productId;
       localStorage.setItem(key, JSON.stringify({
         data: recommendations,
         timestamp: Date.now()
       }));
+      console.log('[CartWhisper] Cached', recommendations.length, 'recommendations for product:', productId);
     } catch (e) {
       // localStorage 可能已满，清理旧缓存
       clearOldCache();
@@ -302,37 +300,17 @@
     } catch (e) {}
   }
 
-  // 检查订阅级别是否变化，如果变化则清除所有推荐缓存
-  function checkAndClearCacheOnPlanChange(maxRecommendations) {
-    try {
-      const savedPlanLevel = localStorage.getItem(CACHE_PLAN_KEY);
-      const currentPlanLevel = String(maxRecommendations);
-
-      if (savedPlanLevel && savedPlanLevel !== currentPlanLevel) {
-        console.log('[CartWhisper] Plan level changed from', savedPlanLevel, 'to', currentPlanLevel, '- clearing all caches');
-        // 清除所有推荐缓存
-        const keys = Object.keys(localStorage).filter(k => k.startsWith(CACHE_KEY_PREFIX));
-        keys.forEach(key => localStorage.removeItem(key));
-      }
-
-      // 保存当前订阅级别
-      localStorage.setItem(CACHE_PLAN_KEY, currentPlanLevel);
-    } catch (e) {
-      console.error('[CartWhisper] Failed to check plan change:', e);
-    }
-  }
-
   // 标记是否从缓存加载（用于决定是否追踪展示）
   let loadedFromCache = false;
 
-  // 从API获取推荐 (通过 App Proxy)，带缓存
+  // 从API获取推荐，每次都先获取最新的订阅级别
   async function fetchRecommendations(productId) {
     currentSourceProductId = productId;
     loadedFromCache = false;
 
-    // 直接调用后端公开接口获取最新数据
+    // 🔥 关键改动：每次都先调用API获取最新的maxRecommendations和showWatermark
     const fetchUrl = `${backendUrl}/api/public/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper] Fetching recommendations from backend:', fetchUrl);
+    console.log('[CartWhisper] Fetching subscription info from backend:', fetchUrl);
 
     try {
       const response = await fetch(fetchUrl);
@@ -345,47 +323,39 @@
       }
 
       const data = await response.json();
-      let recommendations = data.recommendations || [];
+      const apiRecommendations = data.recommendations || [];
       const maxRecommendations = data.maxRecommendations || 1;
-      const showWatermark = data.showWatermark !== false; // 默认显示水印
+      const showWatermark = data.showWatermark !== false;
 
-      // 🔥 检查订阅级别变化，如果变化则清除旧缓存
-      checkAndClearCacheOnPlanChange(maxRecommendations);
+      console.log(`[CartWhisper] API returned: ${apiRecommendations.length} recommendations, maxRecommendations: ${maxRecommendations}, showWatermark: ${showWatermark}`);
 
-      // 🔥 检查缓存（在确认订阅级别后）
-      const cached = getCachedRecommendations(productId, maxRecommendations);
-      if (cached && cached.length > 0) {
-        loadedFromCache = true;
-        console.log('[CartWhisper] Using cached data for product:', productId);
-        // 即使使用缓存，也要更新水印显示
-        const watermarkEl = document.getElementById('cart-whisper-rec-watermark');
-        if (watermarkEl) {
-          watermarkEl.style.display = showWatermark ? 'block' : 'none';
-        }
-        return cached;
-      }
-
-      // 🔥 前端双重检查：确保不超过订阅计划限制
-      if (recommendations.length > maxRecommendations) {
-        console.log(`[CartWhisper] Front-end trimming from ${recommendations.length} to ${maxRecommendations}`);
-        recommendations = recommendations.slice(0, maxRecommendations);
-      }
-
-      console.log(`[CartWhisper] Final recommendations count: ${recommendations.length} (max: ${maxRecommendations})`);
-      console.log(`[CartWhisper] Show watermark: ${showWatermark}`);
-
-      // 显示/隐藏水印
+      // 显示/隐藏水印（根据最新的订阅状态）
       const watermarkEl = document.getElementById('cart-whisper-rec-watermark');
       if (watermarkEl) {
         watermarkEl.style.display = showWatermark ? 'block' : 'none';
       }
 
-      // 保存到缓存（包含订阅级别）
-      if (recommendations.length > 0) {
-        cacheRecommendations(productId, recommendations, maxRecommendations);
+      // 🔥 检查缓存（在获取订阅级别之后）
+      const cached = getCachedRecommendations(productId);
+      let recommendations;
+
+      if (cached && cached.length > 0) {
+        console.log(`[CartWhisper] Using cached data (${cached.length} items), trimming to ${maxRecommendations}`);
+        recommendations = cached.slice(0, maxRecommendations);
+        loadedFromCache = true;
+      } else {
+        console.log(`[CartWhisper] No cache, using API data (${apiRecommendations.length} items), trimming to ${maxRecommendations}`);
+        recommendations = apiRecommendations.slice(0, maxRecommendations);
+
+        // 保存完整的推荐列表到缓存（不限制数量）
+        if (apiRecommendations.length > 0) {
+          cacheRecommendations(productId, apiRecommendations);
+        }
       }
 
+      console.log(`[CartWhisper] Final recommendations count: ${recommendations.length}`);
       return recommendations;
+
     } catch (error) {
       console.error('[CartWhisper] Failed to fetch recommendations', error);
       return [];
