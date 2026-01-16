@@ -54,6 +54,23 @@ export async function action({ request }) {
       return { success: true, message: 'Subscription reset to FREE' };
     }
 
+    if (actionType === 'clear_recommendations') {
+      const apiKey = await getApiKey(shop);
+      const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+
+      const response = await fetch(`${BACKEND_URL}/api/recommendations`, {
+        method: 'DELETE',
+        headers: { 'X-API-Key': apiKey }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        return { success: true, message: `Successfully cleared ${data.deleted} recommendations` };
+      } else {
+        return { success: false, error: data.error || 'Failed to clear recommendations' };
+      }
+    }
+
     return { success: false, error: 'Unknown action' };
   } catch (error) {
     console.error('[Test Page] Error:', error);
@@ -102,6 +119,15 @@ export default function TestPage() {
     if (confirm('⚠️ This will DELETE the subscription record and create a new FREE subscription. Continue?')) {
       fetcher.submit(
         { action: 'reset_subscription' },
+        { method: 'post' }
+      );
+    }
+  };
+
+  const clearRecommendations = () => {
+    if (confirm('⚠️ This will DELETE all AI-generated recommendations from the backend. You will need to rescan products to generate new recommendations. Continue?')) {
+      fetcher.submit(
+        { action: 'clear_recommendations' },
         { method: 'post' }
       );
     }
@@ -255,6 +281,31 @@ export default function TestPage() {
         <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
           Destructive actions that cannot be undone
         </p>
+
+        {/* Clear Recommendations Button */}
+        <button
+          onClick={clearRecommendations}
+          disabled={fetcher.state === 'submitting'}
+          style={{
+            padding: '12px 24px',
+            fontSize: '14px',
+            backgroundColor: '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            width: '100%',
+            marginBottom: '15px',
+          }}
+        >
+          🗑️ Clear All Recommendations
+        </button>
+        <p style={{ color: '#999', fontSize: '12px', marginBottom: '20px' }}>
+          This will delete all AI-generated recommendations from the backend. You will need to rescan products to generate new recommendations.
+        </p>
+
+        {/* Reset Subscription Button */}
         <button
           onClick={resetSubscription}
           disabled={fetcher.state === 'submitting'}
