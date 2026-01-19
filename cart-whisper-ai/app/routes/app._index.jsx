@@ -31,12 +31,18 @@ export async function loader({ request }) {
     if (apiKey) {
       // 同步计划状态到后端（修复前后端计划不一致的bug）
       try {
+        const planData = {
+          plan: currentPlan.toLowerCase(),
+          manualRefreshPerMonth: planFeatures?.manualRefreshPerMonth || 0,
+          maxProducts: planFeatures?.maxProducts || 50,
+          apiCallsPerDay: planFeatures?.apiCallsPerDay || 5000,
+        };
         await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan: currentPlan.toLowerCase() }),
+          body: JSON.stringify(planData),
         });
-        console.log('[Home] Synced plan to backend:', currentPlan);
+        console.log('[Home] Synced plan to backend:', currentPlan, 'with features:', planData);
       } catch (e) {
         console.error('[Home] Failed to sync plan to backend:', e.message);
       }
@@ -44,6 +50,7 @@ export async function loader({ request }) {
       // 获取同步状态（包含 API 使用量）
       const statusResult = await getSyncStatus(apiKey);
       syncStatus = statusResult.syncStatus;
+      console.log('[Home] Full syncStatus from backend:', JSON.stringify(syncStatus, null, 2));
 
       // 获取所有推荐数据
       const res = await fetch(`${BACKEND_URL}/api/recommendations`, {
