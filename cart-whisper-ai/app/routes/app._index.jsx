@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
-import { getSubscription, getPlanFeatures } from '../utils/billing.server';
+import { getSubscription, getPlanFeatures, getCurrentPlan } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { admin, session } = await authenticate.admin(request);
@@ -18,15 +18,29 @@ export async function loader({ request }) {
   let error = null;
   let subscription = null;
   let planFeatures = null;
+  let currentPlan = 'FREE';
 
   try {
     // 获取订阅信息
     subscription = await getSubscription(shop);
     planFeatures = await getPlanFeatures(shop);
+    currentPlan = await getCurrentPlan(shop);
 
     apiKey = await getApiKey(shop);
 
     if (apiKey) {
+      // 同步计划状态到后端（修复前后端计划不一致的bug）
+      try {
+        await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: currentPlan.toLowerCase() }),
+        });
+        console.log('[Home] Synced plan to backend:', currentPlan);
+      } catch (e) {
+        console.error('[Home] Failed to sync plan to backend:', e.message);
+      }
+
       // 获取同步状态（包含 API 使用量）
       const statusResult = await getSyncStatus(apiKey);
       syncStatus = statusResult.syncStatus;
@@ -46,7 +60,7 @@ export async function loader({ request }) {
         const statsResult = await getStatistics(apiKey);
         statistics = statsResult.statistics;
       } catch (e) {
-        console.log('[Dashboard] Error getting statistics:', e.message);
+        console.log('[Home] Error getting statistics:', e.message);
       }
     }
   } catch (e) {
@@ -63,6 +77,7 @@ export async function loader({ request }) {
     statistics,
     subscription,
     planFeatures,
+    currentPlan,
     error,
     // 查询参数用于显示通知
     upgraded: url.searchParams.get('upgraded') === 'true',
@@ -72,7 +87,7 @@ export async function loader({ request }) {
   };
 }
 
-// Action: Handle reset API usage
+// Action: Handle reset API usage and reset refresh
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const actionType = formData.get('_action');
@@ -94,6 +109,24 @@ export const action = async ({ request }) => {
     }
   }
 
+  if (actionType === 'resetRefresh') {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lastRefreshAt: null }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset refresh time');
+      }
+
+      return { success: true, action: 'resetRefresh' };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
   return null;
 };
 
@@ -108,6 +141,7 @@ export default function Index() {
     statistics,
     subscription,
     planFeatures,
+    currentPlan: loaderPlan,
     error,
     upgraded,
     upgradeFailed,
@@ -117,6 +151,8 @@ export default function Index() {
 
   const planFetcher = useFetcher();
   const billingFetcher = useFetcher();
+  const syncFetcher = useFetcher();
+  const resetFetcher = useFetcher();
   const revalidator = useRevalidator();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,19 +160,21 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showNotification, setShowNotification] = useState(null);
 
-  // Get current plan from subscription
-  const currentPlan = subscription?.plan || 'free';
+  // Get current plan from subscription or loader
+  const currentPlan = loaderPlan?.toLowerCase() || subscription?.plan || 'free';
   const isPro = currentPlan === 'pro' && subscription?.status === 'active';
   const isMax = currentPlan === 'max' && subscription?.status === 'active';
   const isPaid = (isPro || isMax) && subscription?.status === 'active';
   const hasAdvancedAnalytics = planFeatures?.analytics === 'advanced';
+  const isSyncing = syncFetcher.state === 'submitting';
+  const isResetting = resetFetcher.state === 'submitting';
 
   // Revalidate after action
   useEffect(() => {
-    if (planFetcher.data?.success) {
+    if (planFetcher.data?.success || resetFetcher.data?.success || syncFetcher.data?.success) {
       revalidator.revalidate();
     }
-  }, [planFetcher.data]);
+  }, [planFetcher.data, resetFetcher.data, syncFetcher.data]);
 
   // Revalidate after billing action (upgrade/downgrade)
   useEffect(() => {
@@ -186,31 +224,129 @@ export default function Index() {
 
   if (!isRegistered) {
     return (
-      <div style={{ maxWidth: '800px', margin: '40px auto', padding: '20px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '28px', marginBottom: '20px' }}>Welcome to CartWhisper AI</h1>
-        <p style={{ color: '#666', marginTop: '10px', fontSize: '16px', marginBottom: '30px' }}>
-          AI-powered product recommendations to boost your sales
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+        <h1 style={{ marginBottom: '10px' }}>Welcome to CartWhisper AI</h1>
+        <p style={{ color: '#666', marginBottom: '30px' }}>
+          Get started by syncing your products to generate AI-powered recommendations.
         </p>
-        <div style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', padding: '30px', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '20px', marginBottom: '15px' }}>Get Started</h2>
-          <p style={{ color: '#666', marginBottom: '20px' }}>
-            Sync your products to start generating AI-powered recommendations
+
+        {/* Getting Started Card */}
+        <div style={{
+          padding: '30px',
+          backgroundColor: '#e3f2fd',
+          borderRadius: '12px',
+          border: '2px solid #2196f3',
+          marginBottom: '30px',
+          textAlign: 'center',
+        }}>
+          <h2 style={{ color: '#1565c0', marginBottom: '15px' }}>🚀 Initial Setup</h2>
+          <p style={{ color: '#1565c0', marginBottom: '20px', fontSize: '16px' }}>
+            Click the button below to sync your Shopify products and start generating recommendations.
           </p>
-          <Link
-            to="/app/dashboard"
-            style={{
-              display: 'inline-block',
-              padding: '12px 30px',
-              fontSize: '16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
-          >
-            Sync Products Now
-          </Link>
+
+          <syncFetcher.Form method="post" action="/api/scan">
+            <input type="hidden" name="mode" value="auto" />
+            <button
+              type="submit"
+              disabled={isSyncing}
+              style={{
+                padding: '16px 32px',
+                fontSize: '16px',
+                backgroundColor: isSyncing ? '#ccc' : '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: isSyncing ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              {isSyncing ? (
+                <>
+                  <span>⏳</span> Syncing...
+                </>
+              ) : (
+                <>🚀 Start Initial Sync</>
+              )}
+            </button>
+          </syncFetcher.Form>
+
+          {/* Sync Progress */}
+          {isSyncing && (
+            <div style={{ marginTop: '20px', maxWidth: '600px', margin: '20px auto 0' }}>
+              <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#007bff' }}>Syncing in progress...</span>
+                <span style={{ fontSize: '12px', color: '#666' }}>This may take up to 30 minutes</span>
+              </div>
+              <div
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: '#e9ecef',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #007bff, #0056b3)',
+                    borderRadius: '4px',
+                    animation: 'pulse 2s ease-in-out infinite',
+                    width: '100%',
+                  }}
+                >
+                  <style>{`
+                    @keyframes pulse {
+                      0% { opacity: 0.6; }
+                      50% { opacity: 1; }
+                      100% { opacity: 0.6; }
+                    }
+                  `}</style>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sync Result */}
+          {syncFetcher.data && syncFetcher.data.success && (
+            <div
+              style={{
+                marginTop: '20px',
+                padding: '20px',
+                borderRadius: '8px',
+                backgroundColor: '#d4edda',
+                border: '2px solid #28a745',
+              }}
+            >
+              <h3 style={{ color: '#155724', margin: '0 0 10px 0' }}>✅ Initial Sync Completed!</h3>
+              <p style={{ color: '#155724', margin: '5px 0' }}>
+                Successfully synced <strong>{syncFetcher.data.productsCount}</strong> products and generated <strong>{syncFetcher.data.recommendationsCount}</strong> recommendations.
+              </p>
+              <p style={{ color: '#155724', margin: '10px 0 0 0', fontSize: '14px' }}>
+                The page will reload automatically...
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* How it works section */}
+        <div style={{
+          padding: '20px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          border: '1px solid #dee2e6',
+        }}>
+          <h3 style={{ margin: '0 0 15px 0' }}>ℹ️ How it works</h3>
+          <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+            <li>Click "Start Initial Sync" to fetch all products from your Shopify store</li>
+            <li>Products are sent to the CartWhisper AI backend</li>
+            <li>AI analyzes products and generates personalized recommendations</li>
+            <li>Recommendations are stored and can be displayed in your storefront</li>
+          </ol>
         </div>
       </div>
     );
@@ -484,22 +620,144 @@ export default function Index() {
             />
           </div>
 
+          {/* Resync All Status */}
+          {syncStatus?.refreshLimit && (
+            <div style={{
+              marginBottom: '20px',
+              padding: '15px 20px',
+              backgroundColor: syncStatus.canRefresh ? '#d4edda' : (currentPlan === 'free' ? '#fff3e0' : '#fff3cd'),
+              borderRadius: '8px',
+              border: `1px solid ${syncStatus.canRefresh ? '#c3e6cb' : (currentPlan === 'free' ? '#ffb74d' : '#ffc107')}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <span style={{ fontSize: '14px' }}>
+                🔄 <strong>Resync All Limit:</strong> {syncStatus.refreshLimit.used}/{syncStatus.refreshLimit.limit} used this month
+                {syncStatus.refreshLimit.limit === 0 ? (
+                  <span style={{ marginLeft: '10px', color: '#e65100' }}>
+                    🔒 Free plan: Upgrade to PRO for {planFeatures?.manualRefreshPerMonth || 4} resyncs/month
+                  </span>
+                ) : syncStatus.canRefresh ? (
+                  <span style={{ marginLeft: '10px', color: '#28a745' }}>
+                    ✅ {syncStatus.refreshLimit.remaining} resync{syncStatus.refreshLimit.remaining !== 1 ? 's' : ''} remaining
+                  </span>
+                ) : (
+                  <span style={{ marginLeft: '10px', color: '#856404' }}>
+                    ⏰ Next resync: {formatDate(syncStatus.refreshLimit.nextRefreshAt)}
+                  </span>
+                )}
+              </span>
+              <resetFetcher.Form method="post">
+                <input type="hidden" name="_action" value="resetRefresh" />
+                <button
+                  type="submit"
+                  disabled={isResetting}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                  title="Reset refresh count (for testing)"
+                >
+                  {isResetting ? '...' : '🔓 Reset'}
+                </button>
+              </resetFetcher.Form>
+            </div>
+          )}
+
           {/* Quick Actions */}
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '30px' }}>
-            <Link
-              to="/app/dashboard"
-              style={{
-                padding: '12px 24px',
-                fontSize: '14px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                borderRadius: '6px',
-                textDecoration: 'none',
-                fontWeight: 'bold',
-              }}
-            >
-              Sync Products
-            </Link>
+            {/* Sync New Products Button */}
+            <syncFetcher.Form method="post" action="/api/scan">
+              <input type="hidden" name="mode" value="auto" />
+              <button
+                type="submit"
+                disabled={isSyncing}
+                style={{
+                  padding: '12px 24px',
+                  fontSize: '14px',
+                  backgroundColor: isSyncing ? '#ccc' : '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: isSyncing ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                {isSyncing ? (
+                  <>
+                    <span>⏳</span> Syncing...
+                  </>
+                ) : (
+                  <>🚀 {syncStatus?.initialSyncDone ? 'Sync New Products' : 'Initial Sync'}</>
+                )}
+              </button>
+            </syncFetcher.Form>
+
+            {/* Resync All Button */}
+            {syncStatus?.initialSyncDone && (
+              <syncFetcher.Form method="post" action="/api/scan">
+                <input type="hidden" name="mode" value="refresh" />
+                <button
+                  type="submit"
+                  disabled={isSyncing || !syncStatus?.canRefresh}
+                  title={
+                    !syncStatus?.canRefresh
+                      ? (currentPlan === 'free'
+                          ? 'Free plan: Upgrade to PRO to unlock Resync All'
+                          : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
+                      : 'Regenerate all recommendations'
+                  }
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    backgroundColor: isSyncing || !syncStatus?.canRefresh ? '#ccc' : '#fd7e14',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: isSyncing || !syncStatus?.canRefresh ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  🔄 Resync All
+                </button>
+              </syncFetcher.Form>
+            )}
+
+            {/* Upgrade Link for Free Users */}
+            {currentPlan === 'free' && (
+              <Link
+                to="/app/billing"
+                style={{
+                  padding: '12px 24px',
+                  fontSize: '14px',
+                  backgroundColor: '#ff9800',
+                  color: 'white',
+                  borderRadius: '6px',
+                  textDecoration: 'none',
+                  fontWeight: 'bold',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                ⬆️ Upgrade to PRO
+              </Link>
+            )}
+
             <button
               onClick={() => setActiveTab('recommendations')}
               style={{
@@ -516,6 +774,93 @@ export default function Index() {
               View Recommendations
             </button>
           </div>
+
+          {/* Sync Progress */}
+          {isSyncing && (
+            <div style={{ marginBottom: '30px' }}>
+              <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#007bff' }}>Syncing in progress...</span>
+                <span style={{ fontSize: '12px', color: '#999' }}>Please wait, this may take up to 30 minutes</span>
+              </div>
+              <div
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: '#e9ecef',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #007bff, #0056b3)',
+                    borderRadius: '4px',
+                    animation: 'pulse 2s ease-in-out infinite',
+                    width: '100%',
+                  }}
+                >
+                  <style>{`
+                    @keyframes pulse {
+                      0% { opacity: 0.6; }
+                      50% { opacity: 1; }
+                      100% { opacity: 0.6; }
+                    }
+                  `}</style>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sync Result */}
+          {syncFetcher.data && (
+            <div
+              style={{
+                marginBottom: '30px',
+                padding: '20px',
+                borderRadius: '8px',
+                border: syncFetcher.data.success ? '2px solid #28a745' : syncFetcher.data.rateLimited ? '2px solid #ffc107' : '2px solid #dc3545',
+                backgroundColor: syncFetcher.data.success ? '#d4edda' : syncFetcher.data.rateLimited ? '#fff3cd' : '#f8d7da',
+              }}
+            >
+              {syncFetcher.data.success ? (
+                <>
+                  <h3 style={{ color: '#155724', margin: '0 0 15px 0', fontSize: '18px' }}>
+                    ✅ Sync Completed!
+                  </h3>
+                  <div style={{ color: '#155724', fontSize: '14px' }}>
+                    <p style={{ margin: '5px 0' }}>
+                      <strong>Products:</strong> {syncFetcher.data.productsCount}
+                    </p>
+                    <p style={{ margin: '5px 0' }}>
+                      <strong>Recommendations:</strong> {syncFetcher.data.recommendationsCount}
+                    </p>
+                    <p style={{ margin: '5px 0' }}>
+                      <strong>Duration:</strong> {syncFetcher.data.duration}
+                    </p>
+                  </div>
+                </>
+              ) : syncFetcher.data.rateLimited ? (
+                <>
+                  <h3 style={{ color: '#856404', margin: '0 0 10px 0' }}>⏰ Resync Rate Limited</h3>
+                  <p style={{ color: '#856404', margin: '5px 0' }}>
+                    You have reached your monthly resync limit.
+                  </p>
+                  <p style={{ color: '#856404', margin: '5px 0', fontSize: '14px' }}>
+                    Next resync available: <strong>{formatDate(syncFetcher.data.nextRefreshAt)}</strong>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 style={{ color: '#721c24', margin: '0 0 10px 0' }}>❌ Sync Failed</h3>
+                  <p style={{ color: '#721c24', margin: '5px 0' }}>
+                    {syncFetcher.data.error || 'Unknown error occurred'}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Analytics Section - Moved from Analytics tab */}
           <h2 style={{ marginBottom: '20px', fontSize: '20px' }}>Analytics</h2>
@@ -732,7 +1077,7 @@ export default function Index() {
                 <>
                   <p style={{ fontSize: '16px', marginBottom: '10px' }}>No recommendations yet</p>
                   <p style={{ fontSize: '14px' }}>
-                    Sync products at <Link to="/app/dashboard" style={{ color: '#1a73e8' }}>Sync Products</Link> to generate recommendations
+                    Click "Sync New Products" button above to generate recommendations
                   </p>
                 </>
               ) : (

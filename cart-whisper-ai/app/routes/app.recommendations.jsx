@@ -55,8 +55,8 @@ export default function RecommendationsPage() {
         <h1 style={{ color: '#f44336' }}>⚠️ Shop Not Registered</h1>
         <p style={{ color: '#666', marginTop: '10px' }}>
           Please first sync your products at{' '}
-          <Link to="/app/dashboard" style={{ color: '#1a73e8' }}>
-            /app/dashboard
+          <Link to="/app" style={{ color: '#1a73e8' }}>
+            Home
           </Link>
         </p>
       </div>
@@ -189,8 +189,8 @@ export default function RecommendationsPage() {
               <p style={{ fontSize: '16px', marginBottom: '10px' }}>No recommendations yet</p>
               <p style={{ fontSize: '14px' }}>
                 Sync products at{' '}
-                <Link to="/app/dashboard" style={{ color: '#1a73e8' }}>
-                  /app/dashboard
+                <Link to="/app" style={{ color: '#1a73e8' }}>
+                  Home
                 </Link>{' '}
                 to generate recommendations
               </p>
@@ -342,7 +342,7 @@ export default function RecommendationsPage() {
       {/* 操作按钮 */}
       <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginTop: '30px' }}>
         <Link
-          to="/app/dashboard"
+          to="/app"
           style={{
             padding: '12px 24px',
             fontSize: '14px',

@@ -337,8 +337,7 @@ export default function TestPage() {
       }}>
         <h2 style={{ fontSize: '20px', marginBottom: '15px' }}>🔗 Quick Links</h2>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <QuickLink href="/app" text="Dashboard" />
-          <QuickLink href="/app/dashboard" text="Sync Products" />
+          <QuickLink href="/app" text="Home" />
           <QuickLink href="https://cartwhisperaibackend-production.up.railway.app/api/health" text="Backend Health" external />
         </div>
       </div>
