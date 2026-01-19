@@ -180,11 +180,23 @@ export default function ScanPage() {
               </div>
             </div>
           </div>
-          {!syncStatus.canRefresh && syncStatus.nextRefreshAt && (
-            <div style={{ marginTop: '10px', padding: '8px 12px', backgroundColor: '#fff3cd', borderRadius: '4px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {syncStatus.refreshLimit && (
+            <div style={{ marginTop: '10px', padding: '8px 12px', backgroundColor: syncStatus.canRefresh ? '#d4edda' : (currentPlan === 'free' ? '#fff3e0' : '#fff3cd'), borderRadius: '4px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>
-                ⏰ Next refresh available: {formatDate(syncStatus.nextRefreshAt)}
-                {syncStatus.daysUntilRefresh && ` (${syncStatus.daysUntilRefresh} days)`}
+                🔄 Resync All Limit: <strong>{syncStatus.refreshLimit.used}/{syncStatus.refreshLimit.limit}</strong> used this month
+                {syncStatus.refreshLimit.limit === 0 ? (
+                  <span style={{ marginLeft: '10px', color: '#e65100' }}>
+                    🔒 Free plan: Upgrade to PRO for 3 resyncs/month
+                  </span>
+                ) : syncStatus.canRefresh ? (
+                  <span style={{ marginLeft: '10px', color: '#28a745' }}>
+                    ✅ {syncStatus.refreshLimit.remaining} resync{syncStatus.refreshLimit.remaining !== 1 ? 's' : ''} remaining
+                  </span>
+                ) : (
+                  <span style={{ marginLeft: '10px', color: '#856404' }}>
+                    ⏰ Next resync: {formatDate(syncStatus.refreshLimit.nextRefreshAt)}
+                  </span>
+                )}
               </span>
               <resetFetcher.Form method="post" style={{ marginLeft: '10px' }}>
                 <input type="hidden" name="_action" value="resetRefresh" />
@@ -200,7 +212,7 @@ export default function ScanPage() {
                     borderRadius: '4px',
                     cursor: 'pointer',
                   }}
-                  title="Reset refresh time (for testing)"
+                  title="Reset refresh count (for testing)"
                 >
                   {isResetting ? '...' : '🔓 Reset'}
                 </button>
@@ -249,7 +261,13 @@ export default function ScanPage() {
             <button
               type="submit"
               disabled={isScanning || backendStatus.status !== 'ok' || !syncStatus?.canRefresh}
-              title={!syncStatus?.canRefresh ? `Next refresh: ${formatDate(syncStatus?.nextRefreshAt)}` : 'Regenerate all recommendations'}
+              title={
+                !syncStatus?.canRefresh
+                  ? (currentPlan === 'free'
+                      ? 'Free plan: Upgrade to PRO to unlock Resync All (3 times/month)'
+                      : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
+                  : 'Regenerate all recommendations'
+              }
               style={{
                 padding: '14px 28px',
                 fontSize: '16px',
@@ -264,9 +282,31 @@ export default function ScanPage() {
                 gap: '8px',
               }}
             >
-              🔄 Force Refresh
+              🔄 Resync All
             </button>
           </fetcher.Form>
+        )}
+
+        {/* Upgrade Link for Free Users */}
+        {syncStatus?.initialSyncDone && currentPlan === 'free' && (
+          <Link
+            to="/app/billing"
+            style={{
+              padding: '14px 28px',
+              fontSize: '16px',
+              backgroundColor: '#ff9800',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            ⬆️ Upgrade to PRO
+          </Link>
         )}
 
         <Link
@@ -429,13 +469,12 @@ export default function ScanPage() {
             </>
           ) : fetcher.data.rateLimited ? (
             <>
-              <h3 style={{ color: '#856404', margin: '0 0 10px 0' }}>⏰ Refresh Rate Limited</h3>
+              <h3 style={{ color: '#856404', margin: '0 0 10px 0' }}>⏰ Resync Rate Limited</h3>
               <p style={{ color: '#856404', margin: '5px 0' }}>
-                You can only force refresh once per {syncStatus?.plan === 'pro' ? 'week' : 'month'}.
+                You have reached your monthly resync limit for the {syncStatus?.plan?.toUpperCase() || 'FREE'} plan.
               </p>
               <p style={{ color: '#856404', margin: '5px 0', fontSize: '14px' }}>
-                Next refresh available: <strong>{formatDate(fetcher.data.nextRefreshAt)}</strong>
-                {fetcher.data.daysRemaining && ` (${fetcher.data.daysRemaining} days)`}
+                Next resync available: <strong>{formatDate(fetcher.data.nextRefreshAt)}</strong>
               </p>
               <p style={{ color: '#666', margin: '10px 0 0 0', fontSize: '13px' }}>
                 Tip: You can still use "Sync New Products" to add new products incrementally.
