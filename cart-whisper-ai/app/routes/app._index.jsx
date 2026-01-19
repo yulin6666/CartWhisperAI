@@ -180,11 +180,11 @@ export default function Index() {
   if (syncStatus && typeof window !== 'undefined') {
     console.log('=== DEBUG: Resync All Button State ===');
     console.log('currentPlan:', currentPlan);
-    console.log('syncStatus.canRefresh:', syncStatus.canRefresh);
+    console.log('syncStatus.refreshLimit.canRefresh:', syncStatus.refreshLimit?.canRefresh);
     console.log('syncStatus.refreshLimit:', syncStatus.refreshLimit);
     console.log('syncStatus.initialSyncDone:', syncStatus.initialSyncDone);
     console.log('syncStatus.lastRefreshAt:', syncStatus.lastRefreshAt);
-    console.log('Button disabled?', !syncStatus?.canRefresh);
+    console.log('Button disabled?', !syncStatus?.refreshLimit?.canRefresh);
     console.log('======================================');
   }
 
@@ -644,9 +644,9 @@ export default function Index() {
             <div style={{
               marginBottom: '20px',
               padding: '15px 20px',
-              backgroundColor: syncStatus.canRefresh ? '#d4edda' : (currentPlan === 'free' ? '#fff3e0' : '#fff3cd'),
+              backgroundColor: syncStatus.refreshLimit.canRefresh ? '#d4edda' : (currentPlan === 'free' ? '#fff3e0' : '#fff3cd'),
               borderRadius: '8px',
-              border: `1px solid ${syncStatus.canRefresh ? '#c3e6cb' : (currentPlan === 'free' ? '#ffb74d' : '#ffc107')}`,
+              border: `1px solid ${syncStatus.refreshLimit.canRefresh ? '#c3e6cb' : (currentPlan === 'free' ? '#ffb74d' : '#ffc107')}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -659,7 +659,7 @@ export default function Index() {
                   <span style={{ marginLeft: '10px', color: '#e65100' }}>
                     🔒 Free plan: Upgrade to PRO for {planFeatures?.manualRefreshPerMonth || 4} resyncs/month
                   </span>
-                ) : syncStatus.canRefresh ? (
+                ) : syncStatus.refreshLimit.canRefresh ? (
                   <span style={{ marginLeft: '10px', color: '#28a745' }}>
                     ✅ {syncStatus.refreshLimit.remaining} resync{syncStatus.refreshLimit.remaining !== 1 ? 's' : ''} remaining
                   </span>
@@ -729,9 +729,9 @@ export default function Index() {
                 <input type="hidden" name="mode" value="refresh" />
                 <button
                   type="submit"
-                  disabled={isSyncing || !syncStatus?.canRefresh}
+                  disabled={isSyncing || !syncStatus?.refreshLimit?.canRefresh}
                   title={
-                    !syncStatus?.canRefresh
+                    !syncStatus?.refreshLimit?.canRefresh
                       ? (currentPlan === 'free'
                           ? 'Free plan: Upgrade to PRO to unlock Resync All'
                           : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
@@ -740,11 +740,11 @@ export default function Index() {
                   style={{
                     padding: '12px 24px',
                     fontSize: '14px',
-                    backgroundColor: isSyncing || !syncStatus?.canRefresh ? '#ccc' : '#fd7e14',
+                    backgroundColor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#ccc' : '#fd7e14',
                     color: 'white',
                     border: 'none',
                     borderRadius: '6px',
-                    cursor: isSyncing || !syncStatus?.canRefresh ? 'not-allowed' : 'pointer',
+                    cursor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
                     fontWeight: 'bold',
                     display: 'inline-flex',
                     alignItems: 'center',
