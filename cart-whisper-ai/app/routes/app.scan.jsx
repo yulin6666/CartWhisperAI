@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { authenticate } from '../shopify.server';
 import { healthCheck, getSyncStatus, BACKEND_URL } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
+import { getCurrentPlan } from '../utils/billing.server';
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -12,6 +13,7 @@ export const loader = async ({ request }) => {
   let backendStatus = { status: 'unknown' };
   let apiKey = null;
   let syncStatus = null;
+  let currentPlan = 'FREE';
 
   try {
     backendStatus = await healthCheck();
@@ -22,6 +24,9 @@ export const loader = async ({ request }) => {
   // 尝试获取 API Key（如果已注册）
   try {
     apiKey = await getApiKey(shop);
+
+    // 获取真实的订阅计划
+    currentPlan = await getCurrentPlan(shop);
 
     // 获取同步状态
     if (apiKey) {
@@ -39,6 +44,7 @@ export const loader = async ({ request }) => {
     backendStatus,
     isRegistered: !!apiKey,
     syncStatus,
+    currentPlan,
   };
 };
 
@@ -71,7 +77,7 @@ export const action = async ({ request }) => {
 };
 
 export default function ScanPage() {
-  const { shop, backendUrl, backendStatus, isRegistered, syncStatus } = useLoaderData();
+  const { shop, backendUrl, backendStatus, isRegistered, syncStatus, currentPlan: loaderPlan } = useLoaderData();
   const fetcher = useFetcher();
   const resetFetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -79,7 +85,8 @@ export default function ScanPage() {
   const isResetting = resetFetcher.state === 'submitting';
   const [showDetails, setShowDetails] = useState(false);
 
-  const currentPlan = syncStatus?.plan || 'free';
+  // Use the plan from loader (Shopify), not from syncStatus (backend)
+  const currentPlan = loaderPlan?.toLowerCase() || syncStatus?.plan || 'free';
 
   // Revalidate after reset
   useEffect(() => {
@@ -176,7 +183,7 @@ export default function ScanPage() {
             <div>
               <div style={{ fontSize: '12px', color: '#666' }}>Plan</div>
               <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                {currentPlan === 'pro' ? '⭐ Pro' : '🆓 Free'}
+                {currentPlan === 'max' ? '💎 Max' : currentPlan === 'pro' ? '⭐ Pro' : '🆓 Free'}
               </div>
             </div>
           </div>
