@@ -176,6 +176,18 @@ export default function Index() {
   const isSyncing = syncFetcher.state === 'submitting';
   const isResetting = resetFetcher.state === 'submitting';
 
+  // Debug: Log key state (only once on initial render when syncStatus is available)
+  if (syncStatus && typeof window !== 'undefined') {
+    console.log('=== DEBUG: Resync All Button State ===');
+    console.log('currentPlan:', currentPlan);
+    console.log('syncStatus.canRefresh:', syncStatus.canRefresh);
+    console.log('syncStatus.refreshLimit:', syncStatus.refreshLimit);
+    console.log('syncStatus.initialSyncDone:', syncStatus.initialSyncDone);
+    console.log('syncStatus.lastRefreshAt:', syncStatus.lastRefreshAt);
+    console.log('Button disabled?', !syncStatus?.canRefresh);
+    console.log('======================================');
+  }
+
   // Revalidate after action
   useEffect(() => {
     if (planFetcher.data?.success || resetFetcher.data?.success || syncFetcher.data?.success) {
