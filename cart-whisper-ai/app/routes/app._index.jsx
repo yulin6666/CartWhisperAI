@@ -197,7 +197,7 @@ export default function Index() {
             Sync your products to start generating AI-powered recommendations
           </p>
           <Link
-            to="/app/scan"
+            to="/app/dashboard"
             style={{
               display: 'inline-block',
               padding: '12px 30px',
@@ -487,7 +487,7 @@ export default function Index() {
           {/* Quick Actions */}
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '30px' }}>
             <Link
-              to="/app/scan"
+              to="/app/dashboard"
               style={{
                 padding: '12px 24px',
                 fontSize: '14px',
@@ -732,7 +732,7 @@ export default function Index() {
                 <>
                   <p style={{ fontSize: '16px', marginBottom: '10px' }}>No recommendations yet</p>
                   <p style={{ fontSize: '14px' }}>
-                    Sync products at <Link to="/app/scan" style={{ color: '#1a73e8' }}>Sync Products</Link> to generate recommendations
+                    Sync products at <Link to="/app/dashboard" style={{ color: '#1a73e8' }}>Sync Products</Link> to generate recommendations
                   </p>
                 </>
               ) : (
