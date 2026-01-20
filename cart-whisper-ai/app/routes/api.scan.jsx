@@ -134,7 +134,7 @@ export async function action({ request }) {
 
     // 2. 获取 API Key（首次会自动注册）
     console.log('🔑 Getting API key...');
-    const apiKey = await getApiKey(shop);
+    const apiKey = await getApiKey(shop, admin);
     console.log('✅ API key ready');
 
     // 3. 从 Shopify 获取所有商品

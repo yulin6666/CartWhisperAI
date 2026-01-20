@@ -11,15 +11,16 @@ const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhispera
 /**
  * 注册商店并获取 API Key
  * @param {string} domain - 商店域名
- * @returns {Promise<{success: boolean, apiKey: string, isNew: boolean}>}
+ * @param {string} planName - Shopify plan名称（可选）
+ * @returns {Promise<{success: boolean, apiKey: string, isNew: boolean, isDevelopmentStore: boolean, isWhitelisted: boolean}>}
  */
-export async function registerShop(domain) {
+export async function registerShop(domain, planName = null) {
   const response = await fetch(`${BACKEND_URL}/api/shops/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ domain }),
+    body: JSON.stringify({ domain, planName }),
   });
 
   if (!response.ok) {

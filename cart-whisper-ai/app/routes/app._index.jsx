@@ -26,7 +26,7 @@ export async function loader({ request }) {
     planFeatures = await getPlanFeatures(shop);
     currentPlan = await getCurrentPlan(shop);
 
-    apiKey = await getApiKey(shop);
+    apiKey = await getApiKey(shop, admin);
 
     if (apiKey) {
       // 同步计划状态到后端（修复前后端计划不一致的bug）
