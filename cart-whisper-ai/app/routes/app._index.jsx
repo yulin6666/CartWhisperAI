@@ -498,18 +498,7 @@ export default function Index() {
             <StatCard
               icon="⭐"
               label="Plan"
-              value={
-                <div>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold' }}>
-                    {currentPlan.toUpperCase()}
-                  </div>
-                  {subscription?.isTestMode && (
-                    <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
-                      (Test Mode)
-                    </div>
-                  )}
-                </div>
-              }
+              value={currentPlan.toUpperCase()}
               color={isMax ? '#9c27b0' : (isPro ? '#f57c00' : '#388e3c')}
               bgColor={isMax ? '#f3e5f5' : (isPro ? '#fff3e0' : '#e8f5e9')}
               extra={
@@ -630,13 +619,6 @@ export default function Index() {
                 </div>
               }
             />
-            <StatCard
-              icon="🔄"
-              label="Last Refresh"
-              value={syncStatus?.lastRefreshAt ? formatDate(syncStatus.lastRefreshAt).split(' ')[0] : 'Never'}
-              color="#0097a7"
-              bgColor="#e0f7fa"
-            />
           </div>
 
           {/* Resync All Status */}
@@ -647,11 +629,6 @@ export default function Index() {
               backgroundColor: syncStatus.refreshLimit.canRefresh ? '#d4edda' : (currentPlan === 'free' ? '#fff3e0' : '#fff3cd'),
               borderRadius: '8px',
               border: `1px solid ${syncStatus.refreshLimit.canRefresh ? '#c3e6cb' : (currentPlan === 'free' ? '#ffb74d' : '#ffc107')}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '10px'
             }}>
               <span style={{ fontSize: '14px' }}>
                 🔄 <strong>Resync All Limit:</strong> {syncStatus.refreshLimit.used}/{syncStatus.refreshLimit.limit} used this month
@@ -669,25 +646,6 @@ export default function Index() {
                   </span>
                 )}
               </span>
-              <resetFetcher.Form method="post">
-                <input type="hidden" name="_action" value="resetRefresh" />
-                <button
-                  type="submit"
-                  disabled={isResetting}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                  title="Reset refresh count (for testing)"
-                >
-                  {isResetting ? '...' : '🔓 Reset'}
-                </button>
-              </resetFetcher.Form>
             </div>
           )}
 
@@ -776,22 +734,6 @@ export default function Index() {
                 ⬆️ Upgrade to PRO
               </Link>
             )}
-
-            <button
-              onClick={() => setActiveTab('recommendations')}
-              style={{
-                padding: '12px 24px',
-                fontSize: '14px',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-              }}
-            >
-              View Recommendations
-            </button>
           </div>
 
           {/* Sync Progress */}
