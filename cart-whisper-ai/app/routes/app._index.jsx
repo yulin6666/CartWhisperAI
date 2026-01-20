@@ -781,8 +781,8 @@ export default function Index() {
                 marginBottom: '30px',
                 padding: '20px',
                 borderRadius: '8px',
-                border: syncFetcher.data.success ? '2px solid #28a745' : syncFetcher.data.rateLimited ? '2px solid #ffc107' : '2px solid #dc3545',
-                backgroundColor: syncFetcher.data.success ? '#d4edda' : syncFetcher.data.rateLimited ? '#fff3cd' : '#f8d7da',
+                border: syncFetcher.data.success ? '2px solid #28a745' : syncFetcher.data.rateLimited ? '2px solid #ffc107' : syncFetcher.data.tokenQuotaExceeded ? '2px solid #ff9800' : '2px solid #dc3545',
+                backgroundColor: syncFetcher.data.success ? '#d4edda' : syncFetcher.data.rateLimited ? '#fff3cd' : syncFetcher.data.tokenQuotaExceeded ? '#fff3e0' : '#f8d7da',
               }}
             >
               {syncFetcher.data.success ? (
@@ -810,6 +810,19 @@ export default function Index() {
                   </p>
                   <p style={{ color: '#856404', margin: '5px 0', fontSize: '14px' }}>
                     Next resync available: <strong>{formatDate(syncFetcher.data.nextRefreshAt)}</strong>
+                  </p>
+                </>
+              ) : syncFetcher.data.tokenQuotaExceeded ? (
+                <>
+                  <h3 style={{ color: '#e65100', margin: '0 0 10px 0' }}>🎫 Daily Token Quota Exceeded</h3>
+                  <p style={{ color: '#e65100', margin: '5px 0', fontSize: '15px' }}>
+                    You have used all your free tokens for today. Please try again tomorrow.
+                  </p>
+                  <p style={{ color: '#e65100', margin: '10px 0 5px 0', fontSize: '14px' }}>
+                    Quota resets at: <strong>{formatDate(syncFetcher.data.quotaResetDate)}</strong>
+                  </p>
+                  <p style={{ color: '#e65100', margin: '10px 0 0 0', fontSize: '13px' }}>
+                    💡 Want unlimited tokens? Upgrade to PRO or MAX plan!
                   </p>
                 </>
               ) : (
