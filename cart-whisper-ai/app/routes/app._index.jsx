@@ -74,6 +74,19 @@ export async function loader({ request }) {
     error = e.message;
   }
 
+  // Fetch global quota settings (test mode only)
+  let globalQuota = null;
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const quotaRes = await fetch(`${BACKEND_URL}/api/admin/global-quota`);
+      if (quotaRes.ok) {
+        globalQuota = await quotaRes.json();
+      }
+    } catch (e) {
+      console.log('[Home] Error getting global quota:', e.message);
+    }
+  }
+
   return {
     shop,
     backendUrl: BACKEND_URL,
@@ -86,6 +99,7 @@ export async function loader({ request }) {
     planFeatures,
     currentPlan,
     error,
+    globalQuota,
     // 查询参数用于显示通知
     upgraded: url.searchParams.get('upgraded') === 'true',
     upgradeFailed: url.searchParams.get('upgrade_failed') === 'true',
@@ -134,6 +148,30 @@ export const action = async ({ request }) => {
     }
   }
 
+  if (actionType === 'updateGlobalQuota') {
+    try {
+      const dailyTokenQuota = parseInt(formData.get('dailyTokenQuota'));
+
+      if (!dailyTokenQuota || dailyTokenQuota < 0) {
+        return { success: false, error: 'Invalid quota value' };
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/admin/global-quota`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dailyTokenQuota }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update global quota');
+      }
+
+      return { success: true, action: 'updateGlobalQuota', dailyTokenQuota };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
   return null;
 };
 
@@ -150,6 +188,7 @@ export default function Index() {
     planFeatures,
     currentPlan: loaderPlan,
     error,
+    globalQuota,
     upgraded,
     upgradeFailed,
     cancelled,
@@ -160,6 +199,7 @@ export default function Index() {
   const billingFetcher = useFetcher();
   const syncFetcher = useFetcher();
   const resetFetcher = useFetcher();
+  const quotaFetcher = useFetcher();
   const revalidator = useRevalidator();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -646,6 +686,112 @@ export default function Index() {
                   </span>
                 )}
               </span>
+            </div>
+          )}
+
+          {/* Global Token Quota Status (Free Plan Only) */}
+          {currentPlan === 'free' && syncStatus?.tokenQuota && (
+            <div style={{
+              marginBottom: '20px',
+              padding: '15px 20px',
+              backgroundColor: syncStatus.tokenQuota.tokensRemaining > 0 ? '#e3f2fd' : '#fff3e0',
+              borderRadius: '8px',
+              border: `1px solid ${syncStatus.tokenQuota.tokensRemaining > 0 ? '#90caf9' : '#ffb74d'}`,
+            }}>
+              <span style={{ fontSize: '14px' }}>
+                🎫 <strong>Daily Token Quota:</strong> {syncStatus.tokenQuota.tokensUsed}/{syncStatus.tokenQuota.dailyLimit} used today
+                {syncStatus.tokenQuota.tokensRemaining > 0 ? (
+                  <span style={{ marginLeft: '10px', color: '#1976d2' }}>
+                    ✅ {syncStatus.tokenQuota.tokensRemaining} tokens remaining
+                  </span>
+                ) : (
+                  <span style={{ marginLeft: '10px', color: '#e65100' }}>
+                    ⚠️ Quota exceeded - Resets at: {formatDate(syncStatus.tokenQuota.quotaResetDate)}
+                  </span>
+                )}
+              </span>
+              <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+                💡 Upgrade to PRO or MAX for unlimited tokens!
+              </div>
+            </div>
+          )}
+
+          {/* Admin: Global Quota Settings (Test Mode Only) */}
+          {isTestMode && globalQuota && (
+            <div style={{
+              marginBottom: '20px',
+              padding: '20px',
+              backgroundColor: '#fff9e6',
+              borderRadius: '8px',
+              border: '2px solid #ffc107',
+            }}>
+              <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#856404' }}>
+                🔧 Admin: Global Quota Settings
+              </h3>
+              <div style={{ marginBottom: '15px' }}>
+                <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+                  <strong>Current Settings:</strong>
+                </div>
+                <div style={{ fontSize: '13px', color: '#666', marginLeft: '10px' }}>
+                  • Daily Token Limit: <strong>{globalQuota.dailyTokenQuota?.toLocaleString()}</strong> tokens
+                </div>
+                <div style={{ fontSize: '13px', color: '#666', marginLeft: '10px' }}>
+                  • Tokens Used Today: <strong>{globalQuota.tokensUsedToday?.toLocaleString()}</strong> tokens
+                </div>
+                <div style={{ fontSize: '13px', color: '#666', marginLeft: '10px' }}>
+                  • Last Updated: <strong>{globalQuota.updatedAt ? new Date(globalQuota.updatedAt).toLocaleString() : 'N/A'}</strong>
+                </div>
+              </div>
+              <quotaFetcher.Form method="post">
+                <input type="hidden" name="_action" value="updateGlobalQuota" />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '5px' }}>
+                      New Daily Token Limit:
+                    </label>
+                    <input
+                      type="number"
+                      name="dailyTokenQuota"
+                      defaultValue={globalQuota.dailyTokenQuota}
+                      min="0"
+                      step="1000"
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={quotaFetcher.state === 'submitting'}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      backgroundColor: quotaFetcher.state === 'submitting' ? '#ccc' : '#ffc107',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: quotaFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {quotaFetcher.state === 'submitting' ? 'Updating...' : 'Update Quota'}
+                  </button>
+                </div>
+              </quotaFetcher.Form>
+              {quotaFetcher.data?.success && (
+                <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', fontSize: '13px' }}>
+                  ✅ Global quota updated successfully to {quotaFetcher.data.dailyTokenQuota?.toLocaleString()} tokens/day
+                </div>
+              )}
+              {quotaFetcher.data?.error && (
+                <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', fontSize: '13px' }}>
+                  ❌ Error: {quotaFetcher.data.error}
+                </div>
+              )}
             </div>
           )}
 
