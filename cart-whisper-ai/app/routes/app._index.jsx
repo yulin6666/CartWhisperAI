@@ -689,32 +689,6 @@ export default function Index() {
             </div>
           )}
 
-          {/* Global Token Quota Status (Free Plan Only) */}
-          {currentPlan === 'free' && syncStatus?.tokenQuota && (
-            <div style={{
-              marginBottom: '20px',
-              padding: '15px 20px',
-              backgroundColor: syncStatus.tokenQuota.tokensRemaining > 0 ? '#e3f2fd' : '#fff3e0',
-              borderRadius: '8px',
-              border: `1px solid ${syncStatus.tokenQuota.tokensRemaining > 0 ? '#90caf9' : '#ffb74d'}`,
-            }}>
-              <span style={{ fontSize: '14px' }}>
-                🎫 <strong>Daily Token Quota:</strong> {syncStatus.tokenQuota.tokensUsed}/{syncStatus.tokenQuota.dailyLimit} used today
-                {syncStatus.tokenQuota.tokensRemaining > 0 ? (
-                  <span style={{ marginLeft: '10px', color: '#1976d2' }}>
-                    ✅ {syncStatus.tokenQuota.tokensRemaining} tokens remaining
-                  </span>
-                ) : (
-                  <span style={{ marginLeft: '10px', color: '#e65100' }}>
-                    ⚠️ Quota exceeded - Resets at: {formatDate(syncStatus.tokenQuota.quotaResetDate)}
-                  </span>
-                )}
-              </span>
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-                💡 Upgrade to PRO or MAX for unlimited tokens!
-              </div>
-            </div>
-          )}
 
           {/* Admin: Global Quota Settings (Test Mode Only) */}
           {isTestMode && globalQuota && (
