@@ -674,13 +674,40 @@ export default function Index() {
               border: `1px solid ${syncStatus.refreshLimit.canRefresh ? '#c3e6cb' : (currentPlan === 'free' ? '#ffb74d' : '#ffc107')}`,
             }}>
               <div style={{ fontSize: '14px' }}>
-                <div style={{ marginBottom: '8px' }}>
-                  {syncStatus.refreshLimit.limit === 0 ? (
-                    <>
-                      🔄 <strong>Resync All:</strong> <span style={{ color: '#e65100' }}>Free users cannot resync. PRO can resync 3 times/month + 2,000 products</span>
-                    </>
-                  ) : (
-                    <>
+                {syncStatus.refreshLimit.limit === 0 ? (
+                  // Free plan - show upgrade information
+                  <div>
+                    <div style={{ marginBottom: '12px', fontWeight: 'bold', color: '#e65100' }}>
+                      🔒 Current Plan: FREE (Limited Features)
+                    </div>
+                    <div style={{ marginBottom: '8px', paddingLeft: '10px' }}>
+                      📦 <strong>Products:</strong> {syncStatus.productCount || 0}/50 synced
+                    </div>
+                    <div style={{ marginBottom: '8px', paddingLeft: '10px' }}>
+                      🎯 <strong>Recommendations:</strong> 1 per product
+                    </div>
+                    <div style={{ marginBottom: '8px', paddingLeft: '10px' }}>
+                      🔄 <strong>Resync All:</strong> Not available
+                    </div>
+                    <div style={{ marginBottom: '8px', paddingLeft: '10px' }}>
+                      📊 <strong>Analytics:</strong> Basic only (impressions & clicks)
+                    </div>
+                    <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #ffb74d' }}>
+                      <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
+                        ⬆️ Upgrade Benefits:
+                      </div>
+                      <div style={{ marginBottom: '6px', paddingLeft: '10px', fontSize: '13px' }}>
+                        <strong>PRO Plan:</strong> 2,000 products • 3 recommendations/product • 3 resyncs/month • Advanced analytics
+                      </div>
+                      <div style={{ paddingLeft: '10px', fontSize: '13px' }}>
+                        <strong>MAX Plan:</strong> Unlimited products • 3 recommendations/product • 10 resyncs/month • Advanced analytics
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Paid plan - show usage
+                  <div>
+                    <div style={{ marginBottom: '8px' }}>
                       🔄 <strong>Resync All Limit:</strong> {syncStatus.refreshLimit.used}/{syncStatus.refreshLimit.limit} used this month
                       {syncStatus.refreshLimit.canRefresh ? (
                         <span style={{ marginLeft: '10px', color: '#28a745' }}>
@@ -691,18 +718,8 @@ export default function Index() {
                           ⏰ Next resync: {formatDate(syncStatus.refreshLimit.nextRefreshAt)}
                         </span>
                       )}
-                    </>
-                  )}
-                </div>
-                {currentPlan === 'free' && (
-                  <>
-                    <div style={{ marginBottom: '8px' }}>
-                      📦 <strong>Product Limit:</strong> {syncStatus.productCount || 0}/{planFeatures.maxProducts === Infinity ? '∞' : planFeatures.maxProducts} products synced
                     </div>
-                    <div>
-                      🎯 <strong>Recommendations:</strong> <span style={{ color: '#e65100' }}>Free users get 1 recommendation per product. PRO gets 3 recommendations per product</span>
-                    </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -851,27 +868,6 @@ export default function Index() {
                 </button>
               </syncFetcher.Form>
             )}
-
-            {/* Upgrade Link for Free Users */}
-            {currentPlan === 'free' && (
-              <Link
-                to="/app/billing"
-                style={{
-                  padding: '12px 24px',
-                  fontSize: '14px',
-                  backgroundColor: '#ff9800',
-                  color: 'white',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontWeight: 'bold',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                ⬆️ Upgrade to PRO
-              </Link>
-            )}
           </div>
 
           {/* Sync Progress */}
@@ -976,34 +972,6 @@ export default function Index() {
 
           {/* Analytics Section - Moved from Analytics tab */}
           <h2 style={{ marginBottom: '20px', fontSize: '20px' }}>Analytics</h2>
-
-          {/* Upgrade Banner for Free Users */}
-          {!hasAdvancedAnalytics && (
-            <div style={{ backgroundColor: '#fff3e0', borderRadius: '8px', padding: '20px', marginBottom: '30px', border: '1px solid #ffb74d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: '0 0 8px 0', color: '#e65100', fontSize: '16px' }}>🔒 Unlock Advanced Analytics</h3>
-                <p style={{ margin: 0, color: '#e65100', fontSize: '14px' }}>
-                  Upgrade to PRO or MAX plan to access Click-through Rate, Top Recommendations, and Top Products analytics.
-                </p>
-              </div>
-              <Link
-                to="/app/billing"
-                style={{
-                  padding: '10px 24px',
-                  backgroundColor: '#ff9800',
-                  color: 'white',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                  marginLeft: '20px',
-                }}
-              >
-                Upgrade Now
-              </Link>
-            </div>
-          )}
 
           {/* Summary Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
