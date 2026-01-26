@@ -29,7 +29,9 @@ export async function loader({ request }) {
     apiKey = await getApiKey(shop, admin);
 
     if (apiKey) {
-      // 同步计划状态到后端（修复前后端计划不一致的bug）
+      // 同步计划状态到后端（仅在计划变更时执行，而不是每次页面加载）
+      // 注释掉自动同步，改为仅在升级/降级时同步
+      /*
       try {
         const planData = {
           plan: currentPlan.toLowerCase(),
@@ -46,6 +48,7 @@ export async function loader({ request }) {
       } catch (e) {
         console.error('[Home] Failed to sync plan to backend:', e.message);
       }
+      */
 
       // 获取同步状态（包含 API 使用量）
       const statusResult = await getSyncStatus(apiKey);
@@ -661,8 +664,8 @@ export default function Index() {
             />
           </div>
 
-          {/* Resync All Status */}
-          {syncStatus?.refreshLimit && (
+          {/* Plan Limits Status */}
+          {syncStatus?.refreshLimit && planFeatures && (
             <div style={{
               marginBottom: '20px',
               padding: '15px 20px',
@@ -670,25 +673,40 @@ export default function Index() {
               borderRadius: '8px',
               border: `1px solid ${syncStatus.refreshLimit.canRefresh ? '#c3e6cb' : (currentPlan === 'free' ? '#ffb74d' : '#ffc107')}`,
             }}>
-              <span style={{ fontSize: '14px' }}>
-                🔄 <strong>Resync All Limit:</strong> {syncStatus.refreshLimit.used}/{syncStatus.refreshLimit.limit} used this month
-                {syncStatus.refreshLimit.limit === 0 ? (
-                  <span style={{ marginLeft: '10px', color: '#e65100' }}>
-                    🔒 Free plan: Upgrade to PRO for {planFeatures?.manualRefreshPerMonth || 4} resyncs/month
-                  </span>
-                ) : syncStatus.refreshLimit.canRefresh ? (
-                  <span style={{ marginLeft: '10px', color: '#28a745' }}>
-                    ✅ {syncStatus.refreshLimit.remaining} resync{syncStatus.refreshLimit.remaining !== 1 ? 's' : ''} remaining
-                  </span>
-                ) : (
-                  <span style={{ marginLeft: '10px', color: '#856404' }}>
-                    ⏰ Next resync: {formatDate(syncStatus.refreshLimit.nextRefreshAt)}
-                  </span>
+              <div style={{ fontSize: '14px' }}>
+                <div style={{ marginBottom: '8px' }}>
+                  {syncStatus.refreshLimit.limit === 0 ? (
+                    <>
+                      🔄 <strong>Resync All:</strong> <span style={{ color: '#e65100' }}>Free users cannot resync. PRO can resync 3 times/month + 2,000 products</span>
+                    </>
+                  ) : (
+                    <>
+                      🔄 <strong>Resync All Limit:</strong> {syncStatus.refreshLimit.used}/{syncStatus.refreshLimit.limit} used this month
+                      {syncStatus.refreshLimit.canRefresh ? (
+                        <span style={{ marginLeft: '10px', color: '#28a745' }}>
+                          ✅ {syncStatus.refreshLimit.remaining} resync{syncStatus.refreshLimit.remaining !== 1 ? 's' : ''} remaining
+                        </span>
+                      ) : (
+                        <span style={{ marginLeft: '10px', color: '#856404' }}>
+                          ⏰ Next resync: {formatDate(syncStatus.refreshLimit.nextRefreshAt)}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+                {currentPlan === 'free' && (
+                  <>
+                    <div style={{ marginBottom: '8px' }}>
+                      📦 <strong>Product Limit:</strong> {syncStatus.productCount || 0}/{planFeatures.maxProducts === Infinity ? '∞' : planFeatures.maxProducts} products synced
+                    </div>
+                    <div>
+                      🎯 <strong>Recommendations:</strong> <span style={{ color: '#e65100' }}>Free users get 1 recommendation per product. PRO gets 3 recommendations per product</span>
+                    </div>
+                  </>
                 )}
-              </span>
+              </div>
             </div>
           )}
-
 
           {/* Admin: Global Quota Settings (Test Mode Only) */}
           {isTestMode && globalQuota && (

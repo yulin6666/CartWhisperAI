@@ -15,7 +15,7 @@ export const PLANS = {
       maxProducts: 50,
       recommendationsPerProduct: 1,
       apiCallsPerDay: 5000,
-      manualRefreshPerMonth: 1,
+      manualRefreshPerMonth: 0,
       editableReasons: false,
       analytics: 'basic', // 只有曝光和点击数
       showWatermark: true, // 显示水印
@@ -30,7 +30,7 @@ export const PLANS = {
       maxProducts: 2000,
       recommendationsPerProduct: 3,
       apiCallsPerDay: 50000,
-      manualRefreshPerMonth: 4,
+      manualRefreshPerMonth: 3,
       editableReasons: true,
       analytics: 'advanced', // 包含转化率和Top推荐
       prioritySupport: true,
