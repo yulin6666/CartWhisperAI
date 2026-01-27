@@ -15,7 +15,7 @@ export const PLANS = {
       maxProducts: 50,
       recommendationsPerProduct: 1,
       apiCallsPerDay: 5000,
-      manualRefreshPerMonth: 0,
+      manualRefreshPerMonth: 1,
       editableReasons: false,
       analytics: 'basic', // 只有曝光和点击数
       showWatermark: true, // 显示水印
