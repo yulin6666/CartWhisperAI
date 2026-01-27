@@ -205,9 +205,6 @@ export default function Index() {
   const quotaFetcher = useFetcher();
   const revalidator = useRevalidator();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('sourceProductId');
-  const [activeTab, setActiveTab] = useState('overview');
   const [showNotification, setShowNotification] = useState(null);
 
   // Get current plan from subscription or loader
@@ -414,24 +411,6 @@ export default function Index() {
     );
   }
 
-  // Filter and sort recommendations
-  const filteredRecommendations = recommendations.filter((rec) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      rec.sourceTitle.toLowerCase().includes(searchLower) ||
-      rec.targetTitle.toLowerCase().includes(searchLower) ||
-      rec.sourceProductId.includes(searchTerm) ||
-      rec.targetProductId.includes(searchTerm)
-    );
-  });
-
-  const sortedRecommendations = [...filteredRecommendations].sort((a, b) => {
-    if (sortBy === 'sourceProductId') return a.sourceProductId.localeCompare(b.sourceProductId);
-    if (sortBy === 'sourceTitle') return a.sourceTitle.localeCompare(b.sourceTitle);
-    if (sortBy === 'targetTitle') return a.targetTitle.localeCompare(b.targetTitle);
-    return 0;
-  });
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -520,351 +499,488 @@ export default function Index() {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        marginBottom: '32px',
-        backgroundColor: 'white',
-        padding: '6px',
-        borderRadius: '12px',
-        border: '1px solid #e5e7eb',
-        width: 'fit-content'
-      }}>
-        {[
-          { id: 'overview', label: 'Overview', icon: '📊' },
-          { id: 'recommendations', label: 'Recommendations', icon: '🎯' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '10px 20px',
+      {/* Purple Upgrade Banner - Free Users Only */}
+      {currentPlan === 'free' && (
+        <div style={{
+          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+          borderRadius: '16px',
+          padding: '32px',
+          marginBottom: '32px',
+          color: 'white',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '24px',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          {/* Left: Main Message */}
+          <div style={{ flex: '0 0 auto' }}>
+            <div style={{
+              display: 'inline-block',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              padding: '4px 12px',
+              borderRadius: '999px',
+              fontSize: '12px',
+              fontWeight: '600',
+              marginBottom: '12px'
+            }}>
+              PRO PLAN FEATURE
+            </div>
+            <h2 style={{
+              margin: '0 0 8px 0',
+              fontSize: '28px',
+              fontWeight: '700',
+              letterSpacing: '-0.02em'
+            }}>
+              Unlock 3x More Sales
+            </h2>
+            <p style={{
+              margin: 0,
               fontSize: '14px',
-              fontWeight: '500',
-              backgroundColor: activeTab === tab.id ? '#111827' : 'transparent',
-              color: activeTab === tab.id ? 'white' : '#6b7280',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
+              opacity: 0.9
+            }}>
+              Upgrade to show more recommendations per product
+            </p>
+          </div>
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div>
-          {/* Stats Grid - Redesigned */}
+          {/* Middle: Comparison */}
           <div style={{
+            flex: '1 1 400px',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '20px',
-            marginBottom: '32px'
+            gridTemplateColumns: '1fr 1fr',
+            gap: '16px',
+            minWidth: '280px'
           }}>
-            {/* Products Card */}
+            {/* Current FREE */}
             <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e5e7eb',
-              transition: 'all 0.2s'
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: '12px',
+              padding: '16px',
+              backdropFilter: 'blur(10px)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  backgroundColor: '#eff6ff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px'
-                }}>
-                  📦
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500', marginBottom: '4px' }}>
-                    Products
-                  </div>
-                  <div style={{ fontSize: '32px', fontWeight: '600', color: '#111827', lineHeight: '1' }}>
-                    {syncStatus?.productCount || stats.products || 0}
-                  </div>
-                </div>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: '600',
+                opacity: 0.8,
+                marginBottom: '12px',
+                letterSpacing: '0.05em'
+              }}>
+                CURRENT (FREE)
+              </div>
+              <div style={{ fontSize: '13px', lineHeight: '1.8' }}>
+                <div>❌ 50 Products Limit</div>
+                <div>⚠️ 1 Rec / Product</div>
+                <div>📊 Basic Analytics</div>
               </div>
             </div>
 
-            {/* Recommendations Card */}
+            {/* Upgrade to PRO */}
             <div style={{
               backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e5e7eb',
-              transition: 'all 0.2s'
+              borderRadius: '12px',
+              padding: '16px',
+              color: '#7c3aed'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  backgroundColor: '#faf5ff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px'
-                }}>
-                  🎯
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500', marginBottom: '4px' }}>
-                    Recommendations
-                  </div>
-                  <div style={{ fontSize: '32px', fontWeight: '600', color: '#111827', lineHeight: '1' }}>
-                    {syncStatus?.recommendationCount || stats.recommendations || 0}
-                  </div>
-                </div>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: '600',
+                marginBottom: '12px',
+                letterSpacing: '0.05em'
+              }}>
+                UPGRADE TO PRO
               </div>
-            </div>
-
-            {/* Plan Card */}
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e5e7eb',
-              transition: 'all 0.2s'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  backgroundColor: currentPlan === 'free' ? '#fef3c7' : '#dcfce7',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px'
-                }}>
-                  {currentPlan === 'free' ? '🔒' : '⭐'}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500', marginBottom: '4px' }}>
-                    Current Plan
-                  </div>
-                  <div style={{ fontSize: '24px', fontWeight: '600', color: '#111827', lineHeight: '1' }}>
-                    {currentPlan.toUpperCase()}
-                  </div>
-                </div>
+              <div style={{ fontSize: '13px', lineHeight: '1.8', fontWeight: '500' }}>
+                <div>✅ 2,000 Products</div>
+                <div>🚀 3 Recs / Product</div>
+                <div>📊 Advanced Analytics</div>
               </div>
-              {!isPaid && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-                  <button
-                    onClick={() => handleUpgrade('PRO')}
-                    disabled={billingFetcher.state === 'submitting'}
-                    style={{
-                      padding: '10px 16px',
-                      fontSize: '13px',
-                      backgroundColor: '#111827',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {billingFetcher.state === 'submitting' ? 'Processing...' : '⬆️ Upgrade to PRO'}
-                  </button>
-                  <button
-                    onClick={() => handleUpgrade('MAX')}
-                    disabled={billingFetcher.state === 'submitting'}
-                    style={{
-                      padding: '10px 16px',
-                      fontSize: '13px',
-                      backgroundColor: '#6b7280',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {billingFetcher.state === 'submitting' ? 'Processing...' : '⬆️ Upgrade to MAX'}
-                  </button>
-                </div>
-              )}
-              {isPro && (
-                <div style={{ marginTop: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>
-                    ✓ PRO features unlocked
-                  </div>
-                  {subscription?.currentPeriodEnd && (
-                    <div style={{ fontSize: '11px', color: '#9ca3af' }}>
-                      Renews: {formatDate(subscription.currentPeriodEnd)}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMax && (
-                <div style={{ marginTop: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>
-                    ✓ All features unlocked
-                  </div>
-                  {subscription?.currentPeriodEnd && (
-                    <div style={{ fontSize: '11px', color: '#9ca3af' }}>
-                      Renews: {formatDate(subscription.currentPeriodEnd)}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Plan Limits Status - Redesigned */}
-          {syncStatus?.refreshLimit && planFeatures && currentPlan === 'free' && (
+          {/* Right: Action Buttons */}
+          <div style={{
+            flex: '0 0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            minWidth: '200px'
+          }}>
+            <button
+              onClick={() => handleUpgrade('PRO')}
+              disabled={billingFetcher.state === 'submitting'}
+              style={{
+                padding: '14px 24px',
+                fontSize: '15px',
+                fontWeight: '600',
+                backgroundColor: 'white',
+                color: '#7c3aed',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                opacity: billingFetcher.state === 'submitting' ? 0.7 : 1
+              }}
+            >
+              {billingFetcher.state === 'submitting' ? 'Processing...' : 'Upgrade to PRO →'}
+            </button>
+            <Link
+              to="/app/billing?view=plans"
+              style={{
+                padding: '12px 24px',
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'white',
+                textAlign: 'center',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                transition: 'all 0.2s'
+              }}
+            >
+              View MAX Plan (Unlimited)
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div>
+          {/* Stats Grid - Redesigned */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '20px',
+            marginBottom: '32px'
+          }}>
+            {/* Card 1: Product Sync Limit */}
             <div style={{
               backgroundColor: 'white',
               borderRadius: '16px',
-              padding: '32px',
-              border: '1px solid #fbbf24',
-              marginBottom: '32px',
+              padding: '24px',
+              border: '1px solid #e5e7eb',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}>
               <div style={{
                 display: 'flex',
-                alignItems: 'flex-start',
-                gap: '16px',
-                marginBottom: '24px'
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px'
+              }}>
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#6b7280'
+                }}>
+                  Product Sync Limit
+                </span>
+                {syncStatus?.productCount > (planFeatures?.maxProducts * 0.9) && planFeatures?.maxProducts !== Infinity && (
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '4px 8px',
+                    borderRadius: '999px',
+                    backgroundColor: '#fff7ed',
+                    color: '#f97316',
+                    border: '1px solid #fed7aa'
+                  }}>
+                    Near Limit
+                  </span>
+                )}
+              </div>
+
+              <h2 style={{
+                margin: '0 0 16px 0',
+                fontSize: '36px',
+                fontWeight: '700',
+                color: '#111827',
+                lineHeight: '1'
+              }}>
+                {syncStatus?.productCount || 0}
+                <span style={{
+                  fontSize: '24px',
+                  fontWeight: '400',
+                  color: '#9ca3af',
+                  marginLeft: '4px'
+                }}>
+                  / {planFeatures?.maxProducts === Infinity ? '∞' : planFeatures?.maxProducts || 50}
+                </span>
+              </h2>
+
+              {/* Progress Bar */}
+              <div style={{
+                width: '100%',
+                height: '8px',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '999px',
+                overflow: 'hidden',
+                marginBottom: '12px'
               }}>
                 <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  backgroundColor: '#fef3c7',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  flexShrink: 0
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #f97316, #fb923c)',
+                  borderRadius: '999px',
+                  width: `${Math.min(((syncStatus?.productCount || 0) / (planFeatures?.maxProducts || 50)) * 100, 100)}%`,
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+
+              <p style={{
+                margin: 0,
+                fontSize: '13px',
+                color: '#6b7280',
+                lineHeight: '1.5'
+              }}>
+                {currentPlan === 'free'
+                  ? 'Upgrade to sync up to 2,000 products.'
+                  : currentPlan === 'pro'
+                  ? 'PRO plan: Up to 2,000 products'
+                  : 'MAX plan: Unlimited products'}
+              </p>
+            </div>
+
+            {/* Card 2: Avg. Click-Through Rate */}
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px'
+              }}>
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#6b7280'
+                }}>
+                  Avg. Click-Through Rate
+                </span>
+                <span style={{
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#10b981'
+                }}>
+                  +5.4%
+                </span>
+              </div>
+
+              <h2 style={{
+                margin: '0 0 16px 0',
+                fontSize: '48px',
+                fontWeight: '700',
+                color: '#111827',
+                lineHeight: '1'
+              }}>
+                {statistics?.summary?.ctr || 0}%
+              </h2>
+
+              <p style={{
+                margin: 0,
+                fontSize: '13px',
+                color: '#6b7280',
+                lineHeight: '1.5'
+              }}>
+                Based on active recommendations.
+              </p>
+            </div>
+
+            {/* Card 3: Advanced Analytics (Locked for Free Users) */}
+            {!hasAdvancedAnalytics ? (
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                padding: '24px',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: '200px'
+              }}>
+                <div style={{
+                  fontSize: '48px',
+                  marginBottom: '16px',
+                  color: '#1f2937'
                 }}>
                   🔒
                 </div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    margin: '0 0 8px 0',
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#111827'
-                  }}>
-                    Free Plan Limitations
-                  </h3>
-                  <p style={{
-                    margin: 0,
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    lineHeight: '1.5'
-                  }}>
-                    Upgrade to unlock more features and grow your business
-                  </p>
-                </div>
-              </div>
 
+                <h3 style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#111827'
+                }}>
+                  Advanced Analytics
+                </h3>
+
+                <p style={{
+                  margin: '0 0 20px 0',
+                  fontSize: '13px',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  View detailed funnel & conversion data.
+                </p>
+
+                <button
+                  onClick={() => handleUpgrade('PRO')}
+                  disabled={billingFetcher.state === 'submitting'}
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s',
+                    opacity: billingFetcher.state === 'submitting' ? 0.7 : 1
+                  }}
+                >
+                  {billingFetcher.state === 'submitting' ? 'Processing...' : 'Unlock Pro'}
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                padding: '24px',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+              }}>
+                <div style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#6b7280',
+                  marginBottom: '16px'
+                }}>
+                  Advanced Analytics
+                </div>
+
+                <h2 style={{
+                  margin: '0 0 16px 0',
+                  fontSize: '36px',
+                  fontWeight: '700',
+                  color: '#111827',
+                  lineHeight: '1'
+                }}>
+                  {(statistics?.summary?.totalClicks || 0).toLocaleString()}
+                </h2>
+
+                <p style={{
+                  margin: 0,
+                  fontSize: '13px',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  Total clicks this month
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Active Products Section */}
+          <div style={{ marginBottom: '40px' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h2 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#111827'
+              }}>
+                Active Products
+              </h2>
+
+              {syncStatus?.initialSyncDone && (
+                <syncFetcher.Form method="post" action="/api/scan" style={{ display: 'inline' }}>
+                  <input type="hidden" name="mode" value="refresh" />
+                  <button
+                    type="submit"
+                    disabled={isSyncing || !syncStatus?.refreshLimit?.canRefresh}
+                    title={
+                      !syncStatus?.refreshLimit?.canRefresh
+                        ? (currentPlan === 'free'
+                            ? 'Upgrade to PRO to unlock Resync All'
+                            : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
+                        : 'Regenerate all recommendations'
+                    }
+                    style={{
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      backgroundColor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#111827',
+                      color: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Resync ({syncStatus?.refreshLimit?.remaining || 0} left)
+                  </button>
+                </syncFetcher.Form>
+              )}
+            </div>
+
+            {/* Products Grid */}
+            {recommendations.length > 0 ? (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
-                marginBottom: '24px'
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px'
               }}>
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#fafafa',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>
-                    📦 Products
+                {recommendations.slice(0, 10).map((rec, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      border: '1px solid #e5e7eb',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <ProductCell
+                      image={rec.sourceImage}
+                      title={rec.sourceTitle}
+                      id={rec.sourceProductId}
+                    />
                   </div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#111827' }}>
-                    {syncStatus.productCount || 0}/50
-                  </div>
-                </div>
-
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#fafafa',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>
-                    🎯 Recommendations
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#111827' }}>
-                    1 per product
-                  </div>
-                </div>
-
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#fafafa',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>
-                    🔄 Resync All
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#111827' }}>
-                    Not available
-                  </div>
-                </div>
-
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#fafafa',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>
-                    📊 Analytics
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#111827' }}>
-                    Basic only
-                  </div>
-                </div>
+                ))}
               </div>
-
+            ) : (
               <div style={{
-                padding: '20px',
                 backgroundColor: '#f9fafb',
                 borderRadius: '12px',
+                padding: '40px',
+                textAlign: 'center',
                 border: '1px solid #e5e7eb'
               }}>
-                <div style={{
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '12px'
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📦</div>
+                <p style={{
+                  margin: 0,
+                  fontSize: '14px',
+                  color: '#6b7280'
                 }}>
-                  ⬆️ Upgrade Benefits
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.6' }}>
-                    <strong style={{ color: '#111827' }}>PRO Plan:</strong> 2,000 products • 3 recommendations/product • 3 resyncs/month • Advanced analytics
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.6' }}>
-                    <strong style={{ color: '#111827' }}>MAX Plan:</strong> Unlimited products • 3 recommendations/product • 10 resyncs/month • Advanced analytics
-                  </div>
-                </div>
+                  No products synced yet. Click "Sync New Products" to get started.
+                </p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Admin: Global Quota Settings (Test Mode Only) */}
           {isTestMode && globalQuota && (
@@ -944,92 +1060,6 @@ export default function Index() {
               )}
             </div>
           )}
-
-          {/* Quick Actions - Redesigned */}
-          <div style={{ marginBottom: '40px' }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              color: '#111827',
-              marginBottom: '16px',
-              letterSpacing: '-0.01em'
-            }}>
-              Actions
-            </h2>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {/* Sync New Products Button */}
-              <syncFetcher.Form method="post" action="/api/scan">
-                <input type="hidden" name="mode" value="auto" />
-                <button
-                  type="submit"
-                  disabled={isSyncing}
-                  style={{
-                    padding: '14px 24px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    backgroundColor: isSyncing ? '#e5e7eb' : '#111827',
-                    color: isSyncing ? '#9ca3af' : 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: isSyncing ? 'not-allowed' : 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.2s',
-                    boxShadow: isSyncing ? 'none' : '0 1px 3px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  {isSyncing ? (
-                    <>
-                      <span>⏳</span>
-                      <span>Syncing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>🚀</span>
-                      <span>{syncStatus?.initialSyncDone ? 'Sync New Products' : 'Initial Sync'}</span>
-                    </>
-                  )}
-                </button>
-              </syncFetcher.Form>
-
-              {/* Resync All Button */}
-              {syncStatus?.initialSyncDone && (
-                <syncFetcher.Form method="post" action="/api/scan">
-                  <input type="hidden" name="mode" value="refresh" />
-                  <button
-                    type="submit"
-                    disabled={isSyncing || !syncStatus?.refreshLimit?.canRefresh}
-                    title={
-                      !syncStatus?.refreshLimit?.canRefresh
-                        ? (currentPlan === 'free'
-                            ? 'Free plan: Upgrade to PRO to unlock Resync All'
-                            : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
-                        : 'Regenerate all recommendations'
-                    }
-                    style={{
-                      padding: '14px 24px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      backgroundColor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#6b7280',
-                      color: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
-                      border: 'none',
-                      borderRadius: '10px',
-                      cursor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s',
-                      boxShadow: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'none' : '0 1px 3px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    <span>🔄</span>
-                    <span>Resync All</span>
-                  </button>
-                </syncFetcher.Form>
-              )}
-            </div>
-          </div>
 
           {/* Sync Progress - Redesigned */}
           {isSyncing && (
@@ -1349,123 +1379,18 @@ export default function Index() {
             </p>
           </div>
         </div>
-      )}
-
-      {/* Recommendations Tab */}
-      {activeTab === 'recommendations' && (
-        <div>
-          {/* Search and Sort */}
-          <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Search</label>
-              <input
-                type="text"
-                placeholder="Search by product name or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '14px',
-                }}
-              />
-            </div>
-            <div style={{ minWidth: '200px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Sort by</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '14px',
-                }}
-              >
-                <option value="sourceProductId">Source Product ID</option>
-                <option value="sourceTitle">Source Product Title</option>
-                <option value="targetTitle">Target Product Title</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Recommendations Table */}
-          {sortedRecommendations.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f5f5f5', borderRadius: '8px', color: '#999' }}>
-              {recommendations.length === 0 ? (
-                <>
-                  <p style={{ fontSize: '16px', marginBottom: '10px' }}>No recommendations yet</p>
-                  <p style={{ fontSize: '14px' }}>
-                    Click "Sync New Products" button above to generate recommendations
-                  </p>
-                </>
-              ) : (
-                <p>No results match your search</p>
-              )}
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Source Product</th>
-                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Recommended Product</th>
-                    <th style={{ padding: '15px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px' }}>Reason</th>
-                    <th style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px' }}>Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedRecommendations.map((rec, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #eee', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
-                      <td style={{ padding: '12px 15px', fontSize: '14px' }}>
-                        <ProductCell image={rec.sourceImage} title={rec.sourceTitle} id={rec.sourceProductId} />
-                      </td>
-                      <td style={{ padding: '12px 15px', fontSize: '14px' }}>
-                        <ProductCell image={rec.targetImage} title={rec.targetTitle} id={rec.targetProductId} />
-                      </td>
-                      <td style={{ padding: '12px 15px', fontSize: '14px', color: '#666' }}>
-                        <ReasonCell reason={rec.reason} />
-                      </td>
-                      <td style={{ padding: '12px 15px', fontSize: '12px', color: '#999', textAlign: 'center' }}>
-                        {new Date(rec.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div style={{ marginTop: '15px', fontSize: '12px', color: '#999', textAlign: 'right' }}>
-                Showing {sortedRecommendations.length} of {recommendations.length} recommendations
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      </div>
 
       {error && (
         <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#ffebee', borderRadius: '8px', border: '1px solid #ef5350', color: '#c62828' }}>
           Error: {error}
         </div>
       )}
-      </div>
     </div>
   );
 }
 
 // Helper Components
-function StatCard({ icon, label, value, color, bgColor, extra }) {
-  return (
-    <div style={{ padding: '20px', borderRadius: '12px', backgroundColor: bgColor, border: `1px solid ${color}22` }}>
-      <div style={{ fontSize: '24px', marginBottom: '8px' }}>{icon}</div>
-      <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>{label}</div>
-      <div style={{ fontSize: '28px', fontWeight: 'bold', color }}>{value}</div>
-      {extra}
-    </div>
-  );
-}
-
 function ProductCell({ image, title, id }) {
   return (
     <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
@@ -1480,17 +1405,6 @@ function ProductCell({ image, title, id }) {
         <div style={{ fontWeight: '500', marginBottom: '4px' }}>{title}</div>
         <div style={{ fontSize: '12px', color: '#999' }}>ID: {id}</div>
       </div>
-    </div>
-  );
-}
-
-function ReasonCell({ reason }) {
-  const parts = (reason || '—').split('|');
-  // Display English only (parts[1]), fallback to parts[0] if no English
-  const displayText = parts[1] || parts[0] || '—';
-  return (
-    <div>
-      <div style={{ fontWeight: '500' }}>{displayText}</div>
     </div>
   );
 }
