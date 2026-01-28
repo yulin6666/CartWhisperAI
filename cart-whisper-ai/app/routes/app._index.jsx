@@ -206,6 +206,7 @@ export default function Index() {
   const revalidator = useRevalidator();
 
   const [showNotification, setShowNotification] = useState(null);
+  const [visibleProducts, setVisibleProducts] = useState(10);
 
   // Get current plan from subscription or loader
   const currentPlan = loaderPlan?.toLowerCase() || subscription?.plan || 'free';
@@ -285,6 +286,11 @@ export default function Index() {
       revalidator.revalidate();
     }
   }, [upgraded, upgradeFailed, cancelled]);
+
+  // Reset visible products count when plan or recommendations change
+  useEffect(() => {
+    setVisibleProducts(10);
+  }, [currentPlan, recommendations.length]);
 
   // Format date helper
   const formatDate = (dateStr) => {
@@ -1018,7 +1024,7 @@ export default function Index() {
                       </tr>
                     </thead>
                     <tbody>
-                      {groupedProducts.slice(0, 10).map((group, idx) => {
+                      {groupedProducts.slice(0, visibleProducts).map((group, idx) => {
                         // For FREE plan, get all recommendations (up to 3) for display
                         const displayRecommendations = currentPlan === 'free'
                           ? recommendations
@@ -1099,8 +1105,10 @@ export default function Index() {
                                     backgroundColor: recIdx === 0 ? '#f0fdf4' : '#f9fafb',
                                     borderRadius: '8px',
                                     borderLeft: recIdx === 0 ? '3px solid #10b981' : '3px solid transparent',
-                                    fontSize: '13px'
+                                    fontSize: '13px',
+                                    transition: 'all 0.2s'
                                   }}
+                                  className={currentPlan === 'free' && recIdx > 0 ? 'locked-recommendation' : ''}
                                 >
                                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                                     {/* Recommendation Image */}
@@ -1151,24 +1159,30 @@ export default function Index() {
                                     </div>
                                   </div>
 
-                                  {/* Lock Overlay for 2nd and 3rd recommendations (FREE plan only) */}
+                                  {/* Light Lock Overlay for 2nd and 3rd recommendations (FREE plan only) */}
                                   {currentPlan === 'free' && recIdx > 0 && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      top: 0,
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 0,
-                                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                      borderRadius: '8px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      backdropFilter: 'blur(2px)',
-                                      cursor: 'not-allowed'
-                                    }}>
-                                      {recIdx === 1 && (
-                                        <div style={{
+                                    <>
+                                      <div
+                                        className="lock-overlay"
+                                        style={{
+                                          position: 'absolute',
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          bottom: 0,
+                                          backgroundColor: 'rgba(249, 250, 251, 0.85)',
+                                          borderRadius: '8px',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s'
+                                        }}
+                                      />
+                                      <div
+                                        className="lock-message"
+                                        style={{
+                                          position: 'absolute',
+                                          top: '50%',
+                                          left: '50%',
+                                          transform: 'translate(-50%, -50%)',
                                           backgroundColor: 'rgba(55, 65, 81, 0.95)',
                                           color: 'white',
                                           padding: '8px 16px',
@@ -1178,13 +1192,25 @@ export default function Index() {
                                           display: 'flex',
                                           alignItems: 'center',
                                           gap: '6px',
-                                          whiteSpace: 'nowrap'
-                                        }}>
-                                          <span style={{ fontSize: '14px' }}>🔒</span>
-                                          Upgrade to unlock these 2 items
-                                        </div>
-                                      )}
-                                    </div>
+                                          whiteSpace: 'nowrap',
+                                          opacity: 0,
+                                          pointerEvents: 'none',
+                                          transition: 'opacity 0.2s',
+                                          zIndex: 10
+                                        }}
+                                      >
+                                        <span style={{ fontSize: '14px' }}>🔒</span>
+                                        {recIdx === 1 ? 'Upgrade to unlock these 2 items' : ''}
+                                      </div>
+                                      <style>{`
+                                        .locked-recommendation:hover .lock-message {
+                                          opacity: 1;
+                                        }
+                                        .locked-recommendation:hover .lock-overlay {
+                                          backgroundColor: rgba(249, 250, 251, 0.95);
+                                        }
+                                      `}</style>
+                                    </>
                                   )}
                                 </div>
                               ))}
@@ -1211,6 +1237,36 @@ export default function Index() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Show More Button */}
+                {visibleProducts < groupedProducts.length && (
+                  <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                    <button
+                      onClick={() => setVisibleProducts(prev => Math.min(prev + 10, groupedProducts.length))}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        backgroundColor: 'white',
+                        color: '#111827',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f9fafb';
+                        e.currentTarget.style.borderColor = '#d1d5db';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = 'white';
+                        e.currentTarget.style.borderColor = '#e5e7eb';
+                      }}
+                    >
+                      Show More ({groupedProducts.length - visibleProducts} remaining)
+                    </button>
+                  </div>
+                )}
               ) : (
                 // PRO/MAX Plans: Card Layout
                 <div style={{
@@ -1218,7 +1274,7 @@ export default function Index() {
                   flexDirection: 'column',
                   gap: '16px'
                 }}>
-                  {groupedProducts.slice(0, 10).map((group, idx) => (
+                  {groupedProducts.slice(0, visibleProducts).map((group, idx) => (
                     <div
                       key={idx}
                       style={{
@@ -1337,6 +1393,36 @@ export default function Index() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Show More Button */}
+                  {visibleProducts < groupedProducts.length && (
+                    <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                      <button
+                        onClick={() => setVisibleProducts(prev => Math.min(prev + 10, groupedProducts.length))}
+                        style={{
+                          padding: '12px 24px',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          backgroundColor: 'white',
+                          color: '#111827',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f9fafb';
+                          e.currentTarget.style.borderColor = '#d1d5db';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'white';
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                        }}
+                      >
+                        Show More ({groupedProducts.length - visibleProducts} remaining)
+                      </button>
+                    </div>
+                  )}
                 </div>
               )
             ) : (
