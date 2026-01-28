@@ -577,31 +577,80 @@ export default function Index() {
           marginBottom: '40px',
           color: 'white',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '48px'
+          flexDirection: 'column',
+          gap: '32px'
         }}>
-          {/* Left: Title */}
-          <div style={{ flex: '0 0 auto', maxWidth: '380px' }}>
+          {/* Top Row: Title and Button */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '32px'
+          }}>
+            {/* Left: Title */}
             <h2 style={{
               margin: 0,
               fontSize: '36px',
               fontWeight: '700',
-              lineHeight: '1.2'
+              lineHeight: '1.2',
+              flex: '1 1 auto'
             }}>
               Unlock Your Store's Full Revenue Potential
             </h2>
+
+            {/* Right: Action Buttons */}
+            <div style={{
+              flex: '0 0 auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              alignItems: 'flex-end'
+            }}>
+              <button
+                onClick={() => handleUpgrade('PRO')}
+                disabled={billingFetcher.state === 'submitting'}
+                style={{
+                  padding: '16px 32px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  backgroundColor: 'white',
+                  color: '#7c3aed',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {billingFetcher.state === 'submitting' ? 'Processing...' : (
+                  <>Upgrade to PRO <span>⚡</span></>
+                )}
+              </button>
+              <Link
+                to="/app/billing?view=plans"
+                style={{
+                  fontSize: '14px',
+                  color: 'white',
+                  textDecoration: 'none',
+                  opacity: 0.9
+                }}
+              >
+                Need unlimited scale? View MAX Plan →
+              </Link>
+            </div>
           </div>
 
-          {/* Middle: Feature Checklist (2x2 Grid) */}
+          {/* Bottom: Feature Checklist (2x2 Grid) */}
           <div style={{
-            flex: '1 1 auto',
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '16px 40px',
+            gridTemplateColumns: 'repeat(3, auto)',
+            gap: '16px 48px',
             fontSize: '16px',
             fontWeight: '500',
-            maxWidth: '600px'
+            justifyContent: 'start'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✓</span>
@@ -613,56 +662,12 @@ export default function Index() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✓</span>
-              <span>3 Recommendations / Popup</span>
+              <span>no watermark</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✓</span>
-              <span>no watermark</span>
+              <span>3 Recommendations / Popup</span>
             </div>
-          </div>
-
-          {/* Right: Action Buttons */}
-          <div style={{
-            flex: '0 0 auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            alignItems: 'flex-end'
-          }}>
-            <button
-              onClick={() => handleUpgrade('PRO')}
-              disabled={billingFetcher.state === 'submitting'}
-              style={{
-                padding: '16px 32px',
-                fontSize: '16px',
-                fontWeight: '600',
-                backgroundColor: 'white',
-                color: '#7c3aed',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              {billingFetcher.state === 'submitting' ? 'Processing...' : (
-                <>Upgrade to PRO <span>⚡</span></>
-              )}
-            </button>
-            <Link
-              to="/app/billing?view=plans"
-              style={{
-                fontSize: '14px',
-                color: 'white',
-                textDecoration: 'none',
-                opacity: 0.9
-              }}
-            >
-              Need unlimited scale? View MAX Plan →
-            </Link>
           </div>
         </div>
       )}
