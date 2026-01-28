@@ -1219,7 +1219,7 @@ export default function Index() {
                           </td>
 
                           {/* Status */}
-                          <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'top' }}>
+                          <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'middle' }}>
                             <span style={{
                               display: 'inline-block',
                               padding: '6px 12px',
