@@ -1096,7 +1096,7 @@ export default function Index() {
 
                           {/* Recommendations */}
                           <td style={{ padding: '16px', verticalAlign: 'top' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                               {displayRecommendations.map((rec, recIdx) => (
                                 <div
                                   key={recIdx}
@@ -1205,10 +1205,10 @@ export default function Index() {
                                       </div>
                                       <style>{`
                                         .locked-recommendation:hover .lock-message {
-                                          opacity: 1;
+                                          opacity: 1 !important;
                                         }
                                         .locked-recommendation:hover .lock-overlay {
-                                          backgroundColor: rgba(249, 250, 251, 0.95);
+                                          background-color: rgba(249, 250, 251, 0.95) !important;
                                         }
                                       `}</style>
                                     </>
