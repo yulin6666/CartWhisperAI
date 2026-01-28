@@ -71,6 +71,36 @@ export async function action({ request }) {
       }
     }
 
+    if (actionType === 'sync_plan_config') {
+      const { getCurrentPlan } = await import('../utils/billing.server.js');
+      const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+
+      const currentPlan = await getCurrentPlan(shop);
+      const planFeatures = await getPlanFeatures(shop);
+
+      const planData = {
+        plan: currentPlan.toLowerCase(),
+        manualRefreshPerMonth: planFeatures?.manualRefreshPerMonth || 0,
+        maxProducts: planFeatures?.maxProducts || 50,
+        apiCallsPerDay: planFeatures?.apiCallsPerDay || 5000,
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(planData),
+      });
+
+      if (!response.ok) {
+        return { success: false, error: 'Failed to sync plan config to backend' };
+      }
+
+      return {
+        success: true,
+        message: `Plan config synced! Plan: ${currentPlan}, Refresh/Month: ${planFeatures?.manualRefreshPerMonth}`
+      };
+    }
+
     return { success: false, error: 'Unknown action' };
   } catch (error) {
     console.error('[Test Page] Error:', error);
@@ -128,6 +158,15 @@ export default function TestPage() {
     if (confirm('⚠️ This will DELETE all AI-generated recommendations from the backend. You will need to rescan products to generate new recommendations. Continue?')) {
       fetcher.submit(
         { action: 'clear_recommendations' },
+        { method: 'post' }
+      );
+    }
+  };
+
+  const syncPlanConfig = () => {
+    if (confirm('🔄 This will sync the latest plan configuration from billing.server.js to the backend database. Continue?')) {
+      fetcher.submit(
+        { action: 'sync_plan_config' },
         { method: 'post' }
       );
     }
@@ -264,6 +303,42 @@ export default function TestPage() {
         </button>
         <p style={{ color: '#999', fontSize: '12px', marginTop: '10px' }}>
           This will remove all cached recommendations and plan level data
+        </p>
+      </div>
+
+      {/* Sync Plan Configuration */}
+      <div style={{
+        backgroundColor: '#e3f2fd',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '20px',
+        border: '2px solid #2196f3',
+      }}>
+        <h2 style={{ fontSize: '20px', marginBottom: '15px', color: '#1565c0' }}>
+          🔄 Sync Plan Configuration
+        </h2>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
+          Sync the latest plan configuration (manualRefreshPerMonth, maxProducts, etc.) from <code>billing.server.js</code> to the backend database.
+        </p>
+        <button
+          onClick={syncPlanConfig}
+          disabled={fetcher.state === 'submitting'}
+          style={{
+            padding: '12px 24px',
+            fontSize: '14px',
+            backgroundColor: fetcher.state === 'submitting' ? '#ccc' : '#2196f3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: fetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+            fontWeight: 'bold',
+            width: '100%',
+          }}
+        >
+          {fetcher.state === 'submitting' ? '⏳ Syncing...' : '🔄 Sync Plan Config to Backend'}
+        </button>
+        <p style={{ color: '#999', fontSize: '12px', marginTop: '10px' }}>
+          Use this after updating plan features in billing.server.js (e.g., changing manualRefreshPerMonth from 0 to 1)
         </p>
       </div>
 
