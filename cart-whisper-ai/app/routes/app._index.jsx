@@ -1270,131 +1270,208 @@ export default function Index() {
                 )}
               </>
             ) : (
-                // PRO/MAX Plans: Card Layout
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px'
-                }}>
-                  {groupedProducts.slice(0, visibleProducts).map((group, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        backgroundColor: 'white',
-                        borderRadius: '12px',
-                        padding: '24px',
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                      }}
-                    >
-                      {/* Product Header */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '20px',
-                        paddingBottom: '20px',
-                        borderBottom: '1px solid #e5e7eb'
-                      }}>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                          {group.product.image ? (
-                            <img
-                              src={group.product.image}
-                              alt={group.product.title}
-                              style={{
-                                width: '60px',
-                                height: '60px',
-                                borderRadius: '8px',
-                                objectFit: 'cover',
-                                backgroundColor: '#f5f5f5'
-                              }}
-                            />
-                          ) : (
-                            <div style={{
-                              width: '60px',
-                              height: '60px',
-                              borderRadius: '8px',
-                              backgroundColor: '#e9ecef',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '28px'
-                            }}>
-                              📦
-                            </div>
-                          )}
-                          <div>
-                            <div style={{
-                              fontWeight: '600',
-                              color: '#111827',
-                              marginBottom: '4px',
-                              fontSize: '16px'
-                            }}>
-                              {group.product.title}
-                            </div>
-                            <div style={{
-                              fontSize: '13px',
-                              color: '#9ca3af'
-                            }}>
-                              ID: {group.product.id}
-                            </div>
-                          </div>
-                        </div>
-                        <span style={{
-                          padding: '6px 12px',
-                          borderRadius: '6px',
-                          backgroundColor: '#dcfce7',
-                          color: '#10b981',
-                          fontSize: '12px',
-                          fontWeight: '600'
+                // PRO/MAX Plans: Table Layout (same as FREE but without lock overlay)
+                <>
+                  <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb',
+                    overflow: 'hidden'
+                  }}>
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse'
+                    }}>
+                      <thead>
+                        <tr style={{
+                          backgroundColor: '#f9fafb',
+                          borderBottom: '1px solid #e5e7eb'
                         }}>
-                          Active
-                        </span>
-                      </div>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: '#6b7280',
+                            letterSpacing: '0.05em',
+                            textTransform: 'uppercase'
+                          }}>
+                            TRIGGER PRODUCT
+                          </th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: '#6b7280',
+                            letterSpacing: '0.05em',
+                            textTransform: 'uppercase'
+                          }}>
+                            RECOMMENDATIONS
+                          </th>
+                          <th style={{
+                            padding: '16px',
+                            textAlign: 'center',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: '#6b7280',
+                            letterSpacing: '0.05em',
+                            textTransform: 'uppercase',
+                            width: '120px'
+                          }}>
+                            STATUS
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedProducts.slice(0, visibleProducts).map((group, idx) => {
+                          // For PRO/MAX plans, show all recommendations (no lock overlay)
+                          const displayRecommendations = group.recommendations;
 
-                      {/* Recommendations Row */}
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: `repeat(${group.recommendations.length}, 1fr)`,
-                        gap: '12px'
-                      }}>
-                        {group.recommendations.map((rec, recIdx) => (
-                          <div
-                            key={recIdx}
-                            style={{
-                              padding: '16px',
-                              backgroundColor: '#f9fafb',
-                              borderRadius: '8px',
-                              border: '1px solid #e5e7eb'
-                            }}
-                          >
-                            {recIdx === 0 && (
-                              <div style={{
-                                fontSize: '20px',
-                                marginBottom: '8px'
-                              }}>
-                                ✨
+                          return (
+                            <tr
+                              key={idx}
+                              style={{
+                                borderBottom: idx < groupedProducts.length - 1 ? '1px solid #e5e7eb' : 'none'
+                              }}
+                            >
+                            {/* Trigger Product */}
+                            <td style={{ padding: '0 16px', verticalAlign: 'top' }}>
+                              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                {group.product.image ? (
+                                  <img
+                                    src={group.product.image}
+                                    alt={group.product.title}
+                                    style={{
+                                      width: '50px',
+                                      height: '50px',
+                                      borderRadius: '6px',
+                                      objectFit: 'cover',
+                                      backgroundColor: '#f5f5f5'
+                                    }}
+                                  />
+                                ) : (
+                                  <div style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#e9ecef',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '24px'
+                                  }}>
+                                    📦
+                                  </div>
+                                )}
+                                <div>
+                                  <div style={{
+                                    fontWeight: '500',
+                                    color: '#111827',
+                                    marginBottom: '4px',
+                                    fontSize: '14px'
+                                  }}>
+                                    {group.product.title}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '12px',
+                                    color: '#9ca3af'
+                                  }}>
+                                    ID: {group.product.id}
+                                  </div>
+                                </div>
                               </div>
-                            )}
-                            <div style={{
-                              fontWeight: '600',
-                              color: '#111827',
-                              marginBottom: '6px',
-                              fontSize: '14px'
-                            }}>
-                              {rec.title}
-                            </div>
-                            <div style={{
-                              fontSize: '12px',
-                              color: '#6b7280'
-                            }}>
-                              {rec.reason}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                            </td>
+
+                            {/* Recommendations */}
+                            <td style={{ padding: '0 16px', verticalAlign: 'top' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                                {displayRecommendations.map((rec, recIdx) => (
+                                  <div
+                                    key={recIdx}
+                                    style={{
+                                      position: 'relative',
+                                      padding: '12px',
+                                      backgroundColor: recIdx === 0 ? '#f0fdf4' : '#f9fafb',
+                                      borderRadius: '8px',
+                                      borderLeft: recIdx === 0 ? '3px solid #10b981' : '3px solid transparent',
+                                      fontSize: '13px',
+                                      transition: 'all 0.2s'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                      {/* Recommendation Image */}
+                                      {rec.image ? (
+                                        <img
+                                          src={rec.image}
+                                          alt={rec.title}
+                                          style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            borderRadius: '6px',
+                                            objectFit: 'cover',
+                                            backgroundColor: '#f5f5f5',
+                                            flexShrink: 0
+                                          }}
+                                        />
+                                      ) : (
+                                        <div style={{
+                                          width: '50px',
+                                          height: '50px',
+                                          borderRadius: '6px',
+                                          backgroundColor: '#e9ecef',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          fontSize: '24px',
+                                          flexShrink: 0
+                                        }}>
+                                          📦
+                                        </div>
+                                      )}
+
+                                      {/* Recommendation Text */}
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{
+                                          fontWeight: '500',
+                                          color: '#111827',
+                                          marginBottom: '4px'
+                                        }}>
+                                          {rec.title}
+                                        </div>
+                                        <div style={{
+                                          fontSize: '12px',
+                                          color: '#6b7280'
+                                        }}>
+                                          {rec.reason}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+
+                            {/* Status */}
+                            <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'top' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                backgroundColor: '#dcfce7',
+                                color: '#10b981',
+                                fontSize: '12px',
+                                fontWeight: '600'
+                              }}>
+                                Active
+                              </span>
+                            </td>
+                          </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
                   {/* Show More Button */}
                   {visibleProducts < groupedProducts.length && (
