@@ -271,6 +271,35 @@ export async function confirmSubscription(admin, shop) {
       },
     });
 
+    // 同步到后端 PostgreSQL 数据库
+    try {
+      const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+      const syncResponse = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plan: subscription.plan,
+          shopifySubscriptionId: subscription.shopifySubscriptionId,
+          billingStatus: 'active',
+          subscriptionStartedAt: new Date(activeSubscription.createdAt).toISOString(),
+          subscriptionEndsAt: activeSubscription.currentPeriodEnd
+            ? new Date(activeSubscription.currentPeriodEnd).toISOString()
+            : null,
+        }),
+      });
+
+      if (!syncResponse.ok) {
+        console.error('[confirmSubscription] Failed to sync to backend:', await syncResponse.text());
+      } else {
+        console.log('[confirmSubscription] Successfully synced plan to backend');
+      }
+    } catch (error) {
+      console.error('[confirmSubscription] Error syncing to backend:', error);
+      // 不抛出错误，因为本地订阅已经成功
+    }
+
     return true;
   }
 
@@ -347,6 +376,8 @@ export async function directUpgrade(shop, plan = 'PRO') {
   console.log('[directUpgrade] Upgrading shop:', shop, 'to plan:', plan);
 
   const planLower = plan.toLowerCase();
+  const now = new Date();
+  const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30天后
 
   await prisma.subscription.upsert({
     where: { shop },
@@ -355,17 +386,43 @@ export async function directUpgrade(shop, plan = 'PRO') {
       plan: planLower,
       status: 'active',
       isTestMode: true,
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
     },
     update: {
       plan: planLower,
       status: 'active',
       isTestMode: true,
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
     },
   });
+
+  // 同步到后端 PostgreSQL 数据库
+  try {
+    const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+    const syncResponse = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        plan: planLower,
+        billingStatus: 'active',
+        subscriptionStartedAt: now.toISOString(),
+        subscriptionEndsAt: periodEnd.toISOString(),
+      }),
+    });
+
+    if (!syncResponse.ok) {
+      console.error('[directUpgrade] Failed to sync to backend:', await syncResponse.text());
+    } else {
+      console.log('[directUpgrade] Successfully synced plan to backend');
+    }
+  } catch (error) {
+    console.error('[directUpgrade] Error syncing to backend:', error);
+    // 不抛出错误，因为本地订阅已经成功
+  }
 
   console.log('[directUpgrade] Successfully upgraded to:', planLower);
   return planLower;
