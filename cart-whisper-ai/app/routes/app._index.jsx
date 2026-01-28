@@ -211,6 +211,7 @@ export default function Index() {
   // Get current plan from subscription or loader
   const currentPlan = loaderPlan?.toLowerCase() || subscription?.plan || 'free';
   const isSyncing = syncFetcher.state === 'submitting';
+  const isBackendSyncing = syncStatus?.isSyncing || false; // 后端正在同步
 
   // Debug: Log key state (only once on initial render when syncStatus is available)
   if (syncStatus && typeof window !== 'undefined') {
@@ -291,6 +292,19 @@ export default function Index() {
   useEffect(() => {
     setVisibleProducts(10);
   }, [currentPlan, recommendations.length]);
+
+  // Auto-refresh when backend is syncing
+  useEffect(() => {
+    if (isBackendSyncing) {
+      // 每30秒刷新一次，检查同步状态
+      const intervalId = setInterval(() => {
+        console.log('[Auto-refresh] Checking sync status...');
+        revalidator.revalidate();
+      }, 30000); // 30秒
+
+      return () => clearInterval(intervalId);
+    }
+  }, [isBackendSyncing, revalidator]);
 
   // Format date helper
   const formatDate = (dateStr) => {
@@ -937,6 +951,51 @@ export default function Index() {
             </div>
           </div>
 
+          {/* Backend Syncing Notice */}
+          {isBackendSyncing && (
+            <div style={{
+              backgroundColor: '#e0f2fe',
+              borderLeft: '4px solid #0284c7',
+              borderRadius: '8px',
+              padding: '16px 20px',
+              marginBottom: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                fontSize: '24px',
+                animation: 'spin 2s linear infinite'
+              }}>
+                ⏳
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#075985',
+                  marginBottom: '4px'
+                }}>
+                  Sync in Progress
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: '#0c4a6e',
+                  lineHeight: '1.5'
+                }}>
+                  Your products are being synced in the background. This may take up to 30 minutes.
+                  Page will auto-refresh every 30 seconds to update progress.
+                </div>
+              </div>
+              <style>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
+          )}
+
           {/* Synced Products Section */}
           <div style={{ marginBottom: '40px' }}>
             <div style={{
@@ -972,29 +1031,31 @@ export default function Index() {
                 <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
                 <button
                   type="submit"
-                  disabled={isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh)}
+                  disabled={isSyncing || isBackendSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh)}
                   title={
-                    syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh
-                      ? (currentPlan === 'free'
-                          ? 'Upgrade to PRO to unlock more syncs'
-                          : `Next sync available: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
-                      : (syncStatus?.initialSyncDone ? 'Sync new products and update recommendations' : 'Start initial sync')
+                    isBackendSyncing
+                      ? 'Sync is already in progress. Please wait...'
+                      : (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh
+                          ? (currentPlan === 'free'
+                              ? 'Upgrade to PRO to unlock more syncs'
+                              : `Next sync available: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
+                          : (syncStatus?.initialSyncDone ? 'Sync new products and update recommendations' : 'Start initial sync'))
                   }
                   style={{
                     padding: '10px 20px',
                     fontSize: '14px',
                     fontWeight: '500',
-                    backgroundColor: isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? '#e5e7eb' : '#111827',
-                    color: isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? '#9ca3af' : 'white',
+                    backgroundColor: isSyncing || isBackendSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? '#e5e7eb' : '#111827',
+                    color: isSyncing || isBackendSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? '#9ca3af' : 'white',
                     border: 'none',
                     borderRadius: '8px',
-                    cursor: isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? 'not-allowed' : 'pointer',
+                    cursor: isSyncing || isBackendSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                   }}
                 >
-                  {syncStatus?.initialSyncDone
-                    ? (isSyncing ? 'Syncing...' : `Resync (${syncStatus?.refreshLimit?.remaining || 0} left)`)
-                    : (isSyncing ? 'Syncing...' : 'Start Sync')
+                  {isSyncing || isBackendSyncing
+                    ? 'Syncing...'
+                    : `Sync (${syncStatus?.refreshLimit?.remaining || 0} left)`
                   }
                 </button>
               </syncFetcher.Form>
