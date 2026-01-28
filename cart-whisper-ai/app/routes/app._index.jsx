@@ -207,11 +207,13 @@ export default function Index() {
 
   const [showNotification, setShowNotification] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(10);
+  const [optimisticSyncing, setOptimisticSyncing] = useState(false); // Track sync initiation
 
   // Get current plan from subscription or loader
   const currentPlan = loaderPlan?.toLowerCase() || subscription?.plan || 'free';
   const isSyncing = syncFetcher.state === 'submitting';
   const isBackendSyncing = syncStatus?.isSyncing || false; // 后端正在同步
+  const isAnySyncing = isSyncing || isBackendSyncing || optimisticSyncing; // Combined sync state
 
   // Debug: Log key state (only once on initial render when syncStatus is available)
   if (syncStatus && typeof window !== 'undefined') {
@@ -293,9 +295,31 @@ export default function Index() {
     setVisibleProducts(10);
   }, [currentPlan, recommendations.length]);
 
-  // Auto-refresh when backend is syncing
+  // Handle sync completion and set optimistic state
+  useEffect(() => {
+    if (syncFetcher.data?.success && syncFetcher.data?.async) {
+      // Async sync started, set optimistic state
+      setOptimisticSyncing(true);
+      console.log('[Optimistic] Sync started, disabling button');
+    }
+  }, [syncFetcher.data]);
+
+  // Clear optimistic state when backend confirms sync is running or completed
   useEffect(() => {
     if (isBackendSyncing) {
+      // Backend confirmed sync is running, clear optimistic state
+      setOptimisticSyncing(false);
+      console.log('[Optimistic] Backend confirmed syncing, clearing optimistic state');
+    } else if (optimisticSyncing && syncStatus?.initialSyncDone) {
+      // Sync completed (no longer syncing and sync is done), clear optimistic state
+      setOptimisticSyncing(false);
+      console.log('[Optimistic] Sync completed, clearing optimistic state');
+    }
+  }, [isBackendSyncing, optimisticSyncing, syncStatus?.initialSyncDone]);
+
+  // Auto-refresh when backend is syncing
+  useEffect(() => {
+    if (isBackendSyncing || optimisticSyncing) {
       // 每30秒刷新一次，检查同步状态
       const intervalId = setInterval(() => {
         console.log('[Auto-refresh] Checking sync status...');
@@ -304,7 +328,7 @@ export default function Index() {
 
       return () => clearInterval(intervalId);
     }
-  }, [isBackendSyncing, revalidator]);
+  }, [isBackendSyncing, optimisticSyncing, revalidator]);
 
   // Format date helper
   const formatDate = (dateStr) => {
@@ -356,22 +380,22 @@ export default function Index() {
             <input type="hidden" name="mode" value="auto" />
             <button
               type="submit"
-              disabled={isSyncing}
+              disabled={isAnySyncing}
               style={{
                 padding: '16px 32px',
                 fontSize: '16px',
-                backgroundColor: isSyncing ? '#ccc' : '#007bff',
+                backgroundColor: isAnySyncing ? '#ccc' : '#007bff',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                cursor: isSyncing ? 'not-allowed' : 'pointer',
+                cursor: isAnySyncing ? 'not-allowed' : 'pointer',
                 fontWeight: 'bold',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
               }}
             >
-              {isSyncing ? (
+              {isAnySyncing ? (
                 <>
                   <span>⏳</span> Syncing...
                 </>
@@ -382,7 +406,7 @@ export default function Index() {
           </syncFetcher.Form>
 
           {/* Sync Progress - Async Mode */}
-          {isSyncing && (
+          {isAnySyncing && (
             <div style={{
               backgroundColor: 'white',
               borderRadius: '16px',
@@ -952,7 +976,7 @@ export default function Index() {
           </div>
 
           {/* Backend Syncing Notice */}
-          {isBackendSyncing && (
+          {(isBackendSyncing || optimisticSyncing) && (
             <div style={{
               backgroundColor: '#e0f2fe',
               borderLeft: '4px solid #0284c7',
@@ -1031,9 +1055,9 @@ export default function Index() {
                 <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
                 <button
                   type="submit"
-                  disabled={isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh}
+                  disabled={isAnySyncing || !syncStatus?.refreshLimit?.canRefresh}
                   title={
-                    isBackendSyncing
+                    isAnySyncing
                       ? 'Sync is already in progress. Please wait...'
                       : (!syncStatus?.refreshLimit?.canRefresh
                           ? (currentPlan === 'free'
@@ -1045,15 +1069,15 @@ export default function Index() {
                     padding: '10px 20px',
                     fontSize: '14px',
                     fontWeight: '500',
-                    backgroundColor: isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#111827',
-                    color: isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
+                    backgroundColor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#111827',
+                    color: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
                     border: 'none',
                     borderRadius: '8px',
-                    cursor: isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
+                    cursor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                   }}
                 >
-                  {isSyncing || isBackendSyncing
+                  {isAnySyncing
                     ? 'Syncing...'
                     : `Sync (${syncStatus?.refreshLimit?.remaining || 0} left)`
                   }
@@ -1697,7 +1721,7 @@ export default function Index() {
           )}
 
           {/* Sync Progress - Redesigned */}
-          {isSyncing && (
+          {isAnySyncing && (
             <div style={{
               backgroundColor: 'white',
               borderRadius: '16px',
