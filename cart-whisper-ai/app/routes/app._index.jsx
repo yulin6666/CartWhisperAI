@@ -1336,7 +1336,7 @@ export default function Index() {
                               }}
                             >
                             {/* Trigger Product */}
-                            <td style={{ padding: '0 16px', verticalAlign: 'top' }}>
+                            <td style={{ padding: '0 16px', verticalAlign: 'middle' }}>
                               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                                 {group.product.image ? (
                                   <img
@@ -1384,7 +1384,7 @@ export default function Index() {
                             </td>
 
                             {/* Recommendations */}
-                            <td style={{ padding: '0 16px', verticalAlign: 'top' }}>
+                            <td style={{ padding: '1px 16px', verticalAlign: 'top' }}>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                                 {displayRecommendations.map((rec, recIdx) => (
                                   <div
@@ -1453,7 +1453,7 @@ export default function Index() {
                             </td>
 
                             {/* Status */}
-                            <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'top' }}>
+                            <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'middle' }}>
                               <span style={{
                                 display: 'inline-block',
                                 padding: '6px 12px',
