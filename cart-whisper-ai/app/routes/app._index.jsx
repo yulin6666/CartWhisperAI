@@ -931,35 +931,36 @@ export default function Index() {
                 )}
               </div>
 
-              {syncStatus?.initialSyncDone && (
-                <syncFetcher.Form method="post" action="/api/scan" style={{ display: 'inline' }}>
-                  <input type="hidden" name="mode" value="refresh" />
-                  <button
-                    type="submit"
-                    disabled={isSyncing || !syncStatus?.refreshLimit?.canRefresh}
-                    title={
-                      !syncStatus?.refreshLimit?.canRefresh
-                        ? (currentPlan === 'free'
-                            ? 'Upgrade to PRO to unlock Resync All'
-                            : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
-                        : 'Regenerate all recommendations'
-                    }
-                    style={{
-                      padding: '10px 20px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      backgroundColor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#111827',
-                      color: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: isSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    Resync ({syncStatus?.refreshLimit?.remaining || 0} left)
-                  </button>
-                </syncFetcher.Form>
-              )}
+              <syncFetcher.Form method="post" action="/api/scan" style={{ display: 'inline' }}>
+                <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'refresh' : 'auto'} />
+                <button
+                  type="submit"
+                  disabled={isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh)}
+                  title={
+                    syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh
+                      ? (currentPlan === 'free'
+                          ? 'Upgrade to PRO to unlock Resync All'
+                          : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
+                      : (syncStatus?.initialSyncDone ? 'Regenerate all recommendations' : 'Start initial sync')
+                  }
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    backgroundColor: isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? '#e5e7eb' : '#111827',
+                    color: isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? '#9ca3af' : 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh) ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {syncStatus?.initialSyncDone
+                    ? `Resync (${syncStatus?.refreshLimit?.remaining || 0} left)`
+                    : (isSyncing ? 'Syncing...' : 'Start Sync')
+                  }
+                </button>
+              </syncFetcher.Form>
             </div>
 
             {/* Products Display */}
