@@ -207,17 +207,11 @@ export default function Index() {
 
   const [showNotification, setShowNotification] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(10);
-  const [optimisticRefreshCount, setOptimisticRefreshCount] = useState(null); // 乐观更新的刷新次数
 
   // Get current plan from subscription or loader
   const currentPlan = loaderPlan?.toLowerCase() || subscription?.plan || 'free';
   const isSyncing = syncFetcher.state === 'submitting';
   const isBackendSyncing = syncStatus?.isSyncing || false; // 后端正在同步
-
-  // 计算显示的剩余次数：优先使用乐观更新的值
-  const displayedRemaining = optimisticRefreshCount !== null
-    ? optimisticRefreshCount
-    : (syncStatus?.refreshLimit?.remaining || 0);
 
   // Debug: Log key state (only once on initial render when syncStatus is available)
   if (syncStatus && typeof window !== 'undefined') {
@@ -271,23 +265,6 @@ export default function Index() {
       revalidator.revalidate();
     }
   }, [planFetcher.data, resetFetcher.data, syncFetcher.data]);
-
-  // 乐观更新：当开始同步时立即减少显示的剩余次数
-  useEffect(() => {
-    if (syncFetcher.state === 'submitting' && optimisticRefreshCount === null) {
-      const currentRemaining = syncStatus?.refreshLimit?.remaining || 0;
-      if (currentRemaining > 0) {
-        setOptimisticRefreshCount(currentRemaining - 1);
-      }
-    }
-  }, [syncFetcher.state, syncStatus?.refreshLimit?.remaining, optimisticRefreshCount]);
-
-  // 清除乐观更新的值，当新数据加载后
-  useEffect(() => {
-    if (syncStatus?.refreshLimit?.remaining !== undefined && optimisticRefreshCount !== null) {
-      setOptimisticRefreshCount(null);
-    }
-  }, [syncStatus?.refreshLimit?.remaining, optimisticRefreshCount]);
 
   // Revalidate after billing action (upgrade/downgrade)
   useEffect(() => {
@@ -1054,31 +1031,31 @@ export default function Index() {
                 <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
                 <button
                   type="submit"
-                  disabled={isSyncing || isBackendSyncing || displayedRemaining === 0}
+                  disabled={isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh}
                   title={
                     isBackendSyncing
                       ? 'Sync is already in progress. Please wait...'
-                      : (displayedRemaining === 0
+                      : (!syncStatus?.refreshLimit?.canRefresh
                           ? (currentPlan === 'free'
                               ? 'Upgrade to PRO to unlock more syncs'
                               : `Next sync available: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
-                          : (syncStatus?.initialSyncDone ? 'Sync new products and update recommendations' : 'Start initial sync'))
+                          : 'Sync new products and update recommendations')
                   }
                   style={{
                     padding: '10px 20px',
                     fontSize: '14px',
                     fontWeight: '500',
-                    backgroundColor: isSyncing || isBackendSyncing || displayedRemaining === 0 ? '#e5e7eb' : '#111827',
-                    color: isSyncing || isBackendSyncing || displayedRemaining === 0 ? '#9ca3af' : 'white',
+                    backgroundColor: isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#111827',
+                    color: isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
                     border: 'none',
                     borderRadius: '8px',
-                    cursor: isSyncing || isBackendSyncing || displayedRemaining === 0 ? 'not-allowed' : 'pointer',
+                    cursor: isSyncing || isBackendSyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                   }}
                 >
                   {isSyncing || isBackendSyncing
                     ? 'Syncing...'
-                    : `Sync (${displayedRemaining} left)`
+                    : `Sync (${syncStatus?.refreshLimit?.remaining || 0} left)`
                   }
                 </button>
               </syncFetcher.Form>
