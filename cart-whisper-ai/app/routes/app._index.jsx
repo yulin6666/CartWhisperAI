@@ -1018,13 +1018,27 @@ export default function Index() {
                       </tr>
                     </thead>
                     <tbody>
-                      {groupedProducts.slice(0, 10).map((group, idx) => (
-                        <tr
-                          key={idx}
-                          style={{
-                            borderBottom: idx < groupedProducts.length - 1 ? '1px solid #e5e7eb' : 'none'
-                          }}
-                        >
+                      {groupedProducts.slice(0, 10).map((group, idx) => {
+                        // For FREE plan, get all recommendations (up to 3) for display
+                        const displayRecommendations = currentPlan === 'free'
+                          ? recommendations
+                              .filter(rec => rec.sourceProductId === group.product.id)
+                              .slice(0, 3)
+                              .map(rec => ({
+                                id: rec.targetProductId,
+                                title: rec.targetTitle,
+                                image: rec.targetImage,
+                                reason: rec.reason?.split('|')[0] || 'Related Product'
+                              }))
+                          : group.recommendations;
+
+                        return (
+                          <tr
+                            key={idx}
+                            style={{
+                              borderBottom: idx < groupedProducts.length - 1 ? '1px solid #e5e7eb' : 'none'
+                            }}
+                          >
                           {/* Trigger Product */}
                           <td style={{ padding: '16px', verticalAlign: 'top' }}>
                             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
@@ -1076,7 +1090,7 @@ export default function Index() {
                           {/* Recommendations */}
                           <td style={{ padding: '16px', verticalAlign: 'top' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                              {group.recommendations.map((rec, recIdx) => (
+                              {displayRecommendations.map((rec, recIdx) => (
                                 <div
                                   key={recIdx}
                                   style={{
@@ -1137,8 +1151,8 @@ export default function Index() {
                                     </div>
                                   </div>
 
-                                  {/* Lock Overlay for 2nd and 3rd recommendations */}
-                                  {recIdx > 0 && (
+                                  {/* Lock Overlay for 2nd and 3rd recommendations (FREE plan only) */}
+                                  {currentPlan === 'free' && recIdx > 0 && (
                                     <div style={{
                                       position: 'absolute',
                                       top: 0,
@@ -1192,7 +1206,8 @@ export default function Index() {
                             </span>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
