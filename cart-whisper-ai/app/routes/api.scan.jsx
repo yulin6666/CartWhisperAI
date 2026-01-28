@@ -166,29 +166,35 @@ export async function action({ request }) {
       partialSync = true;
     }
 
-    // 4. 同步到后端（使用指定的模式）
-    console.log(`🚀 Syncing to backend (mode: ${mode})...`);
-    const syncResult = await syncProducts(apiKey, products, mode);
-    console.log(`✅ Sync complete: mode=${syncResult.mode}, ${syncResult.products} products, ${syncResult.newRecommendations} new recommendations (total: ${syncResult.totalRecommendations})`);
+    // 4. 异步同步到后端（不等待完成）
+    console.log(`🚀 Starting async sync to backend (mode: ${mode})...`);
+
+    // 立即返回，不等待同步完成
+    // 在后台触发同步（fire and forget）
+    syncProducts(apiKey, products, mode).then(syncResult => {
+      console.log(`✅ Async sync complete: mode=${syncResult.mode}, ${syncResult.products} products, ${syncResult.newRecommendations} new recommendations`);
+    }).catch(error => {
+      console.error(`❌ Async sync failed:`, error);
+    });
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
     return {
       success: true,
-      message: partialSync ? `Synced ${maxProducts} of ${originalProductCount} products` : 'Scan completed successfully',
-      mode: syncResult.mode,
-      productsCount: syncResult.products,
-      recommendationsCount: syncResult.totalRecommendations || syncResult.recommendations,
-      newRecommendationsCount: syncResult.newRecommendations,
+      async: true,
+      message: partialSync
+        ? `Syncing ${maxProducts} of ${originalProductCount} products in background. Please refresh in 30 minutes.`
+        : 'Sync started in background. Please refresh in 30 minutes to see results.',
+      mode: mode,
+      productsCount: products.length,
       duration: `${duration}s`,
-      canRefresh: syncResult.canRefresh,
-      nextRefreshAt: syncResult.nextRefreshAt,
       partialSync: partialSync,
       limitExceeded: partialSync,
       currentPlan: currentPlan,
       maxProducts: maxProducts,
       actualProducts: originalProductCount,
       upgradeRequired: partialSync,
+      estimatedCompletionTime: '30 minutes',
     };
   } catch (error) {
     console.error('❌ Scan error:', error);

@@ -367,40 +367,53 @@ export default function Index() {
             </button>
           </syncFetcher.Form>
 
-          {/* Sync Progress */}
+          {/* Sync Progress - Async Mode */}
           {isSyncing && (
-            <div style={{ marginTop: '20px', maxWidth: '600px', margin: '20px auto 0' }}>
-              <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#007bff' }}>Syncing in progress...</span>
-                <span style={{ fontSize: '12px', color: '#666' }}>This may take up to 30 minutes</span>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '16px',
+              padding: '32px',
+              border: '1px solid #e5e7eb',
+              marginBottom: '32px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '16px'
+              }}>
+                ⏳
               </div>
-              <div
-                style={{
-                  width: '100%',
-                  height: '8px',
-                  backgroundColor: '#e9ecef',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    background: 'linear-gradient(90deg, #007bff, #0056b3)',
-                    borderRadius: '4px',
-                    animation: 'pulse 2s ease-in-out infinite',
-                    width: '100%',
-                  }}
-                >
-                  <style>{`
-                    @keyframes pulse {
-                      0% { opacity: 0.6; }
-                      50% { opacity: 1; }
-                      100% { opacity: 0.6; }
-                    }
-                  `}</style>
-                </div>
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#111827',
+                marginBottom: '12px'
+              }}>
+                Sync Started Successfully
+              </h3>
+              <p style={{
+                fontSize: '16px',
+                color: '#6b7280',
+                marginBottom: '24px',
+                lineHeight: '1.6'
+              }}>
+                Your products are being synced in the background. This process may take up to <strong>30 minutes</strong>.
+                <br />
+                Please refresh this page after 30 minutes to see the results.
+              </p>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 24px',
+                backgroundColor: '#f0fdf4',
+                borderRadius: '8px',
+                border: '1px solid #86efac'
+              }}>
+                <span style={{ fontSize: '20px' }}>💡</span>
+                <span style={{ fontSize: '14px', color: '#166534', fontWeight: '500' }}>
+                  You can safely close this page and come back later
+                </span>
               </div>
             </div>
           )}
@@ -725,17 +738,36 @@ export default function Index() {
 
           {/* Upgrade Link */}
           <div style={{ textAlign: 'right' }}>
-            <Link
-              to="/app/billing?view=plans"
-              style={{
-                fontSize: '14px',
-                color: '#4f46e5',
-                textDecoration: 'none',
-                fontWeight: '500'
-              }}
-            >
-              Need more capacity? Upgrade to MAX (Unlimited) →
-            </Link>
+            {isTestMode ? (
+              <Link
+                to="/app/billing?view=plans"
+                style={{
+                  fontSize: '14px',
+                  color: '#4f46e5',
+                  textDecoration: 'none',
+                  fontWeight: '500'
+                }}
+              >
+                Need more capacity? Upgrade to MAX (Unlimited) →
+              </Link>
+            ) : (
+              <button
+                onClick={() => handleUpgrade('MAX')}
+                disabled={billingFetcher.state === 'submitting'}
+                style={{
+                  fontSize: '14px',
+                  color: '#4f46e5',
+                  textDecoration: 'none',
+                  fontWeight: '500',
+                  background: 'none',
+                  border: 'none',
+                  cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+                  padding: 0
+                }}
+              >
+                Need more capacity? Upgrade to MAX (Unlimited) →
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -937,16 +969,16 @@ export default function Index() {
               </div>
 
               <syncFetcher.Form method="post" action="/api/scan" style={{ display: 'inline' }}>
-                <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'refresh' : 'auto'} />
+                <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
                 <button
                   type="submit"
                   disabled={isSyncing || (syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh)}
                   title={
                     syncStatus?.initialSyncDone && !syncStatus?.refreshLimit?.canRefresh
                       ? (currentPlan === 'free'
-                          ? 'Upgrade to PRO to unlock Resync All'
-                          : `Next resync: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
-                      : (syncStatus?.initialSyncDone ? 'Regenerate all recommendations' : 'Start initial sync')
+                          ? 'Upgrade to PRO to unlock more syncs'
+                          : `Next sync available: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
+                      : (syncStatus?.initialSyncDone ? 'Sync new products and update recommendations' : 'Start initial sync')
                   }
                   style={{
                     padding: '10px 20px',
@@ -961,7 +993,7 @@ export default function Index() {
                   }}
                 >
                   {syncStatus?.initialSyncDone
-                    ? `Resync (${syncStatus?.refreshLimit?.remaining || 0} left)`
+                    ? (isSyncing ? 'Syncing...' : `Resync (${syncStatus?.refreshLimit?.remaining || 0} left)`)
                     : (isSyncing ? 'Syncing...' : 'Start Sync')
                   }
                 </button>
@@ -1672,20 +1704,43 @@ export default function Index() {
             >
               {syncFetcher.data.success ? (
                 <>
-                  <h3 style={{ color: '#155724', margin: '0 0 15px 0', fontSize: '18px' }}>
-                    ✅ Sync Completed!
-                  </h3>
-                  <div style={{ color: '#155724', fontSize: '14px' }}>
-                    <p style={{ margin: '5px 0' }}>
-                      <strong>Products:</strong> {syncFetcher.data.productsCount}
-                    </p>
-                    <p style={{ margin: '5px 0' }}>
-                      <strong>Recommendations:</strong> {syncFetcher.data.recommendationsCount}
-                    </p>
-                    <p style={{ margin: '5px 0' }}>
-                      <strong>Duration:</strong> {syncFetcher.data.duration}
-                    </p>
-                  </div>
+                  {syncFetcher.data.async ? (
+                    // 异步模式：显示后台同步提示
+                    <>
+                      <h3 style={{ color: '#155724', margin: '0 0 15px 0', fontSize: '18px' }}>
+                        ✅ Sync Started in Background
+                      </h3>
+                      <div style={{ color: '#155724', fontSize: '14px' }}>
+                        <p style={{ margin: '5px 0' }}>
+                          <strong>Products being synced:</strong> {syncFetcher.data.productsCount}
+                        </p>
+                        <p style={{ margin: '5px 0' }}>
+                          <strong>Estimated completion:</strong> {syncFetcher.data.estimatedCompletionTime}
+                        </p>
+                        <p style={{ margin: '15px 0 5px 0', fontSize: '15px', fontWeight: '600' }}>
+                          💡 Please refresh this page in 30 minutes to see the results.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    // 同步模式：显示完成结果
+                    <>
+                      <h3 style={{ color: '#155724', margin: '0 0 15px 0', fontSize: '18px' }}>
+                        ✅ Sync Completed!
+                      </h3>
+                      <div style={{ color: '#155724', fontSize: '14px' }}>
+                        <p style={{ margin: '5px 0' }}>
+                          <strong>Products:</strong> {syncFetcher.data.productsCount}
+                        </p>
+                        <p style={{ margin: '5px 0' }}>
+                          <strong>Recommendations:</strong> {syncFetcher.data.recommendationsCount}
+                        </p>
+                        <p style={{ margin: '5px 0' }}>
+                          <strong>Duration:</strong> {syncFetcher.data.duration}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </>
               ) : syncFetcher.data.rateLimited ? (
                 <>
