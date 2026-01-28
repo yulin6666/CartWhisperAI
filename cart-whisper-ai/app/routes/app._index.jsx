@@ -972,12 +972,13 @@ export default function Index() {
             {groupedProducts.length > 0 ? (
               currentPlan === 'free' ? (
                 // FREE Plan: Table Layout
-                <div style={{
-                  backgroundColor: 'white',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb',
-                  overflow: 'hidden'
-                }}>
+                <>
+                  <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb',
+                    overflow: 'hidden'
+                  }}>
                   <table style={{
                     width: '100%',
                     borderCollapse: 'collapse'
@@ -1267,7 +1268,8 @@ export default function Index() {
                     </button>
                   </div>
                 )}
-              ) : (
+              </>
+            ) : (
                 // PRO/MAX Plans: Card Layout
                 <div style={{
                   display: 'flex',
