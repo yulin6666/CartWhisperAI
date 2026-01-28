@@ -207,7 +207,25 @@ export default function Index() {
 
   const [showNotification, setShowNotification] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(10);
-  const [optimisticSyncing, setOptimisticSyncing] = useState(false); // Track sync initiation
+
+  // Initialize optimisticSyncing from sessionStorage (survives page refresh)
+  const [optimisticSyncing, setOptimisticSyncing] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('cartwhisper_syncing');
+      if (stored) {
+        const { timestamp, shopDomain } = JSON.parse(stored);
+        // Check if it's for the current shop and within 5 minutes
+        if (shopDomain === shop && Date.now() - timestamp < 5 * 60 * 1000) {
+          console.log('[Optimistic] Restored syncing state from sessionStorage');
+          return true;
+        } else {
+          // Clear stale data
+          sessionStorage.removeItem('cartwhisper_syncing');
+        }
+      }
+    }
+    return false;
+  });
 
   // Get current plan from subscription or loader
   const currentPlan = loaderPlan?.toLowerCase() || subscription?.plan || 'free';
@@ -298,24 +316,63 @@ export default function Index() {
   // Handle sync completion and set optimistic state
   useEffect(() => {
     if (syncFetcher.data?.success && syncFetcher.data?.async) {
-      // Async sync started, set optimistic state
+      // Async sync started, set optimistic state and persist to sessionStorage
       setOptimisticSyncing(true);
-      console.log('[Optimistic] Sync started, disabling button');
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('cartwhisper_syncing', JSON.stringify({
+          timestamp: Date.now(),
+          shopDomain: shop
+        }));
+      }
+      console.log('[Optimistic] Sync started, disabling button and saving to sessionStorage');
     }
-  }, [syncFetcher.data]);
+  }, [syncFetcher.data, shop]);
 
   // Clear optimistic state when backend confirms sync is running or completed
   useEffect(() => {
     if (isBackendSyncing) {
       // Backend confirmed sync is running, clear optimistic state
-      setOptimisticSyncing(false);
-      console.log('[Optimistic] Backend confirmed syncing, clearing optimistic state');
-    } else if (optimisticSyncing && syncStatus?.initialSyncDone) {
-      // Sync completed (no longer syncing and sync is done), clear optimistic state
-      setOptimisticSyncing(false);
-      console.log('[Optimistic] Sync completed, clearing optimistic state');
+      if (optimisticSyncing) {
+        setOptimisticSyncing(false);
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('cartwhisper_syncing');
+        }
+        console.log('[Optimistic] Backend confirmed syncing, clearing optimistic state and sessionStorage');
+      }
+    } else if (optimisticSyncing) {
+      // Check if we should clear optimistic state
+      // 1. If sync completed (initialSyncDone is true and backend not syncing)
+      // 2. If optimistic state is stale (more than 5 minutes old)
+      const shouldClear = syncStatus?.initialSyncDone || (() => {
+        if (typeof window !== 'undefined') {
+          const stored = sessionStorage.getItem('cartwhisper_syncing');
+          if (stored) {
+            const { timestamp } = JSON.parse(stored);
+            return Date.now() - timestamp > 5 * 60 * 1000; // 5 minutes
+          }
+        }
+        return false;
+      })();
+
+      if (shouldClear) {
+        setOptimisticSyncing(false);
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('cartwhisper_syncing');
+        }
+        console.log('[Optimistic] Clearing stale optimistic state and sessionStorage');
+      }
     }
   }, [isBackendSyncing, optimisticSyncing, syncStatus?.initialSyncDone]);
+
+  // On mount: if optimisticSyncing is true (from sessionStorage), immediately revalidate
+  useEffect(() => {
+    const hasOptimisticState = typeof window !== 'undefined' && sessionStorage.getItem('cartwhisper_syncing');
+    if (hasOptimisticState) {
+      console.log('[Optimistic] Page loaded with syncing flag, revalidating immediately');
+      revalidator.revalidate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   // Auto-refresh when backend is syncing
   useEffect(() => {
