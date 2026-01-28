@@ -578,12 +578,12 @@ export default function Index() {
           color: 'white',
           display: 'flex',
           flexDirection: 'column',
-          gap: '32px'
+          gap: '24px'
         }}>
-          {/* Top Row: Title and Button */}
+          {/* Row 1: Title and Button */}
           <div style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'space-between',
             gap: '32px'
           }}>
@@ -643,14 +643,12 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Bottom: Feature Checklist (2x2 Grid) */}
+          {/* Row 2: Three features in one line */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, auto)',
-            gap: '16px 48px',
-            fontSize: '16px',
-            fontWeight: '500',
-            justifyContent: 'start'
+            display: 'flex',
+            gap: '48px',
+            fontSize: '18px',
+            fontWeight: '500'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✓</span>
@@ -658,15 +656,11 @@ export default function Index() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✓</span>
-              <span>Advanced ROI Analytics</span>
+              <span>3 Recommendations / Popup</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✓</span>
               <span>no watermark</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '20px' }}>✓</span>
-              <span>3 Recommendations / Popup</span>
             </div>
           </div>
         </div>
