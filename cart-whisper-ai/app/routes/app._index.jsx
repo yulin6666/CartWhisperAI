@@ -1080,6 +1080,7 @@ export default function Index() {
                                 <div
                                   key={recIdx}
                                   style={{
+                                    position: 'relative',
                                     padding: '12px',
                                     backgroundColor: recIdx === 0 ? '#f0fdf4' : '#f9fafb',
                                     borderRadius: '8px',
@@ -1087,31 +1088,90 @@ export default function Index() {
                                     fontSize: '13px'
                                   }}
                                 >
-                                  {recIdx === 0 && (
+                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                    {/* Recommendation Image */}
+                                    {rec.image ? (
+                                      <img
+                                        src={rec.image}
+                                        alt={rec.title}
+                                        style={{
+                                          width: '50px',
+                                          height: '50px',
+                                          borderRadius: '6px',
+                                          objectFit: 'cover',
+                                          backgroundColor: '#f5f5f5',
+                                          flexShrink: 0
+                                        }}
+                                      />
+                                    ) : (
+                                      <div style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        borderRadius: '6px',
+                                        backgroundColor: '#e9ecef',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '24px',
+                                        flexShrink: 0
+                                      }}>
+                                        📦
+                                      </div>
+                                    )}
+
+                                    {/* Recommendation Text */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        marginBottom: '4px'
+                                      }}>
+                                        {rec.title}
+                                      </div>
+                                      <div style={{
+                                        fontSize: '12px',
+                                        color: '#6b7280'
+                                      }}>
+                                        {rec.reason}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Lock Overlay for 2nd and 3rd recommendations */}
+                                  {recIdx > 0 && (
                                     <div style={{
-                                      fontSize: '11px',
-                                      fontWeight: '700',
-                                      color: '#10b981',
-                                      marginBottom: '6px',
-                                      letterSpacing: '0.05em',
-                                      textTransform: 'uppercase'
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                      borderRadius: '8px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      backdropFilter: 'blur(2px)',
+                                      cursor: 'not-allowed'
                                     }}>
-                                      Primary Recommendation
+                                      {recIdx === 1 && (
+                                        <div style={{
+                                          backgroundColor: 'rgba(55, 65, 81, 0.95)',
+                                          color: 'white',
+                                          padding: '8px 16px',
+                                          borderRadius: '6px',
+                                          fontSize: '12px',
+                                          fontWeight: '600',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '6px',
+                                          whiteSpace: 'nowrap'
+                                        }}>
+                                          <span style={{ fontSize: '14px' }}>🔒</span>
+                                          Upgrade to unlock these 2 items
+                                        </div>
+                                      )}
                                     </div>
                                   )}
-                                  <div style={{
-                                    fontWeight: '500',
-                                    color: '#111827',
-                                    marginBottom: '4px'
-                                  }}>
-                                    {rec.title}
-                                  </div>
-                                  <div style={{
-                                    fontSize: '12px',
-                                    color: '#6b7280'
-                                  }}>
-                                    {rec.reason}
-                                  </div>
                                 </div>
                               ))}
                             </div>
