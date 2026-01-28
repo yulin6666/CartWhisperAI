@@ -272,12 +272,22 @@ export default function Index() {
     }
   }, [planFetcher.data, resetFetcher.data, syncFetcher.data]);
 
+  // 乐观更新：当开始同步时立即减少显示的剩余次数
+  useEffect(() => {
+    if (syncFetcher.state === 'submitting' && optimisticRefreshCount === null) {
+      const currentRemaining = syncStatus?.refreshLimit?.remaining || 0;
+      if (currentRemaining > 0) {
+        setOptimisticRefreshCount(currentRemaining - 1);
+      }
+    }
+  }, [syncFetcher.state, syncStatus?.refreshLimit?.remaining, optimisticRefreshCount]);
+
   // 清除乐观更新的值，当新数据加载后
   useEffect(() => {
-    if (syncStatus?.refreshLimit?.remaining !== undefined) {
+    if (syncStatus?.refreshLimit?.remaining !== undefined && optimisticRefreshCount !== null) {
       setOptimisticRefreshCount(null);
     }
-  }, [syncStatus?.refreshLimit?.remaining]);
+  }, [syncStatus?.refreshLimit?.remaining, optimisticRefreshCount]);
 
   // Revalidate after billing action (upgrade/downgrade)
   useEffect(() => {
@@ -341,16 +351,6 @@ export default function Index() {
         { method: 'post', action: '/app/billing/cancel' }
       );
     }
-  };
-
-  // 处理同步按钮点击：立即减少显示的剩余次数（乐观更新）
-  const handleSyncClick = (e) => {
-    const currentRemaining = syncStatus?.refreshLimit?.remaining || 0;
-    if (currentRemaining > 0) {
-      // 立即减少显示的次数
-      setOptimisticRefreshCount(currentRemaining - 1);
-    }
-    // 表单会自动提交，不需要阻止默认行为
   };
 
   if (!isRegistered) {
@@ -1054,7 +1054,6 @@ export default function Index() {
                 <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
                 <button
                   type="submit"
-                  onClick={handleSyncClick}
                   disabled={isSyncing || isBackendSyncing || displayedRemaining === 0}
                   title={
                     isBackendSyncing
