@@ -555,11 +555,18 @@ export default function Index() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#fafafa',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-    }}>
+    <>
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#fafafa',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+      }}>
       {/* Header */}
       <div style={{
         backgroundColor: 'white',
@@ -657,7 +664,7 @@ export default function Index() {
         <div style={{
           maxWidth: '1400px',
           margin: '0 auto',
-          padding: '80px 32px',
+          padding: '60px 32px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -834,6 +841,137 @@ export default function Index() {
           </div>
         </div>
       )}
+
+      {/* STEP 1: Sync Product Catalog Card */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '16px',
+        padding: '40px',
+        marginBottom: '40px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '40px'
+      }}>
+        {/* Left: Step label and description */}
+        <div style={{ flex: '1 1 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+            <span style={{
+              padding: '8px 16px',
+              backgroundColor: '#d1fae5',
+              color: '#065f46',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '700',
+              letterSpacing: '0.05em'
+            }}>
+              STEP 1
+            </span>
+            <h3 style={{
+              margin: 0,
+              fontSize: '28px',
+              fontWeight: '700',
+              color: '#111827'
+            }}>
+              Sync your product catalog
+            </h3>
+          </div>
+          <p style={{
+            margin: 0,
+            fontSize: '16px',
+            lineHeight: '1.6',
+            color: '#6b7280'
+          }}>
+            CartWhisper needs to analyze your products to generate AI recommendations. This usually takes less than a minute.
+          </p>
+        </div>
+
+        {/* Middle: Free Allowance Display */}
+        <div style={{
+          flex: '0 0 auto',
+          textAlign: 'center',
+          padding: '0 32px'
+        }}>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#9ca3af',
+            marginBottom: '8px',
+            letterSpacing: '0.05em'
+          }}>
+            FREE ALLOWANCE
+          </div>
+          <div style={{
+            fontSize: '48px',
+            fontWeight: '700',
+            color: '#111827',
+            lineHeight: '1'
+          }}>
+            {syncStatus?.productCount || 0}
+            <span style={{
+              fontSize: '24px',
+              color: '#9ca3af',
+              fontWeight: '400'
+            }}> / {planFeatures?.maxProducts || 50}</span>
+          </div>
+        </div>
+
+        {/* Right: Sync Button */}
+        <div style={{ flex: '0 0 auto' }}>
+          <syncFetcher.Form method="post" action="/api/scan">
+            <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
+            <button
+              type="submit"
+              disabled={isAnySyncing || !syncStatus?.refreshLimit?.canRefresh}
+              title={
+                !syncStatus?.refreshLimit?.canRefresh
+                  ? `Next refresh available: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`
+                  : isAnySyncing
+                  ? 'Syncing in progress...'
+                  : 'Click to sync products'
+              }
+              style={{
+                padding: '20px 48px',
+                fontSize: '18px',
+                fontWeight: '600',
+                backgroundColor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : '#4f46e5',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
+                boxShadow: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? 'none' : '0 4px 12px rgba(79, 70, 229, 0.3)',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {isAnySyncing ? (
+                <>
+                  <span style={{
+                    display: 'inline-block',
+                    width: '20px',
+                    height: '20px',
+                    border: '3px solid rgba(255,255,255,0.3)',
+                    borderTopColor: 'white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></span>
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: '20px' }}>🔄</span>
+                  Start Syncing
+                </>
+              )}
+            </button>
+          </syncFetcher.Form>
+        </div>
+      </div>
 
       {/* PRO Plan Usage Card */}
       {currentPlan === 'pro' && (
@@ -1980,6 +2118,7 @@ export default function Index() {
           Error: {error}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
