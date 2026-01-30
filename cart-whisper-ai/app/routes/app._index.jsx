@@ -649,6 +649,61 @@ export default function Index() {
         </div>
       </div>
 
+      {/* Hero Section */}
+      <div style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '80px 32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '60px'
+        }}>
+          {/* Left: Headline and Subtext */}
+          <div style={{ flex: '1 1 50%', maxWidth: '600px' }}>
+            <h2 style={{
+              margin: '0 0 24px 0',
+              fontSize: '64px',
+              fontWeight: '800',
+              lineHeight: '1.1',
+              color: '#111827',
+              letterSpacing: '-0.02em'
+            }}>
+              Smart <span style={{ color: '#4f46e5' }}>Popups.</span>
+              <br />
+              Bigger <span style={{ color: '#4f46e5' }}>Carts.</span>
+            </h2>
+            <p style={{
+              margin: 0,
+              fontSize: '20px',
+              lineHeight: '1.6',
+              color: '#6b7280',
+              fontWeight: '400'
+            }}>
+              Stop losing revenue. Upgrade your standard add-to-cart popup with AI-driven upsells.
+            </p>
+          </div>
+
+          {/* Right: GIF Demo */}
+          <div style={{ flex: '1 1 50%', maxWidth: '700px' }}>
+            <img
+              src="https://raw.githubusercontent.com/yulin6666/LIN_AI_resource/bf43a178987f8dbe367d4cf6e64ab89cf31076a4/code/iShot_2026-01-29_11.24.09.gif"
+              alt="CartWhisper AI Demo"
+              style={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: '12px',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px 60px' }}>
 
       {/* Notifications */}
