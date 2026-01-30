@@ -965,7 +965,7 @@ export default function Index() {
               ) : (
                 <>
                   <span style={{ fontSize: '20px' }}>🔄</span>
-                  Start Syncing
+                  Start Syncing ({syncStatus?.refreshLimit?.remaining || 0} left)
                 </>
               )}
             </button>
@@ -1300,39 +1300,6 @@ export default function Index() {
                   </span>
                 )}
               </div>
-
-              <syncFetcher.Form method="post" action="/api/scan" style={{ display: 'inline' }}>
-                <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
-                <button
-                  type="submit"
-                  disabled={isAnySyncing || !syncStatus?.refreshLimit?.canRefresh}
-                  title={
-                    isAnySyncing
-                      ? 'Sync is already in progress. Please wait...'
-                      : (!syncStatus?.refreshLimit?.canRefresh
-                          ? (currentPlan === 'free'
-                              ? 'Upgrade to PRO to unlock more syncs'
-                              : `Next sync available: ${formatDate(syncStatus?.refreshLimit?.nextRefreshAt)}`)
-                          : 'Sync new products and update recommendations')
-                  }
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    backgroundColor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? '#e5e7eb' : '#111827',
-                    color: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {isAnySyncing
-                    ? 'Syncing...'
-                    : `Sync (${syncStatus?.refreshLimit?.remaining || 0} left)`
-                  }
-                </button>
-              </syncFetcher.Form>
             </div>
 
             {/* Products Display */}
