@@ -695,18 +695,23 @@ export default function Index() {
             </p>
           </div>
 
-          {/* Right: GIF Demo */}
+          {/* Right: Video Demo */}
           <div style={{ flex: '1 1 50%', maxWidth: '700px' }}>
-            <img
-              src="https://raw.githubusercontent.com/yulin6666/LIN_AI_resource/bf43a178987f8dbe367d4cf6e64ab89cf31076a4/code/iShot_2026-01-29_11.24.09.gif"
-              alt="CartWhisper AI Demo"
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
               style={{
                 width: '100%',
                 height: 'auto',
                 borderRadius: '12px',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
               }}
-            />
+            >
+              <source src="/demo.mp4" type="video/mp4" />
+              <img src="/demo.gif" alt="CartWhisper AI Demo" />
+            </video>
           </div>
         </div>
       </div>
