@@ -249,6 +249,7 @@
   // 缓存配置
   const CACHE_KEY_PREFIX = 'cw_rec_';
   const CACHE_TTL = 30 * 60 * 1000; // 30 分钟缓存
+  const PLAN_CACHE_KEY = 'cw_plan_limit'; // 存储当前plan的推荐限制
 
   // 从缓存获取推荐（完整列表，不限制数量）
   function getCachedRecommendations(productId) {
@@ -331,6 +332,16 @@
       const showWatermark = data.showWatermark !== false;
 
       console.log(`[CartWhisper] API returned: ${apiRecommendations.length} recommendations, maxRecommendations: ${maxRecommendations}, showWatermark: ${showWatermark}`);
+
+      // 🔥 检查plan是否变化，如果变化则清除所有推荐缓存
+      const cachedPlanLimit = localStorage.getItem(PLAN_CACHE_KEY);
+      if (cachedPlanLimit && parseInt(cachedPlanLimit) !== maxRecommendations) {
+        console.log(`[CartWhisper] Plan changed from ${cachedPlanLimit} to ${maxRecommendations}, clearing all caches`);
+        const keys = Object.keys(localStorage).filter(k => k.startsWith(CACHE_KEY_PREFIX));
+        keys.forEach(key => localStorage.removeItem(key));
+      }
+      // 更新plan限制缓存
+      localStorage.setItem(PLAN_CACHE_KEY, maxRecommendations.toString());
 
       // 显示/隐藏水印（根据最新的订阅状态）
       const watermarkEl = document.getElementById('cart-whisper-rec-watermark');
