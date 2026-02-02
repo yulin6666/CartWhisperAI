@@ -1,5 +1,5 @@
 import { useLoaderData, Link, useFetcher, useRevalidator } from 'react-router';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { authenticate } from '../shopify.server';
 import styles from './app._index/styles.module.css';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
@@ -179,6 +179,343 @@ export const action = async ({ request }) => {
   return null;
 };
 
+// ===== Reusable Components =====
+
+// Notification Component
+const Notification = memo(({ notification, onClose }) => {
+  if (!notification) return null;
+
+  return (
+    <div className={`${styles.notification} ${
+      notification.type === 'success' ? styles.notificationSuccess :
+      notification.type === 'error' ? styles.notificationError :
+      styles.notificationInfo
+    }`}>
+      <span>{notification.message}</span>
+      <button onClick={onClose} className={styles.notificationClose}>
+        ×
+      </button>
+    </div>
+  );
+});
+Notification.displayName = 'Notification';
+
+// Stats Grid Component
+const StatsGrid = memo(({ syncStatus, recommendations, statistics }) => {
+  return (
+    <div className={styles.statsGrid}>
+      {/* Card 1: Recommendations */}
+      <div className={styles.statCard}>
+        <div className={styles.statLabel}>
+          Recommendations
+        </div>
+        <div className={styles.statValue}>
+          {(syncStatus?.recommendationCount || recommendations.length || 0).toLocaleString()}
+        </div>
+      </div>
+
+      {/* Card 2: Total Clicks */}
+      <div className={styles.statCard}>
+        <div className={styles.statLabelWithBadge}>
+          <span className={styles.statLabel} style={{ marginBottom: 0 }}>
+            Total Clicks
+          </span>
+          <span className={styles.statBadgeLive}>
+            LIVE
+          </span>
+        </div>
+        <div className={`${styles.statValue} ${styles.statValueWithMargin}`}>
+          {(statistics?.summary?.totalClicks || 0).toLocaleString()}
+        </div>
+        <p className={styles.statDescription}>
+          Users clicked Recommendations
+        </p>
+      </div>
+
+      {/* Card 3: Avg. Click-Through Rate */}
+      <div className={styles.statCard}>
+        <div className={styles.statLabel}>
+          Avg. Click-Through Rate
+        </div>
+        <div className={styles.statValue}>
+          {statistics?.summary?.ctr || 0}%
+        </div>
+      </div>
+    </div>
+  );
+});
+StatsGrid.displayName = 'StatsGrid';
+
+// Sync Progress Component
+const SyncProgress = memo(({ isAnySyncing }) => {
+  if (!isAnySyncing) return null;
+
+  return (
+    <div className={styles.syncProgress}>
+      <div className={styles.syncProgressHeader}>
+        <div className={styles.syncProgressTitle}>
+          <span>⏳</span>
+          <span>Syncing in progress...</span>
+        </div>
+        <span className={styles.syncProgressTime}>
+          This may take up to 30 minutes
+        </span>
+      </div>
+      <div className={styles.syncProgressBar}>
+        <div className={styles.syncProgressBarFill}>
+          <style>{`
+            @keyframes pulse {
+              0% { opacity: 0.6; }
+              50% { opacity: 1; }
+              100% { opacity: 0.6; }
+            }
+          `}</style>
+        </div>
+      </div>
+    </div>
+  );
+});
+SyncProgress.displayName = 'SyncProgress';
+
+// Sync Notice Component
+const SyncNotice = memo(({ isBackendSyncing, optimisticSyncing }) => {
+  if (!isBackendSyncing && !optimisticSyncing) return null;
+
+  return (
+    <div className={styles.syncNotice}>
+      <div className={styles.syncNoticeIcon}>
+        ⏳
+      </div>
+      <div className={styles.syncNoticeContent}>
+        <div className={styles.syncNoticeTitle}>
+          Sync in Progress
+        </div>
+        <div className={styles.syncNoticeText}>
+          Your products are being synced in the background. This may take up to 30 minutes.
+          Page will auto-refresh every 30 seconds to update progress.
+        </div>
+      </div>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+});
+SyncNotice.displayName = 'SyncNotice';
+
+// Sync Result Component
+const SyncResult = memo(({ syncFetcherData, formatDate }) => {
+  if (!syncFetcherData) return null;
+
+  return (
+    <div className={`${styles.syncResult} ${
+      syncFetcherData.success ? styles.syncResultSuccess :
+      syncFetcherData.rateLimited ? styles.syncResultWarning :
+      syncFetcherData.tokenQuotaExceeded ? styles.syncResultQuota :
+      styles.syncResultError
+    }`}>
+      {syncFetcherData.success ? (
+        <>
+          {syncFetcherData.async ? (
+            <>
+              <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>
+                ✅ Sync Started in Background
+              </h3>
+              <div className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Products being synced:</strong> {syncFetcherData.productsCount}
+                </p>
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Estimated completion:</strong> {syncFetcherData.estimatedCompletionTime}
+                </p>
+                <p style={{ margin: '15px 0 5px 0', fontSize: '15px', fontWeight: '600' }}>
+                  💡 Please refresh this page in 30 minutes to see the results.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>
+                ✅ Sync Completed!
+              </h3>
+              <div className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Products:</strong> {syncFetcherData.productsCount}
+                </p>
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Recommendations:</strong> {syncFetcherData.recommendationsCount}
+                </p>
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Duration:</strong> {syncFetcherData.duration}
+                </p>
+              </div>
+            </>
+          )}
+        </>
+      ) : syncFetcherData.rateLimited ? (
+        <>
+          <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleWarning}`}>⏰ Resync Rate Limited</h3>
+          <p className={`${styles.syncResultText} ${styles.syncResultTextWarning}`}>
+            You have reached your monthly resync limit.
+          </p>
+          <p className={`${styles.syncResultText} ${styles.syncResultTextWarning}`} style={{ fontSize: '14px' }}>
+            Next resync available: <strong>{formatDate(syncFetcherData.nextRefreshAt)}</strong>
+          </p>
+        </>
+      ) : syncFetcherData.tokenQuotaExceeded ? (
+        <>
+          <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleQuota}`}>🎫 Daily Token Quota Exceeded</h3>
+          <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ fontSize: '15px' }}>
+            You have used all your free tokens for today. Please try again tomorrow.
+          </p>
+          <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ margin: '10px 0 5px 0', fontSize: '14px' }}>
+            Quota resets at: <strong>{formatDate(syncFetcherData.quotaResetDate)}</strong>
+          </p>
+          <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ margin: '10px 0 0 0', fontSize: '13px' }}>
+            💡 Want unlimited tokens? Upgrade to PRO or MAX plan!
+          </p>
+        </>
+      ) : (
+        <>
+          <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleError}`}>❌ Sync Failed</h3>
+          <p className={`${styles.syncResultText} ${styles.syncResultTextError}`}>
+            {syncFetcherData.error || 'Unknown error occurred'}
+          </p>
+        </>
+      )}
+    </div>
+  );
+});
+SyncResult.displayName = 'SyncResult';
+
+// FREE Plan Banner Component
+const FreePlanBanner = memo(({ onUpgrade, billingFetcherState }) => {
+  return (
+    <div className={styles.freePlanBanner}>
+      <div className={styles.freePlanBannerRow}>
+        <h2 className={styles.freePlanBannerTitle}>
+          Unlock Your Store's Full Revenue Potential
+        </h2>
+        <div className={styles.freePlanBannerActions}>
+          <button
+            onClick={onUpgrade}
+            disabled={billingFetcherState === 'submitting'}
+            className={`${styles.button} ${styles.buttonSecondary}`}
+            style={{ cursor: billingFetcherState === 'submitting' ? 'not-allowed' : 'pointer' }}
+          >
+            {billingFetcherState === 'submitting' ? 'Processing...' : (
+              <>Upgrade to PRO <span>⚡</span></>
+            )}
+          </button>
+          <Link to="/app/billing?view=plans" className={styles.link}>
+            Need unlimited scale? View MAX Plan →
+          </Link>
+        </div>
+      </div>
+      <div className={styles.freePlanBannerFeatures}>
+        <div className={styles.freePlanBannerFeature}>
+          <span style={{ fontSize: '20px' }}>✓</span>
+          <span>Sync 2,000 Products</span>
+        </div>
+        <div className={styles.freePlanBannerFeature}>
+          <span style={{ fontSize: '20px' }}>✓</span>
+          <span>3 Recommendations / Popup</span>
+        </div>
+        <div className={styles.freePlanBannerFeature}>
+          <span style={{ fontSize: '20px' }}>✓</span>
+          <span>no watermark</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+FreePlanBanner.displayName = 'FreePlanBanner';
+
+// Sync Card Component (STEP 1)
+const SyncCard = memo(({ syncStatus, planFeatures, isAnySyncing, formatDate, syncFetcherForm }) => {
+  return (
+    <div className={`${styles.card} ${styles.cardLarge} ${styles.syncCard}`}>
+      <div className={styles.syncCardLeft}>
+        <div className={styles.syncCardHeader}>
+          <span className={styles.stepBadge}>STEP 1</span>
+          <h3 className={styles.syncCardTitle}>Sync your product catalog</h3>
+        </div>
+        <p className={styles.syncCardDescription}>
+          CartWhisper needs to analyze your products to generate AI recommendations. This usually takes less than a minute.
+        </p>
+      </div>
+      <div className={styles.syncCardMiddle}>
+        <div className={styles.syncCardAllowanceLabel}>FREE ALLOWANCE</div>
+        <div className={styles.syncCardAllowanceValue}>
+          {syncStatus?.productCount || 0}
+          <span className={styles.syncCardAllowanceLimit}> / {planFeatures?.maxProducts || 50}</span>
+        </div>
+      </div>
+      <div className={styles.syncCardRight}>
+        {syncFetcherForm}
+      </div>
+    </div>
+  );
+});
+SyncCard.displayName = 'SyncCard';
+
+// PRO Plan Usage Card Component
+const ProPlanUsageCard = memo(({ syncStatus, planFeatures, isTestMode, onUpgrade, billingFetcherState }) => {
+  return (
+    <div className={styles.card}>
+      <div className={styles.usageCard}>
+        <h2 className={styles.usageTitle}>Pro Plan Usage</h2>
+        <div className={styles.usageCount}>
+          {syncStatus?.productCount || 0} / {planFeatures?.maxProducts?.toLocaleString() || '2,000'} Products
+        </div>
+      </div>
+      <div className={styles.progressBar}>
+        <div className={`${styles.progressBarFill} ${styles.progressBarFillPro}`} style={{
+          width: `${Math.min(((syncStatus?.productCount || 0) / (planFeatures?.maxProducts || 2000)) * 100, 100)}%`
+        }} />
+      </div>
+      <div className={styles.usageFooter}>
+        {isTestMode ? (
+          <Link to="/app/billing?view=plans" className={styles.linkPrimary}>
+            Need more capacity? Upgrade to MAX (Unlimited) →
+          </Link>
+        ) : (
+          <button
+            onClick={onUpgrade}
+            disabled={billingFetcherState === 'submitting'}
+            className={styles.buttonLink}
+            style={{ cursor: billingFetcherState === 'submitting' ? 'not-allowed' : 'pointer' }}
+          >
+            Need more capacity? Upgrade to MAX (Unlimited) →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+});
+ProPlanUsageCard.displayName = 'ProPlanUsageCard';
+
+// MAX Plan Usage Card Component
+const MaxPlanUsageCard = memo(({ syncStatus }) => {
+  return (
+    <div className={styles.card}>
+      <div className={styles.usageCard}>
+        <h2 className={styles.usageTitle}>MAX Plan Usage</h2>
+        <div className={styles.usageCount}>
+          {syncStatus?.productCount?.toLocaleString() || 0} / ∞ Products
+        </div>
+      </div>
+      <div className={styles.progressBar}>
+        <div className={`${styles.progressBarFill} ${styles.progressBarFillMax}`} style={{ width: '30%' }} />
+      </div>
+    </div>
+  );
+});
+MaxPlanUsageCard.displayName = 'MaxPlanUsageCard';
+
 export default function Index() {
   const {
     shop,
@@ -280,34 +617,39 @@ export default function Index() {
     return Object.values(groups);
   }, [recommendations, planFeatures]);
 
-  // Revalidate after action
+  // Consolidated revalidation effect
   useEffect(() => {
-    if (planFetcher.data?.success || resetFetcher.data?.success || syncFetcher.data?.success) {
+    const shouldRevalidate =
+      planFetcher.data?.success ||
+      resetFetcher.data?.success ||
+      syncFetcher.data?.success ||
+      (billingFetcher.state === 'idle' && billingFetcher.data) ||
+      upgraded ||
+      cancelled;
+
+    if (shouldRevalidate) {
       revalidator.revalidate();
     }
-  }, [planFetcher.data, resetFetcher.data, syncFetcher.data]);
 
-  // Revalidate after billing action (upgrade/downgrade)
-  useEffect(() => {
-    if (billingFetcher.state === 'idle' && billingFetcher.data) {
-      // Billing action completed, reload data
-      revalidator.revalidate();
-    }
-  }, [billingFetcher.state, billingFetcher.data]);
-
-  // Show notifications and revalidate on upgrade
-  useEffect(() => {
+    // Handle notifications
     if (upgraded) {
       setShowNotification({ type: 'success', message: 'Successfully upgraded to Pro Plan!' });
-      // Force revalidate to get updated subscription data
-      revalidator.revalidate();
     } else if (upgradeFailed) {
       setShowNotification({ type: 'error', message: 'Upgrade failed. Please try again.' });
     } else if (cancelled) {
       setShowNotification({ type: 'info', message: 'Subscription cancelled. You are now on the Free Plan.' });
-      revalidator.revalidate();
     }
-  }, [upgraded, upgradeFailed, cancelled]);
+  }, [
+    planFetcher.data,
+    resetFetcher.data,
+    syncFetcher.data,
+    billingFetcher.state,
+    billingFetcher.data,
+    upgraded,
+    upgradeFailed,
+    cancelled,
+    revalidator
+  ]);
 
   // Reset visible products count when plan or recommendations change
   useEffect(() => {
@@ -389,28 +731,28 @@ export default function Index() {
   }, [isBackendSyncing, optimisticSyncing, revalidator]);
 
   // Format date helper
-  const formatDate = (dateStr) => {
+  const formatDate = useCallback((dateStr) => {
     if (!dateStr) return 'Never';
     return new Date(dateStr).toLocaleDateString('zh-CN', {
       year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
-  };
+  }, []);
 
-  const handleUpgrade = (plan = 'PRO') => {
+  const handleUpgrade = useCallback((plan = 'PRO') => {
     billingFetcher.submit(
       { action: 'upgrade', plan },
       { method: 'post', action: '/app/billing' }
     );
-  };
+  }, [billingFetcher]);
 
-  const handleCancelSubscription = () => {
+  const handleCancelSubscription = useCallback(() => {
     if (confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free Plan.')) {
       billingFetcher.submit(
         {},
         { method: 'post', action: '/app/billing/cancel' }
       );
     }
-  };
+  }, [billingFetcher]);
 
   if (!isRegistered) {
     return (
@@ -576,101 +918,26 @@ export default function Index() {
       <div className={styles.container}>
 
       {/* Notifications */}
-      {showNotification && (
-        <div className={`${styles.notification} ${
-          showNotification.type === 'success' ? styles.notificationSuccess :
-          showNotification.type === 'error' ? styles.notificationError :
-          styles.notificationInfo
-        }`}>
-          <span>{showNotification.message}</span>
-          <button
-            onClick={() => setShowNotification(null)}
-            className={styles.notificationClose}
-          >
-            ×
-          </button>
-        </div>
-      )}
+      <Notification
+        notification={showNotification}
+        onClose={() => setShowNotification(null)}
+      />
 
       {/* Plan-Specific Banner/Usage Card */}
       {currentPlan === 'free' && (
-        <div className={styles.freePlanBanner}>
-          {/* Row 1: Title and Button */}
-          <div className={styles.freePlanBannerRow}>
-            {/* Left: Title */}
-            <h2 className={styles.freePlanBannerTitle}>
-              Unlock Your Store's Full Revenue Potential
-            </h2>
-
-            {/* Right: Action Buttons */}
-            <div className={styles.freePlanBannerActions}>
-              <button
-                onClick={() => handleUpgrade('PRO')}
-                disabled={billingFetcher.state === 'submitting'}
-                className={`${styles.button} ${styles.buttonSecondary}`}
-                style={{ cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer' }}
-              >
-                {billingFetcher.state === 'submitting' ? 'Processing...' : (
-                  <>Upgrade to PRO <span>⚡</span></>
-                )}
-              </button>
-              <Link
-                to="/app/billing?view=plans"
-                className={styles.link}
-              >
-                Need unlimited scale? View MAX Plan →
-              </Link>
-            </div>
-          </div>
-
-          {/* Row 2: Three features in one line */}
-          <div className={styles.freePlanBannerFeatures}>
-            <div className={styles.freePlanBannerFeature}>
-              <span style={{ fontSize: '20px' }}>✓</span>
-              <span>Sync 2,000 Products</span>
-            </div>
-            <div className={styles.freePlanBannerFeature}>
-              <span style={{ fontSize: '20px' }}>✓</span>
-              <span>3 Recommendations / Popup</span>
-            </div>
-            <div className={styles.freePlanBannerFeature}>
-              <span style={{ fontSize: '20px' }}>✓</span>
-              <span>no watermark</span>
-            </div>
-          </div>
-        </div>
+        <FreePlanBanner
+          onUpgrade={() => handleUpgrade('PRO')}
+          billingFetcherState={billingFetcher.state}
+        />
       )}
 
       {/* STEP 1: Sync Product Catalog Card */}
-      <div className={`${styles.card} ${styles.cardLarge} ${styles.syncCard}`}>
-        {/* Left: Step label and description */}
-        <div className={styles.syncCardLeft}>
-          <div className={styles.syncCardHeader}>
-            <span className={styles.stepBadge}>
-              STEP 1
-            </span>
-            <h3 className={styles.syncCardTitle}>
-              Sync your product catalog
-            </h3>
-          </div>
-          <p className={styles.syncCardDescription}>
-            CartWhisper needs to analyze your products to generate AI recommendations. This usually takes less than a minute.
-          </p>
-        </div>
-
-        {/* Middle: Free Allowance Display */}
-        <div className={styles.syncCardMiddle}>
-          <div className={styles.syncCardAllowanceLabel}>
-            FREE ALLOWANCE
-          </div>
-          <div className={styles.syncCardAllowanceValue}>
-            {syncStatus?.productCount || 0}
-            <span className={styles.syncCardAllowanceLimit}> / {planFeatures?.maxProducts || 50}</span>
-          </div>
-        </div>
-
-        {/* Right: Sync Button */}
-        <div className={styles.syncCardRight}>
+      <SyncCard
+        syncStatus={syncStatus}
+        planFeatures={planFeatures}
+        isAnySyncing={isAnySyncing}
+        formatDate={formatDate}
+        syncFetcherForm={
           <syncFetcher.Form method="post" action="/api/scan">
             <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
             <button
@@ -698,136 +965,39 @@ export default function Index() {
               )}
             </button>
           </syncFetcher.Form>
-        </div>
-      </div>
+        }
+      />
 
       {/* PRO Plan Usage Card */}
       {currentPlan === 'pro' && (
-        <div className={styles.card}>
-          <div className={styles.usageCard}>
-            <h2 className={styles.usageTitle}>
-              Pro Plan Usage
-            </h2>
-            <div className={styles.usageCount}>
-              {syncStatus?.productCount || 0} / {planFeatures?.maxProducts?.toLocaleString() || '2,000'} Products
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className={styles.progressBar}>
-            <div className={`${styles.progressBarFill} ${styles.progressBarFillPro}`} style={{
-              width: `${Math.min(((syncStatus?.productCount || 0) / (planFeatures?.maxProducts || 2000)) * 100, 100)}%`
-            }} />
-          </div>
-
-          {/* Upgrade Link */}
-          <div className={styles.usageFooter}>
-            {isTestMode ? (
-              <Link
-                to="/app/billing?view=plans"
-                className={styles.linkPrimary}
-              >
-                Need more capacity? Upgrade to MAX (Unlimited) →
-              </Link>
-            ) : (
-              <button
-                onClick={() => handleUpgrade('MAX')}
-                disabled={billingFetcher.state === 'submitting'}
-                className={styles.buttonLink}
-                style={{ cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer' }}
-              >
-                Need more capacity? Upgrade to MAX (Unlimited) →
-              </button>
-            )}
-          </div>
-        </div>
+        <ProPlanUsageCard
+          syncStatus={syncStatus}
+          planFeatures={planFeatures}
+          isTestMode={isTestMode}
+          onUpgrade={() => handleUpgrade('MAX')}
+          billingFetcherState={billingFetcher.state}
+        />
       )}
 
       {/* MAX Plan Usage Card */}
       {currentPlan === 'max' && (
-        <div className={styles.card}>
-          <div className={styles.usageCard}>
-            <h2 className={styles.usageTitle}>
-              MAX Plan Usage
-            </h2>
-            <div className={styles.usageCount}>
-              {syncStatus?.productCount?.toLocaleString() || 0} / ∞ Products
-            </div>
-          </div>
-
-          {/* Progress Bar (always shows some progress for visual feedback) */}
-          <div className={styles.progressBar}>
-            <div className={`${styles.progressBarFill} ${styles.progressBarFillMax}`} style={{ width: '30%' }} />
-          </div>
-        </div>
+        <MaxPlanUsageCard syncStatus={syncStatus} />
       )}
 
       {/* Main Content */}
       <div>
           {/* Stats Grid - Three Cards */}
-          <div className={styles.statsGrid}>
-            {/* Card 1: Recommendations */}
-            <div className={styles.statCard}>
-              <div className={styles.statLabel}>
-                Recommendations
-              </div>
-              <div className={styles.statValue}>
-                {(syncStatus?.recommendationCount || recommendations.length || 0).toLocaleString()}
-              </div>
-            </div>
-
-            {/* Card 2: Total Clicks */}
-            <div className={styles.statCard}>
-              <div className={styles.statLabelWithBadge}>
-                <span className={styles.statLabel} style={{ marginBottom: 0 }}>
-                  Total Clicks
-                </span>
-                <span className={styles.statBadgeLive}>
-                  LIVE
-                </span>
-              </div>
-              <div className={`${styles.statValue} ${styles.statValueWithMargin}`}>
-                {(statistics?.summary?.totalClicks || 0).toLocaleString()}
-              </div>
-              <p className={styles.statDescription}>
-                Users clicked Recommendations
-              </p>
-            </div>
-
-            {/* Card 3: Avg. Click-Through Rate */}
-            <div className={styles.statCard}>
-              <div className={styles.statLabel}>
-                Avg. Click-Through Rate
-              </div>
-              <div className={styles.statValue}>
-                {statistics?.summary?.ctr || 0}%
-              </div>
-            </div>
-          </div>
+          <StatsGrid
+            syncStatus={syncStatus}
+            recommendations={recommendations}
+            statistics={statistics}
+          />
 
           {/* Backend Syncing Notice */}
-          {(isBackendSyncing || optimisticSyncing) && (
-            <div className={styles.syncNotice}>
-              <div className={styles.syncNoticeIcon}>
-                ⏳
-              </div>
-              <div className={styles.syncNoticeContent}>
-                <div className={styles.syncNoticeTitle}>
-                  Sync in Progress
-                </div>
-                <div className={styles.syncNoticeText}>
-                  Your products are being synced in the background. This may take up to 30 minutes.
-                  Page will auto-refresh every 30 seconds to update progress.
-                </div>
-              </div>
-              <style>{`
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}</style>
-            </div>
-          )}
+          <SyncNotice
+            isBackendSyncing={isBackendSyncing}
+            optimisticSyncing={optimisticSyncing}
+          />
 
           {/* Synced Products Section */}
           <div style={{ marginBottom: '40px' }}>
@@ -1470,112 +1640,13 @@ export default function Index() {
           )}
 
           {/* Sync Progress - Redesigned */}
-          {isAnySyncing && (
-            <div className={styles.syncProgress}>
-              <div className={styles.syncProgressHeader}>
-                <div className={styles.syncProgressTitle}>
-                  <span>⏳</span>
-                  <span>Syncing in progress...</span>
-                </div>
-                <span className={styles.syncProgressTime}>
-                  This may take up to 30 minutes
-                </span>
-              </div>
-              <div className={styles.syncProgressBar}>
-                <div className={styles.syncProgressBarFill}>
-                  <style>{`
-                    @keyframes pulse {
-                      0% { opacity: 0.6; }
-                      50% { opacity: 1; }
-                      100% { opacity: 0.6; }
-                    }
-                  `}</style>
-                </div>
-              </div>
-            </div>
-          )}
+          <SyncProgress isAnySyncing={isAnySyncing} />
 
           {/* Sync Result */}
-          {syncFetcher.data && (
-            <div className={`${styles.syncResult} ${
-              syncFetcher.data.success ? styles.syncResultSuccess :
-              syncFetcher.data.rateLimited ? styles.syncResultWarning :
-              syncFetcher.data.tokenQuotaExceeded ? styles.syncResultQuota :
-              styles.syncResultError
-            }`}>
-              {syncFetcher.data.success ? (
-                <>
-                  {syncFetcher.data.async ? (
-                    // 异步模式：显示后台同步提示
-                    <>
-                      <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>
-                        ✅ Sync Started in Background
-                      </h3>
-                      <div className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
-                        <p style={{ margin: '5px 0' }}>
-                          <strong>Products being synced:</strong> {syncFetcher.data.productsCount}
-                        </p>
-                        <p style={{ margin: '5px 0' }}>
-                          <strong>Estimated completion:</strong> {syncFetcher.data.estimatedCompletionTime}
-                        </p>
-                        <p style={{ margin: '15px 0 5px 0', fontSize: '15px', fontWeight: '600' }}>
-                          💡 Please refresh this page in 30 minutes to see the results.
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    // 同步模式：显示完成结果
-                    <>
-                      <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>
-                        ✅ Sync Completed!
-                      </h3>
-                      <div className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
-                        <p style={{ margin: '5px 0' }}>
-                          <strong>Products:</strong> {syncFetcher.data.productsCount}
-                        </p>
-                        <p style={{ margin: '5px 0' }}>
-                          <strong>Recommendations:</strong> {syncFetcher.data.recommendationsCount}
-                        </p>
-                        <p style={{ margin: '5px 0' }}>
-                          <strong>Duration:</strong> {syncFetcher.data.duration}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : syncFetcher.data.rateLimited ? (
-                <>
-                  <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleWarning}`}>⏰ Resync Rate Limited</h3>
-                  <p className={`${styles.syncResultText} ${styles.syncResultTextWarning}`}>
-                    You have reached your monthly resync limit.
-                  </p>
-                  <p className={`${styles.syncResultText} ${styles.syncResultTextWarning}`} style={{ fontSize: '14px' }}>
-                    Next resync available: <strong>{formatDate(syncFetcher.data.nextRefreshAt)}</strong>
-                  </p>
-                </>
-              ) : syncFetcher.data.tokenQuotaExceeded ? (
-                <>
-                  <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleQuota}`}>🎫 Daily Token Quota Exceeded</h3>
-                  <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ fontSize: '15px' }}>
-                    You have used all your free tokens for today. Please try again tomorrow.
-                  </p>
-                  <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ margin: '10px 0 5px 0', fontSize: '14px' }}>
-                    Quota resets at: <strong>{formatDate(syncFetcher.data.quotaResetDate)}</strong>
-                  </p>
-                  <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ margin: '10px 0 0 0', fontSize: '13px' }}>
-                    💡 Want unlimited tokens? Upgrade to PRO or MAX plan!
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleError}`}>❌ Sync Failed</h3>
-                  <p className={`${styles.syncResultText} ${styles.syncResultTextError}`}>
-                    {syncFetcher.data.error || 'Unknown error occurred'}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
+          <SyncResult
+            syncFetcherData={syncFetcher.data}
+            formatDate={formatDate}
+          />
         </div>
       </div>
 
