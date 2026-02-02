@@ -292,7 +292,7 @@ const SyncNotice = memo(({ isBackendSyncing, optimisticSyncing }) => {
         </div>
         <div className={styles.syncNoticeText}>
           Your products are being synced in the background. This may take up to 30 minutes.
-          Page will auto-refresh every 30 seconds to update progress.
+          Page will auto-refresh every 45 seconds to update progress.
         </div>
       </div>
       <style>{`
@@ -516,6 +516,133 @@ const MaxPlanUsageCard = memo(({ syncStatus }) => {
 });
 MaxPlanUsageCard.displayName = 'MaxPlanUsageCard';
 
+// Products Table Component
+const ProductsTable = memo(({ groupedProducts, visibleProducts, currentPlan, recommendations, onShowMore }) => {
+  if (groupedProducts.length === 0) {
+    return (
+      <div className={styles.productsEmpty}>
+        <div className={styles.productsEmptyIcon}>📦</div>
+        <p className={styles.productsEmptyText}>
+          No products synced yet. Click "Resync" to get started.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead className={styles.tableHead}>
+            <tr>
+              <th className={styles.tableHeader}>TRIGGER PRODUCT</th>
+              <th className={styles.tableHeader}>RECOMMENDATIONS</th>
+              <th className={`${styles.tableHeader} ${styles.tableHeaderCenter}`}>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groupedProducts.slice(0, visibleProducts).map((group, idx) => {
+              // For FREE plan, get all recommendations (up to 3) for display
+              const displayRecommendations = currentPlan === 'free'
+                ? recommendations
+                    .filter(rec => rec.sourceProductId === group.product.id)
+                    .slice(0, 3)
+                    .map(rec => ({
+                      id: rec.targetProductId,
+                      title: rec.targetTitle,
+                      image: rec.targetImage,
+                      reason: rec.reason?.split('|')[0] || 'Related Product'
+                    }))
+                : group.recommendations;
+
+              return (
+                <tr key={idx} className={styles.tableRow}>
+                  {/* Trigger Product */}
+                  <td className={styles.tableCell}>
+                    <div className={styles.productDisplay}>
+                      {group.product.image ? (
+                        <img
+                          src={group.product.image}
+                          alt={group.product.title}
+                          className={styles.productImage}
+                        />
+                      ) : (
+                        <div className={styles.productImagePlaceholder}>📦</div>
+                      )}
+                      <div className={styles.productInfo}>
+                        <div className={styles.productTitle}>{group.product.title}</div>
+                        <div className={styles.productId}>ID: {group.product.id}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Recommendations */}
+                  <td className={styles.tableCellTop}>
+                    <div className={styles.recommendationsList}>
+                      {displayRecommendations.map((rec, recIdx) => (
+                        <div
+                          key={recIdx}
+                          className={`${styles.recommendationItem} ${
+                            recIdx === 0 ? styles.recommendationItemFirst : styles.recommendationItemOther
+                          } ${currentPlan === 'free' && recIdx > 0 ? 'locked-recommendation' : ''}`}
+                        >
+                          <div className={styles.recommendationContent}>
+                            {rec.image ? (
+                              <img
+                                src={rec.image}
+                                alt={rec.title}
+                                className={styles.productImage}
+                              />
+                            ) : (
+                              <div className={styles.productImagePlaceholder}>📦</div>
+                            )}
+                            <div className={styles.recommendationText}>
+                              <div className={styles.recommendationTitle}>{rec.title}</div>
+                              <div className={styles.recommendationReason}>{rec.reason}</div>
+                            </div>
+                          </div>
+
+                          {/* Lock Overlay for FREE plan (2nd and 3rd recommendations) */}
+                          {currentPlan === 'free' && recIdx > 0 && (
+                            <>
+                              <div className={styles.lockOverlay} />
+                              <div className={styles.lockMessage}>
+                                <span style={{ fontSize: '14px' }}>🔒</span>
+                                {recIdx === 1 ? 'Upgrade to unlock these 2 items' : ''}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+
+                  {/* Status */}
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <span className={`${styles.statusBadge} ${styles.statusBadgeActive}`}>
+                      Active
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Show More Button */}
+      {visibleProducts < groupedProducts.length && (
+        <div className={styles.showMoreWrapper}>
+          <button onClick={onShowMore} className={styles.buttonSmall}>
+            Show More ({groupedProducts.length - visibleProducts} remaining)
+          </button>
+        </div>
+      )}
+    </>
+  );
+});
+ProductsTable.displayName = 'ProductsTable';
+
 export default function Index() {
   const {
     shop,
@@ -717,14 +844,14 @@ export default function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
-  // Auto-refresh when backend is syncing
+  // Auto-refresh when backend is syncing (optimized interval)
   useEffect(() => {
     if (isBackendSyncing || optimisticSyncing) {
-      // 每30秒刷新一次，检查同步状态
+      // 每45秒刷新一次，检查同步状态（从30秒优化到45秒以减少服务器负载）
       const intervalId = setInterval(() => {
         console.log('[Auto-refresh] Checking sync status...');
         revalidator.revalidate();
-      }, 30000); // 30秒
+      }, 45000); // 45秒
 
       return () => clearInterval(intervalId);
     }
@@ -753,6 +880,10 @@ export default function Index() {
       );
     }
   }, [billingFetcher]);
+
+  const handleShowMore = useCallback(() => {
+    setVisibleProducts(prev => Math.min(prev + 10, groupedProducts.length));
+  }, [groupedProducts.length]);
 
   if (!isRegistered) {
     return (
@@ -907,9 +1038,11 @@ export default function Index() {
               loop
               muted
               playsInline
+              preload="metadata"
               className={styles.heroVideo}
             >
               <source src="/demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
             </video>
           </div>
         </div>
@@ -1015,549 +1148,13 @@ export default function Index() {
             </div>
 
             {/* Products Display */}
-            {groupedProducts.length > 0 ? (
-              currentPlan === 'free' ? (
-                // FREE Plan: Table Layout
-                <>
-                  <div style={{
-                    backgroundColor: 'white',
-                    borderRadius: '12px',
-                    border: '1px solid #e5e7eb',
-                    overflow: 'hidden'
-                  }}>
-                  <table style={{
-                    width: '100%',
-                    borderCollapse: 'collapse'
-                  }}>
-                    <thead>
-                      <tr style={{
-                        backgroundColor: '#f9fafb',
-                        borderBottom: '1px solid #e5e7eb'
-                      }}>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          color: '#6b7280',
-                          letterSpacing: '0.05em',
-                          textTransform: 'uppercase'
-                        }}>
-                          TRIGGER PRODUCT
-                        </th>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'left',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          color: '#6b7280',
-                          letterSpacing: '0.05em',
-                          textTransform: 'uppercase'
-                        }}>
-                          RECOMMENDATIONS
-                        </th>
-                        <th style={{
-                          padding: '16px',
-                          textAlign: 'center',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          color: '#6b7280',
-                          letterSpacing: '0.05em',
-                          textTransform: 'uppercase',
-                          width: '120px'
-                        }}>
-                          STATUS
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {groupedProducts.slice(0, visibleProducts).map((group, idx) => {
-                        // For FREE plan, get all recommendations (up to 3) for display
-                        const displayRecommendations = currentPlan === 'free'
-                          ? recommendations
-                              .filter(rec => rec.sourceProductId === group.product.id)
-                              .slice(0, 3)
-                              .map(rec => ({
-                                id: rec.targetProductId,
-                                title: rec.targetTitle,
-                                image: rec.targetImage,
-                                reason: rec.reason?.split('|')[0] || 'Related Product'
-                              }))
-                          : group.recommendations;
-
-                        return (
-                          <tr
-                            key={idx}
-                            style={{
-                              borderBottom: idx < groupedProducts.length - 1 ? '1px solid #e5e7eb' : 'none'
-                            }}
-                          >
-                          {/* Trigger Product */}
-                          <td style={{ padding: '0 16px', verticalAlign: 'middle' }}>
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                              {group.product.image ? (
-                                <img
-                                  src={group.product.image}
-                                  alt={group.product.title}
-                                  style={{
-                                    width: '50px',
-                                    height: '50px',
-                                    borderRadius: '6px',
-                                    objectFit: 'cover',
-                                    backgroundColor: '#f5f5f5'
-                                  }}
-                                />
-                              ) : (
-                                <div style={{
-                                  width: '50px',
-                                  height: '50px',
-                                  borderRadius: '6px',
-                                  backgroundColor: '#e9ecef',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '24px'
-                                }}>
-                                  📦
-                                </div>
-                              )}
-                              <div>
-                                <div style={{
-                                  fontWeight: '500',
-                                  color: '#111827',
-                                  marginBottom: '4px',
-                                  fontSize: '14px'
-                                }}>
-                                  {group.product.title}
-                                </div>
-                                <div style={{
-                                  fontSize: '12px',
-                                  color: '#9ca3af'
-                                }}>
-                                  ID: {group.product.id}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Recommendations */}
-                          <td style={{ padding: '1px 16px', verticalAlign: 'top' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                              {displayRecommendations.map((rec, recIdx) => (
-                                <div
-                                  key={recIdx}
-                                  style={{
-                                    position: 'relative',
-                                    padding: '12px',
-                                    backgroundColor: recIdx === 0 ? '#f0fdf4' : '#f9fafb',
-                                    borderRadius: '8px',
-                                    borderLeft: recIdx === 0 ? '3px solid #10b981' : '3px solid transparent',
-                                    fontSize: '13px',
-                                    transition: 'all 0.2s'
-                                  }}
-                                  className={currentPlan === 'free' && recIdx > 0 ? 'locked-recommendation' : ''}
-                                >
-                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                    {/* Recommendation Image */}
-                                    {rec.image ? (
-                                      <img
-                                        src={rec.image}
-                                        alt={rec.title}
-                                        style={{
-                                          width: '50px',
-                                          height: '50px',
-                                          borderRadius: '6px',
-                                          objectFit: 'cover',
-                                          backgroundColor: '#f5f5f5',
-                                          flexShrink: 0
-                                        }}
-                                      />
-                                    ) : (
-                                      <div style={{
-                                        width: '50px',
-                                        height: '50px',
-                                        borderRadius: '6px',
-                                        backgroundColor: '#e9ecef',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '24px',
-                                        flexShrink: 0
-                                      }}>
-                                        📦
-                                      </div>
-                                    )}
-
-                                    {/* Recommendation Text */}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                      <div style={{
-                                        fontWeight: '500',
-                                        color: '#111827',
-                                        marginBottom: '4px'
-                                      }}>
-                                        {rec.title}
-                                      </div>
-                                      <div style={{
-                                        fontSize: '12px',
-                                        color: '#6b7280'
-                                      }}>
-                                        {rec.reason}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Light Lock Overlay for 2nd and 3rd recommendations (FREE plan only) */}
-                                  {currentPlan === 'free' && recIdx > 0 && (
-                                    <>
-                                      <div
-                                        className="lock-overlay"
-                                        style={{
-                                          position: 'absolute',
-                                          top: 0,
-                                          left: 0,
-                                          right: 0,
-                                          bottom: 0,
-                                          backgroundColor: 'rgba(249, 250, 251, 0.85)',
-                                          borderRadius: '8px',
-                                          cursor: 'pointer',
-                                          transition: 'all 0.2s'
-                                        }}
-                                      />
-                                      <div
-                                        className="lock-message"
-                                        style={{
-                                          position: 'absolute',
-                                          top: '50%',
-                                          left: '50%',
-                                          transform: 'translate(-50%, -50%)',
-                                          backgroundColor: 'rgba(55, 65, 81, 0.95)',
-                                          color: 'white',
-                                          padding: '8px 16px',
-                                          borderRadius: '6px',
-                                          fontSize: '12px',
-                                          fontWeight: '600',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '6px',
-                                          whiteSpace: 'nowrap',
-                                          opacity: 0,
-                                          pointerEvents: 'none',
-                                          transition: 'opacity 0.2s',
-                                          zIndex: 10
-                                        }}
-                                      >
-                                        <span style={{ fontSize: '14px' }}>🔒</span>
-                                        {recIdx === 1 ? 'Upgrade to unlock these 2 items' : ''}
-                                      </div>
-                                      <style>{`
-                                        .locked-recommendation:hover .lock-message {
-                                          opacity: 1 !important;
-                                        }
-                                        .locked-recommendation:hover .lock-overlay {
-                                          background-color: rgba(249, 250, 251, 0.95) !important;
-                                        }
-                                      `}</style>
-                                    </>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-
-                          {/* Status */}
-                          <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'middle' }}>
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              backgroundColor: '#dcfce7',
-                              color: '#10b981',
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}>
-                              Active
-                            </span>
-                          </td>
-                        </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Show More Button */}
-                {visibleProducts < groupedProducts.length && (
-                  <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                    <button
-                      onClick={() => setVisibleProducts(prev => Math.min(prev + 10, groupedProducts.length))}
-                      style={{
-                        padding: '12px 24px',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        backgroundColor: 'white',
-                        color: '#111827',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f9fafb';
-                        e.currentTarget.style.borderColor = '#d1d5db';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'white';
-                        e.currentTarget.style.borderColor = '#e5e7eb';
-                      }}
-                    >
-                      Show More ({groupedProducts.length - visibleProducts} remaining)
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-                // PRO/MAX Plans: Table Layout (same as FREE but without lock overlay)
-                <>
-                  <div style={{
-                    backgroundColor: 'white',
-                    borderRadius: '12px',
-                    border: '1px solid #e5e7eb',
-                    overflow: 'hidden'
-                  }}>
-                    <table style={{
-                      width: '100%',
-                      borderCollapse: 'collapse'
-                    }}>
-                      <thead>
-                        <tr style={{
-                          backgroundColor: '#f9fafb',
-                          borderBottom: '1px solid #e5e7eb'
-                        }}>
-                          <th style={{
-                            padding: '16px',
-                            textAlign: 'left',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: '#6b7280',
-                            letterSpacing: '0.05em',
-                            textTransform: 'uppercase'
-                          }}>
-                            TRIGGER PRODUCT
-                          </th>
-                          <th style={{
-                            padding: '16px',
-                            textAlign: 'left',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: '#6b7280',
-                            letterSpacing: '0.05em',
-                            textTransform: 'uppercase'
-                          }}>
-                            RECOMMENDATIONS
-                          </th>
-                          <th style={{
-                            padding: '16px',
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: '#6b7280',
-                            letterSpacing: '0.05em',
-                            textTransform: 'uppercase',
-                            width: '120px'
-                          }}>
-                            STATUS
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {groupedProducts.slice(0, visibleProducts).map((group, idx) => {
-                          // For PRO/MAX plans, show all recommendations (no lock overlay)
-                          const displayRecommendations = group.recommendations;
-
-                          return (
-                            <tr
-                              key={idx}
-                              style={{
-                                borderBottom: idx < groupedProducts.length - 1 ? '1px solid #e5e7eb' : 'none'
-                              }}
-                            >
-                            {/* Trigger Product */}
-                            <td style={{ padding: '0 16px', verticalAlign: 'middle' }}>
-                              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                {group.product.image ? (
-                                  <img
-                                    src={group.product.image}
-                                    alt={group.product.title}
-                                    style={{
-                                      width: '50px',
-                                      height: '50px',
-                                      borderRadius: '6px',
-                                      objectFit: 'cover',
-                                      backgroundColor: '#f5f5f5'
-                                    }}
-                                  />
-                                ) : (
-                                  <div style={{
-                                    width: '50px',
-                                    height: '50px',
-                                    borderRadius: '6px',
-                                    backgroundColor: '#e9ecef',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '24px'
-                                  }}>
-                                    📦
-                                  </div>
-                                )}
-                                <div>
-                                  <div style={{
-                                    fontWeight: '500',
-                                    color: '#111827',
-                                    marginBottom: '4px',
-                                    fontSize: '14px'
-                                  }}>
-                                    {group.product.title}
-                                  </div>
-                                  <div style={{
-                                    fontSize: '12px',
-                                    color: '#9ca3af'
-                                  }}>
-                                    ID: {group.product.id}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-
-                            {/* Recommendations */}
-                            <td style={{ padding: '1px 16px', verticalAlign: 'top' }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                                {displayRecommendations.map((rec, recIdx) => (
-                                  <div
-                                    key={recIdx}
-                                    style={{
-                                      position: 'relative',
-                                      padding: '12px',
-                                      backgroundColor: recIdx === 0 ? '#f0fdf4' : '#f9fafb',
-                                      borderRadius: '8px',
-                                      borderLeft: recIdx === 0 ? '3px solid #10b981' : '3px solid transparent',
-                                      fontSize: '13px',
-                                      transition: 'all 0.2s'
-                                    }}
-                                  >
-                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                      {/* Recommendation Image */}
-                                      {rec.image ? (
-                                        <img
-                                          src={rec.image}
-                                          alt={rec.title}
-                                          style={{
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '6px',
-                                            objectFit: 'cover',
-                                            backgroundColor: '#f5f5f5',
-                                            flexShrink: 0
-                                          }}
-                                        />
-                                      ) : (
-                                        <div style={{
-                                          width: '50px',
-                                          height: '50px',
-                                          borderRadius: '6px',
-                                          backgroundColor: '#e9ecef',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          fontSize: '24px',
-                                          flexShrink: 0
-                                        }}>
-                                          📦
-                                        </div>
-                                      )}
-
-                                      {/* Recommendation Text */}
-                                      <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{
-                                          fontWeight: '500',
-                                          color: '#111827',
-                                          marginBottom: '4px'
-                                        }}>
-                                          {rec.title}
-                                        </div>
-                                        <div style={{
-                                          fontSize: '12px',
-                                          color: '#6b7280'
-                                        }}>
-                                          {rec.reason}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </td>
-
-                            {/* Status */}
-                            <td style={{ padding: '0 16px', textAlign: 'center', verticalAlign: 'middle' }}>
-                              <span style={{
-                                display: 'inline-block',
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                backgroundColor: '#dcfce7',
-                                color: '#10b981',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                Active
-                              </span>
-                            </td>
-                          </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Show More Button */}
-                  {visibleProducts < groupedProducts.length && (
-                    <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                      <button
-                        onClick={() => setVisibleProducts(prev => Math.min(prev + 10, groupedProducts.length))}
-                        style={{
-                          padding: '12px 24px',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          backgroundColor: 'white',
-                          color: '#111827',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f9fafb';
-                          e.currentTarget.style.borderColor = '#d1d5db';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.backgroundColor = 'white';
-                          e.currentTarget.style.borderColor = '#e5e7eb';
-                        }}
-                      >
-                        Show More ({groupedProducts.length - visibleProducts} remaining)
-                      </button>
-                    </div>
-                  )}
-                </>
-              )
-            ) : (
-              <div className={styles.productsEmpty}>
-                <div className={styles.productsEmptyIcon}>📦</div>
-                <p className={styles.productsEmptyText}>
-                  No products synced yet. Click "Resync" to get started.
-                </p>
-              </div>
-            )}
+            <ProductsTable
+              groupedProducts={groupedProducts}
+              visibleProducts={visibleProducts}
+              currentPlan={currentPlan}
+              recommendations={recommendations}
+              onShowMore={handleShowMore}
+            />
           </div>
 
           {/* Admin: Global Quota Settings (Test Mode Only) */}
