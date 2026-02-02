@@ -710,7 +710,6 @@ export default function Index() {
               }}
             >
               <source src="/demo.mp4" type="video/mp4" />
-              <img src="/demo.gif" alt="CartWhisper AI Demo" />
             </video>
           </div>
         </div>
