@@ -1,6 +1,7 @@
 import { useLoaderData, Link, useFetcher, useRevalidator } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { authenticate } from '../shopify.server';
+import styles from './app._index/styles.module.css';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
 import { getSubscription, getPlanFeatures, getCurrentPlan } from '../utils/billing.server';
@@ -413,23 +414,16 @@ export default function Index() {
 
   if (!isRegistered) {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-        <h1 style={{ marginBottom: '10px' }}>Welcome to CartWhisper AI</h1>
-        <p style={{ color: '#666', marginBottom: '30px' }}>
+      <div className={styles.containerWelcome}>
+        <h1 className={styles.welcomeTitle}>Welcome to CartWhisper AI</h1>
+        <p className={styles.welcomeSubtitle}>
           Get started by syncing your products to generate AI-powered recommendations.
         </p>
 
         {/* Getting Started Card */}
-        <div style={{
-          padding: '30px',
-          backgroundColor: '#e3f2fd',
-          borderRadius: '12px',
-          border: '2px solid #2196f3',
-          marginBottom: '30px',
-          textAlign: 'center',
-        }}>
-          <h2 style={{ color: '#1565c0', marginBottom: '15px' }}>🚀 Initial Setup</h2>
-          <p style={{ color: '#1565c0', marginBottom: '20px', fontSize: '16px' }}>
+        <div className={styles.cardWelcome}>
+          <h2 className={styles.welcomeCardTitle}>🚀 Initial Setup</h2>
+          <p className={styles.welcomeCardText}>
             Click the button below to sync your Shopify products and start generating recommendations.
           </p>
 
@@ -438,19 +432,7 @@ export default function Index() {
             <button
               type="submit"
               disabled={isAnySyncing}
-              style={{
-                padding: '16px 32px',
-                fontSize: '16px',
-                backgroundColor: isAnySyncing ? '#ccc' : '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: isAnySyncing ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}
+              className={`${styles.buttonWelcome} ${isAnySyncing ? styles.buttonWelcomeDisabled : styles.buttonWelcomePrimary}`}
             >
               {isAnySyncing ? (
                 <>
@@ -464,49 +446,21 @@ export default function Index() {
 
           {/* Sync Progress - Async Mode */}
           {isAnySyncing && (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '1px solid #e5e7eb',
-              marginBottom: '32px',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '48px',
-                marginBottom: '16px'
-              }}>
+            <div className={styles.syncProgressWelcome}>
+              <div className={styles.syncProgressIcon}>
                 ⏳
               </div>
-              <h3 style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#111827',
-                marginBottom: '12px'
-              }}>
+              <h3 className={styles.syncProgressWelcomeTitle}>
                 Sync Started Successfully
               </h3>
-              <p style={{
-                fontSize: '16px',
-                color: '#6b7280',
-                marginBottom: '24px',
-                lineHeight: '1.6'
-              }}>
+              <p className={styles.syncProgressWelcomeText}>
                 Your products are being synced in the background. This process may take up to <strong>30 minutes</strong>.
                 <br />
                 Please refresh this page after 30 minutes to see the results.
               </p>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                backgroundColor: '#f0fdf4',
-                borderRadius: '8px',
-                border: '1px solid #86efac'
-              }}>
+              <div className={styles.syncProgressTip}>
                 <span style={{ fontSize: '20px' }}>💡</span>
-                <span style={{ fontSize: '14px', color: '#166534', fontWeight: '500' }}>
+                <span className={styles.syncProgressTipText}>
                   You can safely close this page and come back later
                 </span>
               </div>
@@ -515,20 +469,12 @@ export default function Index() {
 
           {/* Sync Result */}
           {syncFetcher.data && syncFetcher.data.success && (
-            <div
-              style={{
-                marginTop: '20px',
-                padding: '20px',
-                borderRadius: '8px',
-                backgroundColor: '#d4edda',
-                border: '2px solid #28a745',
-              }}
-            >
-              <h3 style={{ color: '#155724', margin: '0 0 10px 0' }}>✅ Initial Sync Completed!</h3>
-              <p style={{ color: '#155724', margin: '5px 0' }}>
+            <div className={`${styles.syncResult} ${styles.syncResultSuccess}`}>
+              <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>✅ Initial Sync Completed!</h3>
+              <p className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
                 Successfully synced <strong>{syncFetcher.data.productsCount}</strong> products and generated <strong>{syncFetcher.data.recommendationsCount}</strong> recommendations.
               </p>
-              <p style={{ color: '#155724', margin: '10px 0 0 0', fontSize: '14px' }}>
+              <p className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`} style={{ margin: '10px 0 0 0', fontSize: '14px' }}>
                 The page will reload automatically...
               </p>
             </div>
@@ -536,14 +482,9 @@ export default function Index() {
         </div>
 
         {/* How it works section */}
-        <div style={{
-          padding: '20px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          border: '1px solid #dee2e6',
-        }}>
-          <h3 style={{ margin: '0 0 15px 0' }}>ℹ️ How it works</h3>
-          <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+        <div className={styles.cardInfo}>
+          <h3 className={styles.infoTitle}>ℹ️ How it works</h3>
+          <ol className={styles.infoList}>
             <li>Click "Start Initial Sync" to fetch all products from your Shopify store</li>
             <li>Products are sent to the CartWhisper AI backend</li>
             <li>AI analyzes products and generates personalized recommendations</li>
@@ -562,93 +503,39 @@ export default function Index() {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: '#fafafa',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-      }}>
+      <div className={styles.pageWrapper}>
       {/* Header */}
-      <div style={{
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        padding: '16px 0'
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.headerContent}>
             {/* Left: Logo + Title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                backgroundColor: '#7c3aed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '24px',
-                fontWeight: 'bold'
-              }}>
+            <div className={styles.headerLeft}>
+              <div className={styles.logo}>
                 C
               </div>
-              <h1 style={{
-                margin: 0,
-                fontSize: '24px',
-                fontWeight: '700',
-                color: '#111827'
-              }}>
-                CartWhisper <span style={{ color: '#4f46e5' }}>AI</span>
+              <h1 className={styles.headerTitle}>
+                CartWhisper <span className={styles.headerTitleAccent}>AI</span>
               </h1>
             </div>
 
             {/* Right: Plan badge + Avatar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className={styles.headerRight}>
               {currentPlan === 'free' && (
-                <div style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#f3f4f6',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6b7280'
-                }}>
+                <div className={`${styles.planBadge} ${styles.planBadgeFree}`}>
                   FREE PLAN
                 </div>
               )}
               {currentPlan === 'pro' && (
-                <div style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#e0e7ff',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#4f46e5'
-                }}>
+                <div className={`${styles.planBadge} ${styles.planBadgePro}`}>
                   PRO PLAN
                 </div>
               )}
               {currentPlan === 'max' && (
-                <div style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#f3e8ff',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#7c3aed'
-                }}>
+                <div className={`${styles.planBadge} ${styles.planBadgeMax}`}>
                   MAX PLAN
                 </div>
               )}
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                backgroundColor: '#e5e7eb',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '20px'
-              }}>
+              <div className={styles.avatar}>
                 👤
               </div>
             </div>
@@ -657,57 +544,28 @@ export default function Index() {
       </div>
 
       {/* Hero Section */}
-      <div style={{
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e5e7eb'
-      }}>
-        <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          padding: '60px 32px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '60px'
-        }}>
+      <div className={styles.hero}>
+        <div className={styles.heroInner}>
           {/* Left: Headline and Subtext */}
-          <div style={{ flex: '1 1 50%', maxWidth: '600px' }}>
-            <h2 style={{
-              margin: '0 0 24px 0',
-              fontSize: '64px',
-              fontWeight: '800',
-              lineHeight: '1.1',
-              color: '#111827',
-              letterSpacing: '-0.02em'
-            }}>
-              Smart <span style={{ color: '#4f46e5' }}>Popups.</span>
+          <div className={styles.heroLeft}>
+            <h2 className={styles.heroHeadline}>
+              Smart <span className={styles.heroAccent}>Popups.</span>
               <br />
-              Bigger <span style={{ color: '#4f46e5' }}>Carts.</span>
+              Bigger <span className={styles.heroAccent}>Carts.</span>
             </h2>
-            <p style={{
-              margin: 0,
-              fontSize: '20px',
-              lineHeight: '1.6',
-              color: '#6b7280',
-              fontWeight: '400'
-            }}>
+            <p className={styles.heroSubtext}>
               Stop losing revenue. Upgrade your standard add-to-cart popup with AI-driven upsells.
             </p>
           </div>
 
           {/* Right: Video Demo */}
-          <div style={{ flex: '1 1 50%', maxWidth: '700px' }}>
+          <div className={styles.heroRight}>
             <video
               autoPlay
               loop
               muted
               playsInline
-              style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '12px',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
-              }}
+              className={styles.heroVideo}
             >
               <source src="/demo.mp4" type="video/mp4" />
             </video>
@@ -715,33 +573,19 @@ export default function Index() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px 60px' }}>
+      <div className={styles.container}>
 
       {/* Notifications */}
       {showNotification && (
-        <div
-          style={{
-            padding: '15px 20px',
-            marginBottom: '20px',
-            borderRadius: '8px',
-            backgroundColor: showNotification.type === 'success' ? '#d4edda' : showNotification.type === 'error' ? '#f8d7da' : '#d1ecf1',
-            color: showNotification.type === 'success' ? '#155724' : showNotification.type === 'error' ? '#721c24' : '#0c5460',
-            border: `1px solid ${showNotification.type === 'success' ? '#c3e6cb' : showNotification.type === 'error' ? '#f5c6cb' : '#bee5eb'}`,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <div className={`${styles.notification} ${
+          showNotification.type === 'success' ? styles.notificationSuccess :
+          showNotification.type === 'error' ? styles.notificationError :
+          styles.notificationInfo
+        }`}>
           <span>{showNotification.message}</span>
           <button
             onClick={() => setShowNotification(null)}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: 'inherit',
-            }}
+            className={styles.notificationClose}
           >
             ×
           </button>
@@ -750,60 +594,21 @@ export default function Index() {
 
       {/* Plan-Specific Banner/Usage Card */}
       {currentPlan === 'free' && (
-        <div style={{
-          background: 'linear-gradient(135deg, #7c3aed 0%, #9f7aea 100%)',
-          borderRadius: '20px',
-          padding: '48px',
-          marginBottom: '40px',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px'
-        }}>
+        <div className={styles.freePlanBanner}>
           {/* Row 1: Title and Button */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '32px'
-          }}>
+          <div className={styles.freePlanBannerRow}>
             {/* Left: Title */}
-            <h2 style={{
-              margin: 0,
-              fontSize: '36px',
-              fontWeight: '700',
-              lineHeight: '1.2',
-              flex: '1 1 auto'
-            }}>
+            <h2 className={styles.freePlanBannerTitle}>
               Unlock Your Store's Full Revenue Potential
             </h2>
 
             {/* Right: Action Buttons */}
-            <div style={{
-              flex: '0 0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              alignItems: 'flex-end'
-            }}>
+            <div className={styles.freePlanBannerActions}>
               <button
                 onClick={() => handleUpgrade('PRO')}
                 disabled={billingFetcher.state === 'submitting'}
-                style={{
-                  padding: '16px 32px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  backgroundColor: 'white',
-                  color: '#7c3aed',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+                className={`${styles.button} ${styles.buttonSecondary}`}
+                style={{ cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer' }}
               >
                 {billingFetcher.state === 'submitting' ? 'Processing...' : (
                   <>Upgrade to PRO <span>⚡</span></>
@@ -811,12 +616,7 @@ export default function Index() {
               </button>
               <Link
                 to="/app/billing?view=plans"
-                style={{
-                  fontSize: '14px',
-                  color: 'white',
-                  textDecoration: 'none',
-                  opacity: 0.9
-                }}
+                className={styles.link}
               >
                 Need unlimited scale? View MAX Plan →
               </Link>
@@ -824,21 +624,16 @@ export default function Index() {
           </div>
 
           {/* Row 2: Three features in one line */}
-          <div style={{
-            display: 'flex',
-            gap: '48px',
-            fontSize: '18px',
-            fontWeight: '500'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className={styles.freePlanBannerFeatures}>
+            <div className={styles.freePlanBannerFeature}>
               <span style={{ fontSize: '20px' }}>✓</span>
               <span>Sync 2,000 Products</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className={styles.freePlanBannerFeature}>
               <span style={{ fontSize: '20px' }}>✓</span>
               <span>3 Recommendations / Popup</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className={styles.freePlanBannerFeature}>
               <span style={{ fontSize: '20px' }}>✓</span>
               <span>no watermark</span>
             </div>
@@ -847,83 +642,35 @@ export default function Index() {
       )}
 
       {/* STEP 1: Sync Product Catalog Card */}
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '16px',
-        padding: '40px',
-        marginBottom: '40px',
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '40px'
-      }}>
+      <div className={`${styles.card} ${styles.cardLarge} ${styles.syncCard}`}>
         {/* Left: Step label and description */}
-        <div style={{ flex: '1 1 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-            <span style={{
-              padding: '8px 16px',
-              backgroundColor: '#d1fae5',
-              color: '#065f46',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '700',
-              letterSpacing: '0.05em'
-            }}>
+        <div className={styles.syncCardLeft}>
+          <div className={styles.syncCardHeader}>
+            <span className={styles.stepBadge}>
               STEP 1
             </span>
-            <h3 style={{
-              margin: 0,
-              fontSize: '28px',
-              fontWeight: '700',
-              color: '#111827'
-            }}>
+            <h3 className={styles.syncCardTitle}>
               Sync your product catalog
             </h3>
           </div>
-          <p style={{
-            margin: 0,
-            fontSize: '16px',
-            lineHeight: '1.6',
-            color: '#6b7280'
-          }}>
+          <p className={styles.syncCardDescription}>
             CartWhisper needs to analyze your products to generate AI recommendations. This usually takes less than a minute.
           </p>
         </div>
 
         {/* Middle: Free Allowance Display */}
-        <div style={{
-          flex: '0 0 auto',
-          textAlign: 'center',
-          padding: '0 32px'
-        }}>
-          <div style={{
-            fontSize: '14px',
-            fontWeight: '600',
-            color: '#9ca3af',
-            marginBottom: '8px',
-            letterSpacing: '0.05em'
-          }}>
+        <div className={styles.syncCardMiddle}>
+          <div className={styles.syncCardAllowanceLabel}>
             FREE ALLOWANCE
           </div>
-          <div style={{
-            fontSize: '48px',
-            fontWeight: '700',
-            color: '#111827',
-            lineHeight: '1'
-          }}>
+          <div className={styles.syncCardAllowanceValue}>
             {syncStatus?.productCount || 0}
-            <span style={{
-              fontSize: '24px',
-              color: '#9ca3af',
-              fontWeight: '400'
-            }}> / {planFeatures?.maxProducts || 50}</span>
+            <span className={styles.syncCardAllowanceLimit}> / {planFeatures?.maxProducts || 50}</span>
           </div>
         </div>
 
         {/* Right: Sync Button */}
-        <div style={{ flex: '0 0 auto' }}>
+        <div className={styles.syncCardRight}>
           <syncFetcher.Form method="post" action="/api/scan">
             <input type="hidden" name="mode" value={syncStatus?.initialSyncDone ? 'incremental' : 'auto'} />
             <button
@@ -936,34 +683,11 @@ export default function Index() {
                   ? 'Syncing in progress...'
                   : 'Click to sync products'
               }
-              style={{
-                padding: '20px 48px',
-                fontSize: '18px',
-                fontWeight: '600',
-                backgroundColor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? '#9ca3af' : '#4f46e5',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? 'not-allowed' : 'pointer',
-                boxShadow: isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? 'none' : '0 4px 12px rgba(79, 70, 229, 0.3)',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                whiteSpace: 'nowrap'
-              }}
+              className={`${styles.button} ${isAnySyncing || !syncStatus?.refreshLimit?.canRefresh ? styles.buttonDisabled : styles.buttonPrimary}`}
             >
               {isAnySyncing ? (
                 <>
-                  <span style={{
-                    display: 'inline-block',
-                    width: '20px',
-                    height: '20px',
-                    border: '3px solid rgba(255,255,255,0.3)',
-                    borderTopColor: 'white',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }}></span>
+                  <span className={styles.spinner}></span>
                   Syncing...
                 </>
               ) : (
@@ -979,66 +703,29 @@ export default function Index() {
 
       {/* PRO Plan Usage Card */}
       {currentPlan === 'pro' && (
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '16px',
-          padding: '32px',
-          marginBottom: '40px',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#111827'
-            }}>
+        <div className={styles.card}>
+          <div className={styles.usageCard}>
+            <h2 className={styles.usageTitle}>
               Pro Plan Usage
             </h2>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#6b7280'
-            }}>
+            <div className={styles.usageCount}>
               {syncStatus?.productCount || 0} / {planFeatures?.maxProducts?.toLocaleString() || '2,000'} Products
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div style={{
-            width: '100%',
-            height: '8px',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '999px',
-            overflow: 'hidden',
-            marginBottom: '16px'
-          }}>
-            <div style={{
-              height: '100%',
-              backgroundColor: '#4f46e5',
-              borderRadius: '999px',
-              width: `${Math.min(((syncStatus?.productCount || 0) / (planFeatures?.maxProducts || 2000)) * 100, 100)}%`,
-              transition: 'width 0.3s ease'
+          <div className={styles.progressBar}>
+            <div className={`${styles.progressBarFill} ${styles.progressBarFillPro}`} style={{
+              width: `${Math.min(((syncStatus?.productCount || 0) / (planFeatures?.maxProducts || 2000)) * 100, 100)}%`
             }} />
           </div>
 
           {/* Upgrade Link */}
-          <div style={{ textAlign: 'right' }}>
+          <div className={styles.usageFooter}>
             {isTestMode ? (
               <Link
                 to="/app/billing?view=plans"
-                style={{
-                  fontSize: '14px',
-                  color: '#4f46e5',
-                  textDecoration: 'none',
-                  fontWeight: '500'
-                }}
+                className={styles.linkPrimary}
               >
                 Need more capacity? Upgrade to MAX (Unlimited) →
               </Link>
@@ -1046,16 +733,8 @@ export default function Index() {
               <button
                 onClick={() => handleUpgrade('MAX')}
                 disabled={billingFetcher.state === 'submitting'}
-                style={{
-                  fontSize: '14px',
-                  color: '#4f46e5',
-                  textDecoration: 'none',
-                  fontWeight: '500',
-                  background: 'none',
-                  border: 'none',
-                  cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
-                  padding: 0
-                }}
+                className={styles.buttonLink}
+                style={{ cursor: billingFetcher.state === 'submitting' ? 'not-allowed' : 'pointer' }}
               >
                 Need more capacity? Upgrade to MAX (Unlimited) →
               </button>
@@ -1066,52 +745,19 @@ export default function Index() {
 
       {/* MAX Plan Usage Card */}
       {currentPlan === 'max' && (
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '16px',
-          padding: '32px',
-          marginBottom: '40px',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#111827'
-            }}>
+        <div className={styles.card}>
+          <div className={styles.usageCard}>
+            <h2 className={styles.usageTitle}>
               MAX Plan Usage
             </h2>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#6b7280'
-            }}>
+            <div className={styles.usageCount}>
               {syncStatus?.productCount?.toLocaleString() || 0} / ∞ Products
             </div>
           </div>
 
           {/* Progress Bar (always shows some progress for visual feedback) */}
-          <div style={{
-            width: '100%',
-            height: '8px',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '999px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              height: '100%',
-              backgroundColor: '#7c3aed',
-              borderRadius: '999px',
-              width: '30%',
-              transition: 'width 0.3s ease'
-            }} />
+          <div className={styles.progressBar}>
+            <div className={`${styles.progressBarFill} ${styles.progressBarFillMax}`} style={{ width: '30%' }} />
           </div>
         </div>
       )}
@@ -1119,111 +765,41 @@ export default function Index() {
       {/* Main Content */}
       <div>
           {/* Stats Grid - Three Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '24px',
-            marginBottom: '48px'
-          }}>
+          <div className={styles.statsGrid}>
             {/* Card 1: Recommendations */}
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '1px solid #e5e7eb',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-            }}>
-              <div style={{
-                fontSize: '16px',
-                fontWeight: '500',
-                color: '#6b7280',
-                marginBottom: '24px'
-              }}>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>
                 Recommendations
               </div>
-              <div style={{
-                fontSize: '64px',
-                fontWeight: '700',
-                color: '#111827',
-                lineHeight: '1'
-              }}>
+              <div className={styles.statValue}>
                 {(syncStatus?.recommendationCount || recommendations.length || 0).toLocaleString()}
               </div>
             </div>
 
             {/* Card 2: Total Clicks */}
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '1px solid #e5e7eb',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '24px'
-              }}>
-                <span style={{
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  color: '#6b7280'
-                }}>
+            <div className={styles.statCard}>
+              <div className={styles.statLabelWithBadge}>
+                <span className={styles.statLabel} style={{ marginBottom: 0 }}>
                   Total Clicks
                 </span>
-                <span style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  backgroundColor: '#dcfce7',
-                  color: '#10b981',
-                  letterSpacing: '0.05em'
-                }}>
+                <span className={styles.statBadgeLive}>
                   LIVE
                 </span>
               </div>
-              <div style={{
-                fontSize: '64px',
-                fontWeight: '700',
-                color: '#111827',
-                lineHeight: '1',
-                marginBottom: '12px'
-              }}>
+              <div className={`${styles.statValue} ${styles.statValueWithMargin}`}>
                 {(statistics?.summary?.totalClicks || 0).toLocaleString()}
               </div>
-              <p style={{
-                margin: 0,
-                fontSize: '14px',
-                color: '#9ca3af'
-              }}>
+              <p className={styles.statDescription}>
                 Users clicked Recommendations
               </p>
             </div>
 
             {/* Card 3: Avg. Click-Through Rate */}
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '1px solid #e5e7eb',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-            }}>
-              <div style={{
-                fontSize: '16px',
-                fontWeight: '500',
-                color: '#6b7280',
-                marginBottom: '24px'
-              }}>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>
                 Avg. Click-Through Rate
               </div>
-              <div style={{
-                fontSize: '64px',
-                fontWeight: '700',
-                color: '#111827',
-                lineHeight: '1'
-              }}>
+              <div className={styles.statValue}>
                 {statistics?.summary?.ctr || 0}%
               </div>
             </div>
@@ -1231,36 +807,15 @@ export default function Index() {
 
           {/* Backend Syncing Notice */}
           {(isBackendSyncing || optimisticSyncing) && (
-            <div style={{
-              backgroundColor: '#e0f2fe',
-              borderLeft: '4px solid #0284c7',
-              borderRadius: '8px',
-              padding: '16px 20px',
-              marginBottom: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}>
-              <div style={{
-                fontSize: '24px',
-                animation: 'spin 2s linear infinite'
-              }}>
+            <div className={styles.syncNotice}>
+              <div className={styles.syncNoticeIcon}>
                 ⏳
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  color: '#075985',
-                  marginBottom: '4px'
-                }}>
+              <div className={styles.syncNoticeContent}>
+                <div className={styles.syncNoticeTitle}>
                   Sync in Progress
                 </div>
-                <div style={{
-                  fontSize: '13px',
-                  color: '#0c4a6e',
-                  lineHeight: '1.5'
-                }}>
+                <div className={styles.syncNoticeText}>
                   Your products are being synced in the background. This may take up to 30 minutes.
                   Page will auto-refresh every 30 seconds to update progress.
                 </div>
@@ -1276,30 +831,13 @@ export default function Index() {
 
           {/* Synced Products Section */}
           <div style={{ marginBottom: '40px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <h2 style={{
-                  margin: 0,
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  color: '#111827'
-                }}>
+            <div className={styles.productsHeader}>
+              <div className={styles.productsHeaderLeft}>
+                <h2 className={styles.productsTitle}>
                   Synced Products
                 </h2>
                 {currentPlan === 'free' && (
-                  <span style={{
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    padding: '4px 12px',
-                    borderRadius: '6px',
-                    backgroundColor: '#fff7ed',
-                    color: '#f97316'
-                  }}>
+                  <span className={styles.productsLimitBadge}>
                     Limit: {syncStatus?.productCount || 0} / {planFeatures?.maxProducts || 50}
                   </span>
                 )}
@@ -1843,19 +1381,9 @@ export default function Index() {
                 </>
               )
             ) : (
-              <div style={{
-                backgroundColor: '#f9fafb',
-                borderRadius: '12px',
-                padding: '40px',
-                textAlign: 'center',
-                border: '1px solid #e5e7eb'
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📦</div>
-                <p style={{
-                  margin: 0,
-                  fontSize: '14px',
-                  color: '#6b7280'
-                }}>
+              <div className={styles.productsEmpty}>
+                <div className={styles.productsEmptyIcon}>📦</div>
+                <p className={styles.productsEmptyText}>
                   No products synced yet. Click "Resync" to get started.
                 </p>
               </div>
@@ -1943,48 +1471,18 @@ export default function Index() {
 
           {/* Sync Progress - Redesigned */}
           {isAnySyncing && (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e5e7eb',
-              marginBottom: '32px'
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px'
-              }}>
-                <div style={{
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
+            <div className={styles.syncProgress}>
+              <div className={styles.syncProgressHeader}>
+                <div className={styles.syncProgressTitle}>
                   <span>⏳</span>
                   <span>Syncing in progress...</span>
                 </div>
-                <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                <span className={styles.syncProgressTime}>
                   This may take up to 30 minutes
                 </span>
               </div>
-              <div style={{
-                width: '100%',
-                height: '6px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '999px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  height: '100%',
-                  background: 'linear-gradient(90deg, #111827, #374151)',
-                  borderRadius: '999px',
-                  animation: 'pulse 2s ease-in-out infinite',
-                  width: '100%'
-                }}>
+              <div className={styles.syncProgressBar}>
+                <div className={styles.syncProgressBarFill}>
                   <style>{`
                     @keyframes pulse {
                       0% { opacity: 0.6; }
@@ -1999,24 +1497,21 @@ export default function Index() {
 
           {/* Sync Result */}
           {syncFetcher.data && (
-            <div
-              style={{
-                marginBottom: '30px',
-                padding: '20px',
-                borderRadius: '8px',
-                border: syncFetcher.data.success ? '2px solid #28a745' : syncFetcher.data.rateLimited ? '2px solid #ffc107' : syncFetcher.data.tokenQuotaExceeded ? '2px solid #ff9800' : '2px solid #dc3545',
-                backgroundColor: syncFetcher.data.success ? '#d4edda' : syncFetcher.data.rateLimited ? '#fff3cd' : syncFetcher.data.tokenQuotaExceeded ? '#fff3e0' : '#f8d7da',
-              }}
-            >
+            <div className={`${styles.syncResult} ${
+              syncFetcher.data.success ? styles.syncResultSuccess :
+              syncFetcher.data.rateLimited ? styles.syncResultWarning :
+              syncFetcher.data.tokenQuotaExceeded ? styles.syncResultQuota :
+              styles.syncResultError
+            }`}>
               {syncFetcher.data.success ? (
                 <>
                   {syncFetcher.data.async ? (
                     // 异步模式：显示后台同步提示
                     <>
-                      <h3 style={{ color: '#155724', margin: '0 0 15px 0', fontSize: '18px' }}>
+                      <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>
                         ✅ Sync Started in Background
                       </h3>
-                      <div style={{ color: '#155724', fontSize: '14px' }}>
+                      <div className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
                         <p style={{ margin: '5px 0' }}>
                           <strong>Products being synced:</strong> {syncFetcher.data.productsCount}
                         </p>
@@ -2031,10 +1526,10 @@ export default function Index() {
                   ) : (
                     // 同步模式：显示完成结果
                     <>
-                      <h3 style={{ color: '#155724', margin: '0 0 15px 0', fontSize: '18px' }}>
+                      <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleSuccess}`}>
                         ✅ Sync Completed!
                       </h3>
-                      <div style={{ color: '#155724', fontSize: '14px' }}>
+                      <div className={`${styles.syncResultText} ${styles.syncResultTextSuccess}`}>
                         <p style={{ margin: '5px 0' }}>
                           <strong>Products:</strong> {syncFetcher.data.productsCount}
                         </p>
@@ -2050,31 +1545,31 @@ export default function Index() {
                 </>
               ) : syncFetcher.data.rateLimited ? (
                 <>
-                  <h3 style={{ color: '#856404', margin: '0 0 10px 0' }}>⏰ Resync Rate Limited</h3>
-                  <p style={{ color: '#856404', margin: '5px 0' }}>
+                  <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleWarning}`}>⏰ Resync Rate Limited</h3>
+                  <p className={`${styles.syncResultText} ${styles.syncResultTextWarning}`}>
                     You have reached your monthly resync limit.
                   </p>
-                  <p style={{ color: '#856404', margin: '5px 0', fontSize: '14px' }}>
+                  <p className={`${styles.syncResultText} ${styles.syncResultTextWarning}`} style={{ fontSize: '14px' }}>
                     Next resync available: <strong>{formatDate(syncFetcher.data.nextRefreshAt)}</strong>
                   </p>
                 </>
               ) : syncFetcher.data.tokenQuotaExceeded ? (
                 <>
-                  <h3 style={{ color: '#e65100', margin: '0 0 10px 0' }}>🎫 Daily Token Quota Exceeded</h3>
-                  <p style={{ color: '#e65100', margin: '5px 0', fontSize: '15px' }}>
+                  <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleQuota}`}>🎫 Daily Token Quota Exceeded</h3>
+                  <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ fontSize: '15px' }}>
                     You have used all your free tokens for today. Please try again tomorrow.
                   </p>
-                  <p style={{ color: '#e65100', margin: '10px 0 5px 0', fontSize: '14px' }}>
+                  <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ margin: '10px 0 5px 0', fontSize: '14px' }}>
                     Quota resets at: <strong>{formatDate(syncFetcher.data.quotaResetDate)}</strong>
                   </p>
-                  <p style={{ color: '#e65100', margin: '10px 0 0 0', fontSize: '13px' }}>
+                  <p className={`${styles.syncResultText} ${styles.syncResultTextQuota}`} style={{ margin: '10px 0 0 0', fontSize: '13px' }}>
                     💡 Want unlimited tokens? Upgrade to PRO or MAX plan!
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 style={{ color: '#721c24', margin: '0 0 10px 0' }}>❌ Sync Failed</h3>
-                  <p style={{ color: '#721c24', margin: '5px 0' }}>
+                  <h3 className={`${styles.syncResultTitle} ${styles.syncResultTitleError}`}>❌ Sync Failed</h3>
+                  <p className={`${styles.syncResultText} ${styles.syncResultTextError}`}>
                     {syncFetcher.data.error || 'Unknown error occurred'}
                   </p>
                 </>
@@ -2085,7 +1580,7 @@ export default function Index() {
       </div>
 
       {error && (
-        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#ffebee', borderRadius: '8px', border: '1px solid #ef5350', color: '#c62828' }}>
+        <div className={`${styles.syncResult} ${styles.syncResultError}`} style={{ marginTop: '20px' }}>
           Error: {error}
         </div>
       )}
