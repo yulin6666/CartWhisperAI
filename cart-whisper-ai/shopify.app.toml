@@ -23,17 +23,10 @@ api_version = "2026-01"
   topics = [ "app_subscriptions/update" ]
   uri = "/webhooks/app_subscriptions_update"
 
-  [[webhooks.subscriptions]]
-  topics = [ "customers/data_request" ]
-  uri = "/webhooks/customers/data_request"
-
-  [[webhooks.subscriptions]]
-  topics = [ "customers/redact" ]
-  uri = "/webhooks/customers/redact"
-
-  [[webhooks.subscriptions]]
-  topics = [ "shop/redact" ]
-  uri = "/webhooks/shop/redact"
+[webhooks.privacy_compliance]
+customer_data_request_url = "https://cartwhisperai-production.up.railway.app/webhooks/customers/data_request"
+customer_deletion_url = "https://cartwhisperai-production.up.railway.app/webhooks/customers/redact"
+shop_deletion_url = "https://cartwhisperai-production.up.railway.app/webhooks/shop/redact"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
