@@ -65,6 +65,7 @@ export async function action({ request }) {
     return new Response('OK', { status: 200 });
   } catch (error) {
     console.error('[Webhook] Error processing APP_SUBSCRIPTIONS_UPDATE:', error);
-    return new Response('Error', { status: 500 });
+    // Return 401 for authentication errors (including HMAC validation failures)
+    return new Response('Unauthorized', { status: 401 });
   }
 }
