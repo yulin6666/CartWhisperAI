@@ -866,11 +866,25 @@ export default function Index() {
   }, []);
 
   const handleUpgrade = useCallback((plan = 'PRO') => {
+    console.log('[Frontend] Initiating upgrade to plan:', plan);
     billingFetcher.submit(
       { action: 'upgrade', plan },
       { method: 'post', action: '/app/billing' }
     );
   }, [billingFetcher]);
+
+  // 监听billing错误
+  useEffect(() => {
+    if (billingFetcher.state === 'idle' && billingFetcher.data) {
+      console.log('[Frontend] Billing fetcher data:', billingFetcher.data);
+      if (billingFetcher.data.error) {
+        setShowNotification({
+          type: 'error',
+          message: `Upgrade failed: ${billingFetcher.data.error}`
+        });
+      }
+    }
+  }, [billingFetcher.state, billingFetcher.data]);
 
   const handleCancelSubscription = useCallback(() => {
     if (confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free Plan.')) {

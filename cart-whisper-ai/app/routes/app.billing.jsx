@@ -35,12 +35,29 @@ export async function action({ request }) {
       const plan = formData.get('plan') || 'PRO';
       console.log('[Billing] Creating subscription for plan:', plan);
 
-      // 创建Shopify订阅（测试模式下会设置test: true，不会真实扣费但会显示确认页面）
-      const result = await createSubscription(admin, shop, plan);
-      console.log('[Billing] Subscription created, confirmationUrl:', result.confirmationUrl);
+      try {
+        // 创建Shopify订阅（测试模式下会设置test: true，不会真实扣费但会显示确认页面）
+        const result = await createSubscription(admin, shop, plan);
+        console.log('[Billing] Subscription created successfully');
+        console.log('[Billing] Confirmation URL:', result.confirmationUrl);
+        console.log('[Billing] Subscription ID:', result.subscriptionId);
 
-      // 重定向到Shopify支付确认页面
-      return redirect(result.confirmationUrl);
+        if (!result.confirmationUrl) {
+          throw new Error('No confirmation URL returned from Shopify');
+        }
+
+        // 重定向到Shopify支付确认页面
+        console.log('[Billing] Redirecting to:', result.confirmationUrl);
+        return redirect(result.confirmationUrl);
+      } catch (subscriptionError) {
+        console.error('[Billing] Subscription creation failed:', subscriptionError);
+        console.error('[Billing] Error details:', {
+          message: subscriptionError.message,
+          stack: subscriptionError.stack,
+          name: subscriptionError.name
+        });
+        throw subscriptionError;
+      }
     }
 
 
