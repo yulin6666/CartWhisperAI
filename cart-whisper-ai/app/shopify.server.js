@@ -19,6 +19,24 @@ const shopify = shopifyApp({
   future: {
     expiringOfflineAccessTokens: true,
   },
+  webhooks: {
+    APP_UNINSTALLED: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/app/uninstalled",
+    },
+    CUSTOMERS_DATA_REQUEST: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/customers/data_request",
+    },
+    CUSTOMERS_REDACT: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/customers/redact",
+    },
+    SHOP_REDACT: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/shop/redact",
+    },
+  },
   ...(process.env.SHOP_CUSTOM_DOMAIN
     ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
     : {}),

@@ -28,6 +28,12 @@ export const action = async ({ request }) => {
     return new Response(null, { status: 200 });
   } catch (error) {
     console.error('[GDPR] Shop redaction error:', error);
+
+    // 如果是HMAC验证失败，返回401 Unauthorized
+    if (error.message?.includes('HMAC') || error.message?.includes('signature')) {
+      return new Response(null, { status: 401 });
+    }
+
     return new Response(null, { status: 500 });
   }
 };
