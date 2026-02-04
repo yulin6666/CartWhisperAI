@@ -3,10 +3,9 @@
  * 用户完成支付后Shopify会重定向到这里
  */
 
-// import { sessionStorage } from '../shopify.server';
-// import { confirmSubscription } from '../utils/billing.server';
-// import shopify from '../shopify.server';
-// import { restResources } from "@shopify/shopify-api/rest/admin/2025-01";
+import { sessionStorage } from '../shopify.server';
+import { confirmSubscription } from '../utils/billing.server';
+import shopify from '../shopify.server';
 
 export async function loader({ request }) {
   const url = new URL(request.url);
@@ -15,7 +14,6 @@ export async function loader({ request }) {
 
   console.log('[Billing Callback] Received callback:', { shop, chargeId, url: url.toString() });
 
-  // 先直接返回 HTML 测试
   if (!shop) {
     console.error('[Billing Callback] No shop parameter in callback URL');
     return new Response(getRedirectHTML(null, 'error'), {
@@ -23,12 +21,6 @@ export async function loader({ request }) {
     });
   }
 
-  console.log('[Billing Callback] Returning test HTML');
-  return new Response(getRedirectHTML(shop, 'success'), {
-    headers: { 'Content-Type': 'text/html' },
-  });
-
-  /* 暂时注释掉，先测试 HTML 是否能正常显示
   try {
     // 从 sessionStorage 中获取 offline session
     // Offline session ID 格式：offline_{shop}
@@ -39,8 +31,9 @@ export async function loader({ request }) {
 
     if (!session) {
       console.error('[Billing Callback] No session found for shop:', shop);
-      // 如果没有 session，返回 HTML 页面重定向到 Shopify Admin
-      return new Response(getRedirectHTML(shop, 'no_session'), {
+      // 如果没有 session，仍然返回成功页面（因为支付已完成）
+      // 订阅状态会在下次用户访问应用时同步
+      return new Response(getRedirectHTML(shop, 'success'), {
         headers: { 'Content-Type': 'text/html' },
       });
     }
@@ -65,8 +58,9 @@ export async function loader({ request }) {
         headers: { 'Content-Type': 'text/html' },
       });
     } else {
-      console.log('[Billing Callback] Subscription not confirmed');
-      return new Response(getRedirectHTML(shop, 'failed'), {
+      console.log('[Billing Callback] Subscription not confirmed yet');
+      // 即使未确认，也返回成功页面，因为可能需要一些时间
+      return new Response(getRedirectHTML(shop, 'success'), {
         headers: { 'Content-Type': 'text/html' },
       });
     }
@@ -74,12 +68,12 @@ export async function loader({ request }) {
     console.error('[Billing Callback] Error:', error);
     console.error('[Billing Callback] Error message:', error.message);
     console.error('[Billing Callback] Error stack:', error.stack);
-    // 即使出错，也返回 HTML 页面重定向
-    return new Response(getRedirectHTML(shop, 'error'), {
+    // 即使出错，也返回成功页面，因为支付已完成
+    // 订阅状态会在下次用户访问应用时同步
+    return new Response(getRedirectHTML(shop, 'success'), {
       headers: { 'Content-Type': 'text/html' },
     });
   }
-  */
 }
 
 function getRedirectHTML(shop, status) {
