@@ -3,10 +3,10 @@
  * 用户完成支付后Shopify会重定向到这里
  */
 
-import { sessionStorage } from '../shopify.server';
-import { confirmSubscription } from '../utils/billing.server';
-import shopify from '../shopify.server';
-import { restResources } from "@shopify/shopify-api/rest/admin/2025-01";
+// import { sessionStorage } from '../shopify.server';
+// import { confirmSubscription } from '../utils/billing.server';
+// import shopify from '../shopify.server';
+// import { restResources } from "@shopify/shopify-api/rest/admin/2025-01";
 
 export async function loader({ request }) {
   const url = new URL(request.url);
