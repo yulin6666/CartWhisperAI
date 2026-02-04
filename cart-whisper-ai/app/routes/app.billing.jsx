@@ -36,11 +36,17 @@ export async function action({ request }) {
       console.log('[Billing] Creating subscription for plan:', plan);
 
       try {
-        // 创建Shopify订阅（测试模式下会设置test: true，不会真实扣费但会显示确认页面）
-        const result = await createSubscription(admin, shop, plan);
-        console.log('[Billing] Subscription created successfully');
-        console.log('[Billing] Confirmation URL:', result.confirmationUrl);
-        console.log('[Billing] Subscription ID:', result.subscriptionId);
+      // 开发测试模式：直接更新数据库，跳过Shopify Billing API
+      if (process.env.SHOPIFY_TEST_MODE === 'true') {
+        console.log('[Billing] Test mode: Directly updating subscription in database');
+        const { directUpgrade } = await import('../utils/billing.server.js');
+        await directUpgrade(shop, plan);
+        return redirect('/app?upgraded=true');
+      }
+
+      // 生产模式：创建真实的Shopify订阅
+      const result = await createSubscription(admin, shop, plan);
+      console.log('[Billing] Subscription created, confirmationUrl:', result.confirmationUrl);
 
         if (!result.confirmationUrl) {
           throw new Error('No confirmation URL returned from Shopify');
