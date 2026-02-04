@@ -23,11 +23,15 @@ export async function loader({ request }) {
 
   try {
     // 从 sessionStorage 中获取 offline session
-    const sessionId = shopify.session.getOfflineId(shop);
+    // Offline session ID 格式：offline_{shop}
+    const sessionId = `offline_${shop}`;
+    console.log('[Billing Callback] Looking for session:', sessionId);
+
     const session = await sessionStorage.loadSession(sessionId);
 
     if (!session) {
       console.error('[Billing Callback] No session found for shop:', shop);
+      // 如果没有 session，返回 HTML 页面重定向到 Shopify Admin
       return new Response(getRedirectHTML(shop, 'no_session'), {
         headers: { 'Content-Type': 'text/html' },
       });
@@ -39,6 +43,7 @@ export async function loader({ request }) {
     const admin = new shopify.clients.Graphql({ session });
 
     // 确认订阅状态
+    console.log('[Billing Callback] Confirming subscription...');
     const confirmed = await confirmSubscription(admin, shop);
 
     if (confirmed) {
@@ -54,6 +59,8 @@ export async function loader({ request }) {
     }
   } catch (error) {
     console.error('[Billing Callback] Error:', error);
+    console.error('[Billing Callback] Error stack:', error.stack);
+    // 即使出错，也返回 HTML 页面重定向
     return new Response(getRedirectHTML(shop, 'error'), {
       headers: { 'Content-Type': 'text/html' },
     });
