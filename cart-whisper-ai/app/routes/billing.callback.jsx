@@ -6,6 +6,7 @@
 import { sessionStorage } from '../shopify.server';
 import { confirmSubscription } from '../utils/billing.server';
 import shopify from '../shopify.server';
+import { restResources } from "@shopify/shopify-api/rest/admin/2025-01";
 
 export async function loader({ request }) {
   const url = new URL(request.url);
@@ -14,6 +15,7 @@ export async function loader({ request }) {
 
   console.log('[Billing Callback] Received callback:', { shop, chargeId, url: url.toString() });
 
+  // 先直接返回 HTML 测试
   if (!shop) {
     console.error('[Billing Callback] No shop parameter in callback URL');
     return new Response(getRedirectHTML(null, 'error'), {
@@ -21,6 +23,12 @@ export async function loader({ request }) {
     });
   }
 
+  console.log('[Billing Callback] Returning test HTML');
+  return new Response(getRedirectHTML(shop, 'success'), {
+    headers: { 'Content-Type': 'text/html' },
+  });
+
+  /* 暂时注释掉，先测试 HTML 是否能正常显示
   try {
     // 从 sessionStorage 中获取 offline session
     // Offline session ID 格式：offline_{shop}
@@ -40,7 +48,12 @@ export async function loader({ request }) {
     console.log('[Billing Callback] Found session for shop:', shop);
 
     // 使用 session 创建 admin API 客户端
-    const admin = new shopify.clients.Graphql({ session });
+    const admin = new shopify.clients.Graphql({
+      session,
+      apiVersion: '2025-01'
+    });
+
+    console.log('[Billing Callback] Created GraphQL client');
 
     // 确认订阅状态
     console.log('[Billing Callback] Confirming subscription...');
@@ -59,12 +72,14 @@ export async function loader({ request }) {
     }
   } catch (error) {
     console.error('[Billing Callback] Error:', error);
+    console.error('[Billing Callback] Error message:', error.message);
     console.error('[Billing Callback] Error stack:', error.stack);
     // 即使出错，也返回 HTML 页面重定向
     return new Response(getRedirectHTML(shop, 'error'), {
       headers: { 'Content-Type': 'text/html' },
     });
   }
+  */
 }
 
 function getRedirectHTML(shop, status) {
