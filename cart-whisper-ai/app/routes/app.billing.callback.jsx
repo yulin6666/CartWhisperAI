@@ -3,7 +3,6 @@
  * 用户完成支付后Shopify会重定向到这里
  */
 
-import { redirect } from 'react-router';
 import { sessionStorage } from '../shopify.server';
 import { confirmSubscription } from '../utils/billing.server';
 import shopify from '../shopify.server';
@@ -17,7 +16,9 @@ export async function loader({ request }) {
 
   if (!shop) {
     console.error('[Billing Callback] No shop parameter in callback URL');
-    return redirect('/app?upgrade_error=true');
+    return new Response(getRedirectHTML(null, 'error'), {
+      headers: { 'Content-Type': 'text/html' },
+    });
   }
 
   try {
@@ -27,8 +28,9 @@ export async function loader({ request }) {
 
     if (!session) {
       console.error('[Billing Callback] No session found for shop:', shop);
-      // 重定向到 auth 路由，重新建立 session
-      return redirect(`/auth?shop=${shop}`);
+      return new Response(getRedirectHTML(shop, 'no_session'), {
+        headers: { 'Content-Type': 'text/html' },
+      });
     }
 
     console.log('[Billing Callback] Found session for shop:', shop);
@@ -40,17 +42,96 @@ export async function loader({ request }) {
     const confirmed = await confirmSubscription(admin, shop);
 
     if (confirmed) {
-      console.log('[Billing Callback] Subscription confirmed, redirecting to app');
-      // 重定向到 Shopify Admin 的 App 页面
-      return redirect(`https://${shop}/admin/apps?upgraded=true`);
+      console.log('[Billing Callback] Subscription confirmed');
+      return new Response(getRedirectHTML(shop, 'success'), {
+        headers: { 'Content-Type': 'text/html' },
+      });
     } else {
       console.log('[Billing Callback] Subscription not confirmed');
-      return redirect(`https://${shop}/admin/apps?upgrade_failed=true`);
+      return new Response(getRedirectHTML(shop, 'failed'), {
+        headers: { 'Content-Type': 'text/html' },
+      });
     }
   } catch (error) {
     console.error('[Billing Callback] Error:', error);
-    return redirect(`https://${shop}/admin/apps?upgrade_error=true`);
+    return new Response(getRedirectHTML(shop, 'error'), {
+      headers: { 'Content-Type': 'text/html' },
+    });
   }
+}
+
+function getRedirectHTML(shop, status) {
+  const message = status === 'success'
+    ? 'Subscription confirmed! Redirecting...'
+    : status === 'failed'
+    ? 'Subscription not confirmed. Redirecting...'
+    : 'Processing subscription. Redirecting...';
+
+  const redirectUrl = shop
+    ? `https://${shop}/admin/apps`
+    : '/app';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Processing Subscription</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f6f6f7;
+          }
+          .container {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #5c6ac4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          h2 {
+            color: #202223;
+            margin: 0 0 10px;
+          }
+          p {
+            color: #6d7175;
+            margin: 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="spinner"></div>
+          <h2>${message}</h2>
+          <p>Please wait...</p>
+        </div>
+        <script>
+          // 等待1秒后重定向，让用户看到确认消息
+          setTimeout(function() {
+            window.top.location.href = '${redirectUrl}';
+          }, 1000);
+        </script>
+      </body>
+    </html>
+  `;
 }
 
 export default function BillingCallback() {
