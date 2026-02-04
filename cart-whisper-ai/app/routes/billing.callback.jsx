@@ -93,69 +93,96 @@ function getRedirectHTML(shop, status) {
     ? `https://${shop}/admin/apps`
     : '/app';
 
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Processing Subscription</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: #f6f6f7;
-          }
-          .container {
-            text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          }
-          .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #5c6ac4;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          h2 {
-            color: #202223;
-            margin: 0 0 10px;
-          }
-          p {
-            color: #6d7175;
-            margin: 0;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="spinner"></div>
-          <h2>${message}</h2>
-          <p>Please wait...</p>
-        </div>
-        <script>
-          // 等待1秒后重定向，让用户看到确认消息
-          setTimeout(function() {
-            window.top.location.href = '${redirectUrl}';
-          }, 1000);
-        </script>
-      </body>
-    </html>
-  `;
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Processing Subscription</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f6f6f7;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #5c6ac4;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    h2 {
+      color: #202223;
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+    p {
+      color: #6d7175;
+      margin: 0;
+      font-size: 14px;
+    }
+    .debug {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>${message}</h2>
+    <p>Please wait...</p>
+    <div class="debug">
+      <div>Status: ${status}</div>
+      <div>Shop: ${shop || 'N/A'}</div>
+      <div>Redirect URL: ${redirectUrl}</div>
+      <div>Time: ${new Date().toISOString()}</div>
+    </div>
+  </div>
+  <script>
+    console.log('[Billing Callback HTML] Page loaded');
+    console.log('[Billing Callback HTML] Status:', '${status}');
+    console.log('[Billing Callback HTML] Shop:', '${shop}');
+    console.log('[Billing Callback HTML] Redirect URL:', '${redirectUrl}');
+
+    // 等待2秒后重定向，让用户看到确认消息
+    setTimeout(function() {
+      console.log('[Billing Callback HTML] Redirecting to:', '${redirectUrl}');
+      try {
+        window.top.location.href = '${redirectUrl}';
+      } catch (e) {
+        console.error('[Billing Callback HTML] Redirect error:', e);
+        // 如果 window.top 不可用，尝试直接重定向
+        window.location.href = '${redirectUrl}';
+      }
+    }, 2000);
+  </script>
+</body>
+</html>`;
 }
 
-export default function BillingCallback() {
-  return null;
-}
+// 不需要 default export，因为我们在 loader 中直接返回 HTML Response
