@@ -1,5 +1,7 @@
 import { useLoaderData, Link, useFetcher, useRevalidator } from 'react-router';
 import { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticate } from '../shopify.server';
 import styles from './app._index/styles.module.css';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
@@ -663,6 +665,7 @@ export default function Index() {
     isTestMode,
   } = useLoaderData();
 
+  const app = useAppBridge(); // 获取 App Bridge 实例
   const planFetcher = useFetcher();
   const billingFetcher = useFetcher();
   const syncFetcher = useFetcher();
@@ -873,10 +876,20 @@ export default function Index() {
     );
   }, [billingFetcher]);
 
-  // 监听billing错误
+  // 监听billing响应并处理重定向
   useEffect(() => {
     if (billingFetcher.state === 'idle' && billingFetcher.data) {
       console.log('[Frontend] Billing fetcher data:', billingFetcher.data);
+
+      // 如果有 confirmationUrl，使用 App Bridge 跳转到 Shopify 支付页面
+      if (billingFetcher.data.confirmationUrl) {
+        console.log('[Frontend] Redirecting to Shopify billing page:', billingFetcher.data.confirmationUrl);
+        const redirect = Redirect.create(app);
+        redirect.dispatch(Redirect.Action.REMOTE, billingFetcher.data.confirmationUrl);
+        return;
+      }
+
+      // 如果有错误，显示通知
       if (billingFetcher.data.error) {
         setShowNotification({
           type: 'error',
@@ -884,7 +897,7 @@ export default function Index() {
         });
       }
     }
-  }, [billingFetcher.state, billingFetcher.data]);
+  }, [billingFetcher.state, billingFetcher.data, app]);
 
   const handleCancelSubscription = useCallback(() => {
     if (confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free Plan.')) {

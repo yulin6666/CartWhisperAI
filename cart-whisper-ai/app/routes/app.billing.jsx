@@ -52,9 +52,11 @@ export async function action({ request }) {
           throw new Error('No confirmation URL returned from Shopify');
         }
 
-        // 重定向到Shopify支付确认页面
-        console.log('[Billing] Redirecting to:', result.confirmationUrl);
-        return redirect(result.confirmationUrl);
+        // 返回 confirmationUrl 给前端，由前端使用 App Bridge 跳转
+        console.log('[Billing] Returning confirmationUrl to frontend:', result.confirmationUrl);
+        return Response.json({
+          confirmationUrl: result.confirmationUrl
+        });
       } catch (subscriptionError) {
         console.error('[Billing] Subscription creation failed:', subscriptionError);
         console.error('[Billing] Error details:', {
