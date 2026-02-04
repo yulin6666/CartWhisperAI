@@ -71,6 +71,22 @@ export async function action({ request }) {
       }
     }
 
+    if (actionType === 'sync_subscription') {
+      const { admin } = await authenticate.admin(request);
+      const { confirmSubscription } = await import('../utils/billing.server.js');
+
+      try {
+        const confirmed = await confirmSubscription(admin.graphql, shop);
+        if (confirmed) {
+          return { success: true, message: 'Subscription synced successfully! Status updated to ACTIVE.' };
+        } else {
+          return { success: false, error: 'No active subscription found in Shopify' };
+        }
+      } catch (error) {
+        return { success: false, error: `Sync failed: ${error.message}` };
+      }
+    }
+
     if (actionType === 'sync_plan_config') {
       const { getCurrentPlan } = await import('../utils/billing.server.js');
       const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
@@ -167,6 +183,15 @@ export default function TestPage() {
     if (confirm('🔄 This will sync the latest plan configuration from billing.server.js to the backend database. Continue?')) {
       fetcher.submit(
         { action: 'sync_plan_config' },
+        { method: 'post' }
+      );
+    }
+  };
+
+  const syncSubscription = () => {
+    if (confirm('🔄 This will query Shopify for the current subscription status and update the local database. Continue?')) {
+      fetcher.submit(
+        { action: 'sync_subscription' },
         { method: 'post' }
       );
     }
@@ -315,31 +340,56 @@ export default function TestPage() {
         border: '2px solid #2196f3',
       }}>
         <h2 style={{ fontSize: '20px', marginBottom: '15px', color: '#1565c0' }}>
-          🔄 Sync Plan Configuration
+          🔄 Sync Subscription & Plan
         </h2>
-        <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
-          Sync the latest plan configuration (manualRefreshPerMonth, maxProducts, etc.) from <code>billing.server.js</code> to the backend database.
-        </p>
-        <button
-          onClick={syncPlanConfig}
-          disabled={fetcher.state === 'submitting'}
-          style={{
-            padding: '12px 24px',
-            fontSize: '14px',
-            backgroundColor: fetcher.state === 'submitting' ? '#ccc' : '#2196f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: fetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold',
-            width: '100%',
-          }}
-        >
-          {fetcher.state === 'submitting' ? '⏳ Syncing...' : '🔄 Sync Plan Config to Backend'}
-        </button>
-        <p style={{ color: '#999', fontSize: '12px', marginTop: '10px' }}>
-          Use this after updating plan features in billing.server.js (e.g., changing manualRefreshPerMonth from 0 to 1)
-        </p>
+
+        {/* Sync Subscription Button */}
+        <div style={{ marginBottom: '20px' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '10px' }}>
+            <strong>Sync Subscription Status:</strong> Query Shopify for the current subscription status and update the local database. Use this if you completed a payment but the plan didn't update.
+          </p>
+          <button
+            onClick={syncSubscription}
+            disabled={fetcher.state === 'submitting'}
+            style={{
+              padding: '12px 24px',
+              fontSize: '14px',
+              backgroundColor: fetcher.state === 'submitting' ? '#ccc' : '#4caf50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: fetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              width: '100%',
+            }}
+          >
+            {fetcher.state === 'submitting' ? '⏳ Syncing...' : '🔄 Sync Subscription from Shopify'}
+          </button>
+        </div>
+
+        {/* Sync Plan Config Button */}
+        <div>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '10px' }}>
+            <strong>Sync Plan Configuration:</strong> Sync the latest plan configuration (manualRefreshPerMonth, maxProducts, etc.) from <code>billing.server.js</code> to the backend database.
+          </p>
+          <button
+            onClick={syncPlanConfig}
+            disabled={fetcher.state === 'submitting'}
+            style={{
+              padding: '12px 24px',
+              fontSize: '14px',
+              backgroundColor: fetcher.state === 'submitting' ? '#ccc' : '#2196f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: fetcher.state === 'submitting' ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              width: '100%',
+            }}
+          >
+            {fetcher.state === 'submitting' ? '⏳ Syncing...' : '🔄 Sync Plan Config to Backend'}
+          </button>
+        </div>
       </div>
 
       {/* Danger Zone */}
