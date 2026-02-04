@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CartWhisper Retina Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background-color: #222; /* 深色背景，护眼且突出画布 */
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        /* --- 核心修改：画布尺寸减半 --- */
+        /* 在高清屏上，800x450 的 CSS 像素会被渲染成 1600x900 的物理像素 */
+        .canvas {
+            width: 800px;
+            height: 450px;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 浏览器外壳样式 (尺寸也相应减半) */
+        .browser-window {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px; /* 圆角减半 */
+            box-shadow: 0 15px 30px -6px rgba(0, 0, 0, 0.15);
+            background: white;
+            overflow: hidden;
+        }
+        .browser-bar {
+            height: 20px; /* 高度减半 */
+            background: #f9fafb;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 4px;
+        }
+        .dot { width: 6px; height: 6px; border-radius: 50%; } /* 点减半 */
+        .bg-red { background: #EF4444; }
+        .bg-yellow { background: #F59E0B; }
+        .bg-green { background: #10B981; }
+
+        /* 渐变与装饰 */
+        .bg-gradient-soft {
+            background: radial-gradient(circle at 10% 20%, #F3E8FF 0%, #FFFFFF 90%);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- 图 1: 核心价值 (Smart Popups) -->
+    <!-- ========================================== -->
+    <div class="canvas bg-gradient-soft">
+        
+        <!-- 文案区 (字体尺寸已调整) -->
+        <div class="pt-10 px-12 text-center z-10">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-indigo-100 text-indigo-600 font-bold text-[10px] mb-3 shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                AI-Powered Upsell Engine
+            </div>
+            <h1 class="text-4xl font-extrabold text-gray-900 leading-tight mb-3">
+                Turn Carts into <span class="text-gradient">Bigger Orders.</span>
+            </h1>
+            <p class="text-sm text-gray-500 max-w-md mx-auto">
+                Automatically display smart product recommendations when customers click "Add to Cart".
+            </p>
+        </div>
+
+        <!-- 截图展示区 -->
+        <div class="flex-1 px-12 pt-6 relative flex justify-center">
+            <!-- 3D 倾斜效果 -->
+            <div class="browser-window w-[600px] h-[400px]" style="transform: perspective(1000px) rotateX(8deg); transform-origin: top center;">
+                <div class="browser-bar">
+                    <div class="dot bg-red"></div><div class="dot bg-yellow"></div><div class="dot bg-green"></div>
+                </div>
+                <!-- 图片 1 -->
+                <img src="https://img.meituan.net/imgrecognize/f8697de86371304683f3127f92ac6d45820626.png" 
+                     class="w-full h-full object-cover" 
+                     style="object-position: top left;">
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- 图 2: 数据看板 (Analytics) -->
+    <!-- ========================================== -->
+    <div class="canvas" style="background: #F8FAFC;">
+        <div class="flex h-full">
+            
+            <!-- 左侧文案 (35%) -->
+            <div class="w-[35%] flex flex-col justify-center px-8 space-y-4 bg-white border-r border-gray-100 z-10 relative shadow-lg">
+                <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </div>
+                <h2 class="text-3xl font-extrabold text-gray-900 leading-tight">
+                    Track Every <br> <span class="text-indigo-600">Click & Sale.</span>
+                </h2>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    Clear dashboard metrics show you exactly how CartWhisper is performing. Track clicks and conversions in real-time.
+                </p>
+                <div class="flex gap-2 pt-2">
+                    <span class="px-2 py-1 bg-green-50 text-green-700 font-bold rounded border border-green-100 text-[10px]">ROI Focused</span>
+                </div>
+            </div>
+
+            <!-- 右侧截图 (65%) -->
+            <div class="w-[65%] relative bg-gray-50 overflow-hidden flex items-center justify-center p-8">
+                <!-- 装饰光晕 -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-200 rounded-full blur-[60px] opacity-40"></div>
+                
+                <div class="browser-window w-full h-auto shadow-xl">
+                    <div class="browser-bar">
+                        <div class="dot bg-red"></div><div class="dot bg-yellow"></div><div class="dot bg-green"></div>
+                    </div>
+                    <!-- 图片 3 (数据图) -->
+                    <!-- object-position: 0 -10px 微调以切掉顶部导航 -->
+                    <img src="https://img.meituan.net/imgrecognize/5f681f12eaa25bd66e74b9af2fa787eb536750.png" 
+                         class="w-full object-cover" 
+                         style="height: 350px; object-position: 0 -10px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- 图 3: 简单设置 (Setup) -->
+    <!-- ========================================== -->
+    <div class="canvas bg-white">
+        <div class="flex flex-col items-center pt-10 px-12 h-full">
+            
+            <h2 class="text-4xl font-extrabold text-center text-gray-900 mb-3">
+                Setup in <span class="text-indigo-600">Seconds.</span>
+            </h2>
+            <p class="text-sm text-gray-500 text-center max-w-sm mb-8">
+                No coding required. Just click "Sync" and let our AI analyze your catalog instantly.
+            </p>
+
+            <!-- 这里的布局修复了你之前的负值高度 bug -->
+            <div class="relative w-full max-w-2xl h-[300px]">
+                
+                <!-- 后层：Banner 背景 -->
+                <div class="absolute top-0 left-6 right-6 h-[-200px] rounded-xl overflow-hidden shadow-lg transform -rotate-2 border border-gray-100 z-0">
+                    <!-- 图片 2 (Banner) -->
+                    <img src="https://img.meituan.net/imgrecognize/a9bbaaba12ea266d76d7c97531fe1dc9553974.png" 
+                         class="w-full h-full object-cover" 
+                         style="object-position: center;">
+                </div>
+
+                <!-- 前层：Sync 按钮 (重点展示) -->
+                <div class="absolute top-0 left-0 right-0 h-[-200px] bg-white rounded-xl shadow-2xl border border-gray-200 transform rotate-2 z-10 overflow-hidden flex flex-col">
+                    <div class="browser-bar bg-gray-50"></div>
+                    <!-- 图片 4 (Sync 按钮) -->
+                    <!-- object-position: 0 -110px 是为了正好露出那个按钮 -->
+                    <img src="https://img.meituan.net/imgrecognize/c6f24f171875056fe8a92a2834f9cde7139748.png" 
+                         class="w-full h-full object-cover" 
+                         style="object-position: 0 0px;">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
