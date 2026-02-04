@@ -179,7 +179,7 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
             },
           },
         ],
-        returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing/callback`,
+        returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing/callback?shop=${shop}`,
         trialDays: planConfig.trialDays || 0,
         test: true, // 暂时总是使用测试模式，等应用通过审核后再改为：process.env.NODE_ENV !== 'production'
       },
