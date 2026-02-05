@@ -181,7 +181,9 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
         ],
         returnUrl: `${process.env.SHOPIFY_APP_URL}/billing/callback?shop=${shop}`,
         trialDays: planConfig.trialDays || 0,
-        test: process.env.NODE_ENV !== 'production', // 开发环境使用测试模式，生产环境使用真实订阅
+        // 使用专门的环境变量控制测试模式，默认为 true（测试模式）
+        // 只有在生产环境且明确设置 BILLING_TEST_MODE=false 时才使用真实订阅
+        test: process.env.BILLING_TEST_MODE !== 'false',
       },
     }
   );
