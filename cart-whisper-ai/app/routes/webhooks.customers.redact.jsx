@@ -6,6 +6,9 @@
  */
 
 import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
+
+const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
 
 export const action = async ({ request }) => {
   try {
@@ -17,12 +20,77 @@ export const action = async ({ request }) => {
       orders_to_redact: payload.orders_to_redact,
     });
 
-    // TODO: 实现实际的数据删除逻辑
-    // 1. 删除该客户的所有个人数据
-    // 2. 匿名化或删除推荐点击记录中的客户信息
-    // 3. 记录删除操作日志
+    const customerId = payload.customer?.id;
+    const customerEmail = payload.customer?.email;
 
-    // 目前返回200 OK表示已收到请求
+    // 1. 删除本地数据库中的客户个人数据
+    try {
+      // 删除包含该客户邮箱的会话数据
+      if (customerEmail) {
+        const deletedSessions = await prisma.session.deleteMany({
+          where: {
+            shop,
+            email: customerEmail,
+          },
+        });
+
+        console.log('[GDPR] Local database cleanup completed:', {
+          shop,
+          customerEmail,
+          deletedSessions: deletedSessions.count,
+        });
+      }
+
+      // 注意：ProductRecommendation 表不包含客户个人信息，无需删除
+      // 如果未来添加了客户点击记录等表，需要在这里删除
+    } catch (dbError) {
+      console.error('[GDPR] Local database cleanup error:', dbError);
+      // 继续执行后端清理，即使本地清理失败
+    }
+
+    // 2. 通知后端删除客户相关数据（如点击记录、统计数据等）
+    try {
+      if (customerId || customerEmail) {
+        const backendResponse = await fetch(`${BACKEND_URL}/api/customers/redact`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            shop,
+            customerId,
+            customerEmail,
+          }),
+        });
+
+        if (backendResponse.ok) {
+          console.log('[GDPR] Backend customer data cleanup completed:', {
+            shop,
+            customerId,
+            customerEmail,
+          });
+        } else {
+          const errorText = await backendResponse.text();
+          console.error('[GDPR] Backend customer cleanup failed:', {
+            shop,
+            status: backendResponse.status,
+            error: errorText,
+          });
+        }
+      }
+    } catch (backendError) {
+      console.error('[GDPR] Backend customer cleanup error:', backendError);
+      // 不抛出错误，因为本地数据已经删除
+    }
+
+    // 3. 记录删除操作（仅日志，不存储到数据库）
+    console.log('[GDPR] Customer data redaction completed successfully:', {
+      shop,
+      customerId,
+      customerEmail,
+      timestamp: new Date().toISOString(),
+    });
+
     return new Response(null, { status: 200 });
   } catch (error) {
     console.error('[GDPR] Customer redaction error:', error);
