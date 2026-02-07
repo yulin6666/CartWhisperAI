@@ -5,7 +5,7 @@
 
 import { redirect } from 'react-router';
 import { authenticate } from '../shopify.server';
-import { createSubscription, getSubscription } from '../utils/billing.server';
+import { createSubscription, getSubscription, cancelSubscription } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
@@ -57,6 +57,27 @@ export async function action({ request }) {
           name: subscriptionError.name
         });
         throw subscriptionError;
+      }
+    }
+
+    if (actionType === 'downgrade') {
+      const targetPlan = formData.get('targetPlan') || 'FREE';
+      console.log('[Billing] Downgrading to plan:', targetPlan);
+
+      try {
+        if (targetPlan.toUpperCase() === 'FREE') {
+          // 降级到 FREE = 取消订阅
+          await cancelSubscription(admin, shop);
+          console.log('[Billing] Successfully downgraded to FREE');
+          return Response.json({ success: true, newPlan: 'free' });
+        }
+
+        // 未来支持 MAX -> PRO 降级（需要取消当前订阅并创建新订阅）
+        console.warn('[Billing] Downgrade to non-FREE plan not yet supported');
+        return Response.json({ error: 'Downgrade to this plan is not yet supported' }, { status: 400 });
+      } catch (downgradeError) {
+        console.error('[Billing] Downgrade failed:', downgradeError);
+        return Response.json({ error: downgradeError.message }, { status: 500 });
       }
     }
 

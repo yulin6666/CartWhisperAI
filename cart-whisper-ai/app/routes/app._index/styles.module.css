@@ -1106,6 +1106,24 @@
   text-decoration: underline;
 }
 
+/* ===== Manage Plan Link ===== */
+.managePlanLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.managePlanLink:hover {
+  background-color: #f3f4f6;
+  color: #4f46e5;
+}
+
 /* ===== Usage Card ===== */
 .usageCard {
   display: flex;

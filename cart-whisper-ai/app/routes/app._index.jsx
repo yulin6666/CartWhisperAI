@@ -5,6 +5,7 @@ import styles from './app._index/styles.module.css';
 import { BACKEND_URL, getSyncStatus, getStatistics } from '../utils/backendApi.server';
 import { getApiKey } from '../utils/shopConfig.server';
 import { getSubscription, getPlanFeatures, getCurrentPlan } from '../utils/billing.server';
+import { ManageSubscriptionModal, DowngradeWarningModal } from '../components';
 
 export async function loader({ request }) {
   const { admin, session } = await authenticate.admin(request);
@@ -673,6 +674,11 @@ export default function Index() {
   const [showNotification, setShowNotification] = useState(null);
   const [visibleProducts, setVisibleProducts] = useState(10);
 
+  // Modal states for subscription management
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+  const [isDowngradeModalOpen, setIsDowngradeModalOpen] = useState(false);
+  const [targetDowngradePlan, setTargetDowngradePlan] = useState(null);
+
   // Initialize optimisticSyncing from sessionStorage (survives page refresh)
   const [optimisticSyncing, setOptimisticSyncing] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -867,11 +873,39 @@ export default function Index() {
 
   const handleUpgrade = useCallback((plan = 'PRO') => {
     console.log('[Frontend] Initiating upgrade to plan:', plan);
+    setIsManageModalOpen(false); // Close manage modal when upgrading
     billingFetcher.submit(
       { action: 'upgrade', plan },
       { method: 'post', action: '/app/billing' }
     );
   }, [billingFetcher]);
+
+  // Downgrade handlers
+  const handleOpenManageModal = useCallback(() => {
+    setIsManageModalOpen(true);
+  }, []);
+
+  const handleCloseManageModal = useCallback(() => {
+    setIsManageModalOpen(false);
+  }, []);
+
+  const handleDowngradeClick = useCallback((targetPlan) => {
+    setTargetDowngradePlan(targetPlan);
+    setIsDowngradeModalOpen(true);
+  }, []);
+
+  const handleCloseDowngradeModal = useCallback(() => {
+    setIsDowngradeModalOpen(false);
+    setTargetDowngradePlan(null);
+  }, []);
+
+  const handleConfirmDowngrade = useCallback(() => {
+    console.log('[Frontend] Confirming downgrade to:', targetDowngradePlan);
+    billingFetcher.submit(
+      { action: 'downgrade', targetPlan: targetDowngradePlan },
+      { method: 'post', action: '/app/billing' }
+    );
+  }, [billingFetcher, targetDowngradePlan]);
 
   // 监听billing响应并处理重定向
   useEffect(() => {
@@ -886,15 +920,29 @@ export default function Index() {
         return;
       }
 
+      // 如果降级成功
+      if (billingFetcher.data.success && billingFetcher.data.newPlan) {
+        console.log('[Frontend] Downgrade successful to:', billingFetcher.data.newPlan);
+        setIsDowngradeModalOpen(false);
+        setIsManageModalOpen(false);
+        setTargetDowngradePlan(null);
+        setShowNotification({
+          type: 'success',
+          message: `Successfully changed to ${billingFetcher.data.newPlan === 'free' ? 'Free' : billingFetcher.data.newPlan} Plan`
+        });
+        revalidator.revalidate();
+        return;
+      }
+
       // 如果有错误，显示通知
       if (billingFetcher.data.error) {
         setShowNotification({
           type: 'error',
-          message: `Upgrade failed: ${billingFetcher.data.error}`
+          message: `Operation failed: ${billingFetcher.data.error}`
         });
       }
     }
-  }, [billingFetcher.state, billingFetcher.data]);
+  }, [billingFetcher.state, billingFetcher.data, revalidator]);
 
   const handleCancelSubscription = useCallback(() => {
     if (confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free Plan.')) {
@@ -1015,8 +1063,14 @@ export default function Index() {
               </h1>
             </div>
 
-            {/* Right: Plan badge + Avatar */}
+            {/* Right: Manage Plan + Plan badge + Avatar */}
             <div className={styles.headerRight}>
+              <button
+                onClick={handleOpenManageModal}
+                className={styles.managePlanLink}
+              >
+                Manage Plan
+              </button>
               {currentPlan === 'free' && (
                 <div className={`${styles.planBadge} ${styles.planBadgeFree}`}>
                   FREE PLAN
@@ -1277,6 +1331,25 @@ export default function Index() {
         </div>
       )}
       </div>
+
+      {/* Subscription Management Modals */}
+      <ManageSubscriptionModal
+        isOpen={isManageModalOpen}
+        onClose={handleCloseManageModal}
+        currentPlan={currentPlan}
+        onUpgrade={handleUpgrade}
+        onDowngrade={handleDowngradeClick}
+        isLoading={billingFetcher.state === 'submitting'}
+      />
+
+      <DowngradeWarningModal
+        isOpen={isDowngradeModalOpen}
+        onClose={handleCloseDowngradeModal}
+        currentPlan={currentPlan}
+        targetPlan={targetDowngradePlan || 'FREE'}
+        onConfirm={handleConfirmDowngrade}
+        isLoading={billingFetcher.state === 'submitting'}
+      />
     </>
   );
 }

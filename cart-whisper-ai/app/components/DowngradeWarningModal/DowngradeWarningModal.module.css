@@ -1,0 +1,121 @@
+.container {
+  padding: 40px;
+  text-align: center;
+}
+
+.warningIconWrapper {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background-color: #fef2f2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.warningIcon {
+  font-size: 40px;
+  color: #dc2626;
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.description {
+  margin: 0 0 24px 0;
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.descriptionBold {
+  font-weight: 700;
+  color: #111827;
+}
+
+.warningBox {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.lostFeaturesList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lostFeatureItem {
+  padding: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lostFeatureItem:not(:last-child) {
+  border-bottom: 1px solid #fecaca;
+}
+
+.lostFeatureIcon {
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border: 2px solid #fecaca;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.button {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.buttonKeep {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.buttonKeep:hover:not(:disabled) {
+  background-color: #4338ca;
+}
+
+.buttonConfirm {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.buttonConfirm:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
