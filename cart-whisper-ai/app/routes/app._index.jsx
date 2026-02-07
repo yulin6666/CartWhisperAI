@@ -873,11 +873,15 @@ export default function Index() {
 
   const handleUpgrade = useCallback((plan = 'PRO') => {
     console.log('[Frontend] Initiating upgrade to plan:', plan);
-    setIsManageModalOpen(false); // Close manage modal when upgrading
+    // Submit first, then close modal (modal will be closed after redirect or on success)
     billingFetcher.submit(
       { action: 'upgrade', plan },
       { method: 'post', action: '/app/billing' }
     );
+    // Close modal after a short delay to ensure submit is processed
+    setTimeout(() => {
+      setIsManageModalOpen(false);
+    }, 100);
   }, [billingFetcher]);
 
   // Downgrade handlers

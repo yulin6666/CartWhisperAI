@@ -17,8 +17,8 @@ const PLANS_CONFIG = {
   },
   PRO: {
     name: 'Pro Growth',
-    price: 9.99,
-    priceLabel: '$9.99',
+    price: 19.99,
+    priceLabel: '$19.99',
     description: 'Billed monthly',
     features: [
       { text: '2,000 Products', included: true },
@@ -28,8 +28,8 @@ const PLANS_CONFIG = {
   },
   MAX: {
     name: 'Unlimited',
-    price: 29.99,
-    priceLabel: '$29.99',
+    price: 49.99,
+    priceLabel: '$49.99',
     description: 'Power users',
     features: [
       { text: 'Unlimited Sync', included: true },
