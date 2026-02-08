@@ -27,6 +27,7 @@ export async function loader({ request }) {
     subscription = await getSubscription(shop);
     planFeatures = await getPlanFeatures(shop);
     currentPlan = await getCurrentPlan(shop);
+    console.log('[BILLING] loader | plan=%s status=%s shopifyId=%s currentPlan=%s', subscription.plan, subscription.status, subscription.shopifySubscriptionId, currentPlan);
 
     apiKey = await getApiKey(shop, admin);
 
@@ -705,17 +706,6 @@ export default function Index() {
   const isBackendSyncing = syncStatus?.isSyncing || false; // 后端正在同步
   const isAnySyncing = isSyncing || isBackendSyncing || optimisticSyncing; // Combined sync state
 
-  // Debug: Log key state (only once on initial render when syncStatus is available)
-  if (syncStatus && typeof window !== 'undefined') {
-    console.log('=== DEBUG: Resync All Button State ===');
-    console.log('currentPlan:', currentPlan);
-    console.log('syncStatus.refreshLimit.canRefresh:', syncStatus.refreshLimit?.canRefresh);
-    console.log('syncStatus.refreshLimit:', syncStatus.refreshLimit);
-    console.log('syncStatus.initialSyncDone:', syncStatus.initialSyncDone);
-    console.log('syncStatus.lastRefreshAt:', syncStatus.lastRefreshAt);
-    console.log('Button disabled?', !syncStatus?.refreshLimit?.canRefresh);
-    console.log('======================================');
-  }
 
   // Group recommendations by source product
   const groupedProducts = useMemo(() => {

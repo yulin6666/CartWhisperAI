@@ -131,17 +131,16 @@ export async function getPlanFeatures(shop) {
  * 创建Shopify订阅
  */
 export async function createSubscription(admin, shop, plan = 'PRO') {
-  console.log('[createSubscription] Starting for plan:', plan, 'shop:', shop);
+  console.log('[BILLING] createSubscription | plan:', plan, '| shop:', shop);
 
   const planConfig = PLANS[plan];
 
   if (!planConfig || plan === 'FREE') {
-    console.error('[createSubscription] Invalid plan:', plan);
+    console.error('[BILLING] createSubscription | Invalid plan:', plan);
     throw new Error('Invalid plan');
   }
 
-  console.log('[createSubscription] Plan config:', planConfig);
-  console.log('[createSubscription] Return URL:', `${process.env.SHOPIFY_APP_URL}/app/billing/callback`);
+  console.log('[BILLING] createSubscription | planConfig.name:', planConfig.name, '| price:', planConfig.price);
 
   // 创建订阅
   const response = await admin.graphql(
@@ -190,20 +189,20 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
 
   const result = await response.json();
 
-  console.log('[createSubscription] GraphQL response:', JSON.stringify(result, null, 2));
+  console.log('[BILLING] createSubscription | GraphQL response:', JSON.stringify(result, null, 2));
 
   if (result.errors) {
-    console.error('[createSubscription] GraphQL errors:', result.errors);
+    console.error('[BILLING] createSubscription | GraphQL errors:', result.errors);
     throw new Error(result.errors[0].message);
   }
 
   if (result.data.appSubscriptionCreate.userErrors.length > 0) {
-    console.error('[createSubscription] User errors:', result.data.appSubscriptionCreate.userErrors);
+    console.error('[BILLING] createSubscription | User errors:', result.data.appSubscriptionCreate.userErrors);
     throw new Error(result.data.appSubscriptionCreate.userErrors[0].message);
   }
 
   const { appSubscription, confirmationUrl } = result.data.appSubscriptionCreate;
-  console.log('[createSubscription] Confirmation URL:', confirmationUrl);
+  console.log('[BILLING] createSubscription | subscriptionId:', appSubscription.id, '| confirmationUrl:', confirmationUrl);
 
   // 保存订阅信息（待确认状态）
   await prisma.subscription.upsert({
@@ -223,6 +222,8 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
     },
   });
 
+  console.log('[BILLING] createSubscription | DB saved: plan=%s status=pending shopifyId=%s', plan.toLowerCase(), appSubscription.id);
+
   return { confirmationUrl, subscriptionId: appSubscription.id };
 }
 
@@ -230,11 +231,15 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
  * 确认订阅（用户完成支付后）
  */
 export async function confirmSubscription(admin, shop) {
+  console.log('[BILLING] confirmSubscription | shop:', shop);
   const subscription = await getSubscription(shop);
 
   if (!subscription.shopifySubscriptionId) {
+    console.error('[BILLING] confirmSubscription | No shopifySubscriptionId in DB');
     throw new Error('No pending subscription found');
   }
+
+  console.log('[BILLING] confirmSubscription | DB state: plan=%s status=%s shopifyId=%s', subscription.plan, subscription.status, subscription.shopifySubscriptionId);
 
   // 查询Shopify订阅状态
   const response = await admin.graphql(
@@ -256,19 +261,23 @@ export async function confirmSubscription(admin, shop) {
   const result = await response.json();
   const activeSubscriptions = result.data.currentAppInstallation.activeSubscriptions;
 
-  console.log('[confirmSubscription] Active subscriptions from Shopify:', JSON.stringify(activeSubscriptions, null, 2));
-  console.log('[confirmSubscription] Local subscription:', JSON.stringify({ id: subscription.shopifySubscriptionId, plan: subscription.plan, status: subscription.status }, null, 2));
+  console.log('[BILLING] confirmSubscription | Shopify activeSubscriptions:', JSON.stringify(activeSubscriptions, null, 2));
 
   // 先尝试精确匹配
   let activeSubscription = activeSubscriptions.find(
     sub => sub.id === subscription.shopifySubscriptionId
   );
 
-  // 如果精确匹配失败，取最新的 ACTIVE 订阅（处理升级场景：Shopify 可能替换了订阅 ID）
-  if (!activeSubscription) {
+  if (activeSubscription) {
+    console.log('[BILLING] confirmSubscription | Exact match found: id=%s name=%s status=%s', activeSubscription.id, activeSubscription.name, activeSubscription.status);
+  } else {
+    console.log('[BILLING] confirmSubscription | Exact match FAILED for id:', subscription.shopifySubscriptionId);
+    // 如果精确匹配失败，取最新的 ACTIVE 订阅（处理升级场景：Shopify 可能替换了订阅 ID）
     activeSubscription = activeSubscriptions.find(sub => sub.status === 'ACTIVE');
     if (activeSubscription) {
-      console.log('[confirmSubscription] Exact match failed, using latest active subscription:', activeSubscription.id);
+      console.log('[BILLING] confirmSubscription | Fallback match: id=%s name=%s status=%s', activeSubscription.id, activeSubscription.name, activeSubscription.status);
+    } else {
+      console.log('[BILLING] confirmSubscription | No ACTIVE subscription found at all');
     }
   }
 
@@ -281,7 +290,7 @@ export async function confirmSubscription(admin, shop) {
     } else if (subName.includes('pro')) {
       confirmedPlan = 'pro';
     }
-    console.log('[confirmSubscription] Confirmed plan:', confirmedPlan, 'from subscription name:', activeSubscription.name);
+    console.log('[BILLING] confirmSubscription | confirmedPlan=%s (from name="%s", DB plan was=%s)', confirmedPlan, activeSubscription.name, subscription.plan);
 
     // 更新订阅状态为激活
     await prisma.subscription.update({
@@ -296,6 +305,10 @@ export async function confirmSubscription(admin, shop) {
           : null,
       },
     });
+
+    // 验证 DB 写入
+    const updatedSub = await prisma.subscription.findUnique({ where: { shop } });
+    console.log('[BILLING] confirmSubscription | DB AFTER update: plan=%s status=%s shopifyId=%s', updatedSub.plan, updatedSub.status, updatedSub.shopifySubscriptionId);
 
     // 同步到后端 PostgreSQL 数据库
     try {
@@ -317,12 +330,12 @@ export async function confirmSubscription(admin, shop) {
       });
 
       if (!syncResponse.ok) {
-        console.error('[confirmSubscription] Failed to sync to backend:', await syncResponse.text());
+        console.error('[BILLING] confirmSubscription | Failed to sync to backend:', await syncResponse.text());
       } else {
-        console.log('[confirmSubscription] Successfully synced plan to backend');
+        console.log('[BILLING] confirmSubscription | Synced to backend OK');
       }
     } catch (error) {
-      console.error('[confirmSubscription] Error syncing to backend:', error);
+      console.error('[BILLING] confirmSubscription | Error syncing to backend:', error);
       // 不抛出错误，因为本地订阅已经成功
     }
 

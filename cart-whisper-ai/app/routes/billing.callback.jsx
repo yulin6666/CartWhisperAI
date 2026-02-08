@@ -12,64 +12,53 @@ export async function loader({ request }) {
   const shop = url.searchParams.get('shop');
   const chargeId = url.searchParams.get('charge_id');
 
-  console.log('[Billing Callback] Received callback:', { shop, chargeId, url: url.toString() });
+  console.log('[BILLING] callback ========================================');
+  console.log('[BILLING] callback | shop:', shop, '| chargeId:', chargeId);
 
   if (!shop) {
-    console.error('[Billing Callback] No shop parameter in callback URL');
+    console.error('[BILLING] callback | No shop parameter');
     return new Response(getRedirectHTML(null, 'error'), {
       headers: { 'Content-Type': 'text/html' },
     });
   }
 
   try {
-    // 从 sessionStorage 中获取 offline session
-    // Offline session ID 格式：offline_{shop}
     const sessionId = `offline_${shop}`;
-    console.log('[Billing Callback] Looking for session:', sessionId);
+    console.log('[BILLING] callback | Looking for session:', sessionId);
 
     const session = await sessionStorage.loadSession(sessionId);
 
     if (!session) {
-      console.error('[Billing Callback] No session found for shop:', shop);
-      // 如果没有 session，仍然返回成功页面（因为支付已完成）
-      // 订阅状态会在下次用户访问应用时同步
+      console.error('[BILLING] callback | No session found for shop:', shop);
       return new Response(getRedirectHTML(shop, 'success'), {
         headers: { 'Content-Type': 'text/html' },
       });
     }
 
-    console.log('[Billing Callback] Found session for shop:', shop);
+    console.log('[BILLING] callback | Session found, creating GraphQL client');
 
-    // 使用 session 创建 admin API 客户端
     const admin = new shopify.clients.Graphql({
       session,
       apiVersion: '2025-01'
     });
 
-    console.log('[Billing Callback] Created GraphQL client');
+    console.log('[BILLING] callback | Calling confirmSubscription...');
 
-    // 确认订阅状态
-    console.log('[Billing Callback] Confirming subscription...');
     const confirmed = await confirmSubscription(admin, shop);
+    console.log('[BILLING] callback | confirmSubscription returned:', confirmed);
 
     if (confirmed) {
-      console.log('[Billing Callback] Subscription confirmed');
-      return new Response(getRedirectHTML(shop, 'success'), {
-        headers: { 'Content-Type': 'text/html' },
-      });
+      console.log('[BILLING] callback | SUCCESS - subscription confirmed');
     } else {
-      console.log('[Billing Callback] Subscription not confirmed yet');
-      // 即使未确认，也返回成功页面，因为可能需要一些时间
-      return new Response(getRedirectHTML(shop, 'success'), {
-        headers: { 'Content-Type': 'text/html' },
-      });
+      console.warn('[BILLING] callback | WARN - confirmSubscription returned false');
     }
+
+    return new Response(getRedirectHTML(shop, 'success'), {
+      headers: { 'Content-Type': 'text/html' },
+    });
   } catch (error) {
-    console.error('[Billing Callback] Error:', error);
-    console.error('[Billing Callback] Error message:', error.message);
-    console.error('[Billing Callback] Error stack:', error.stack);
-    // 即使出错，也返回成功页面，因为支付已完成
-    // 订阅状态会在下次用户访问应用时同步
+    console.error('[BILLING] callback | ERROR:', error.message);
+    console.error('[BILLING] callback | Stack:', error.stack);
     return new Response(getRedirectHTML(shop, 'success'), {
       headers: { 'Content-Type': 'text/html' },
     });
