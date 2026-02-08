@@ -44,12 +44,14 @@ function getPlanLevel(plan) {
   return levels[plan?.toLowerCase()] || 0;
 }
 
-const PlanCard = memo(({ planKey, config, currentPlan, onUpgrade, onDowngrade, isLoading }) => {
+const PlanCard = memo(({ planKey, config, currentPlan, onUpgrade, onDowngrade, upgradingPlan, isDowngrading }) => {
   const isCurrent = currentPlan?.toUpperCase() === planKey;
   const currentLevel = getPlanLevel(currentPlan);
   const planLevel = getPlanLevel(planKey);
   const isDowngrade = planLevel < currentLevel;
   const isUpgrade = planLevel > currentLevel;
+  const isThisUpgrading = upgradingPlan === planKey;
+  const isAnyBusy = !!upgradingPlan || isDowngrading;
 
   return (
     <div className={`${styles.planCard} ${isCurrent ? styles.planCardCurrent : ''}`}>
@@ -97,17 +99,17 @@ const PlanCard = memo(({ planKey, config, currentPlan, onUpgrade, onDowngrade, i
           <button
             className={`${styles.button} ${styles.buttonDowngrade}`}
             onClick={() => onDowngrade(planKey)}
-            disabled={isLoading}
+            disabled={isAnyBusy}
           >
-            {isLoading ? 'Processing...' : 'Downgrade'}
+            Downgrade
           </button>
         ) : isUpgrade ? (
           <button
             className={`${styles.button} ${styles.buttonUpgrade}`}
             onClick={() => onUpgrade(planKey)}
-            disabled={isLoading}
+            disabled={isAnyBusy}
           >
-            {isLoading ? 'Processing...' : 'Upgrade'}
+            {isThisUpgrading ? 'Processing...' : 'Upgrade'}
           </button>
         ) : null}
       </div>
@@ -122,7 +124,8 @@ export function ManageSubscriptionModal({
   currentPlan,
   onUpgrade,
   onDowngrade,
-  isLoading,
+  upgradingPlan,
+  isDowngrading,
 }) {
   const planDisplayName = PLANS_CONFIG[currentPlan?.toUpperCase()]?.name || 'Free';
 
@@ -146,7 +149,8 @@ export function ManageSubscriptionModal({
               currentPlan={currentPlan}
               onUpgrade={onUpgrade}
               onDowngrade={onDowngrade}
-              isLoading={isLoading}
+              upgradingPlan={upgradingPlan}
+              isDowngrading={isDowngrading}
             />
           ))}
         </div>

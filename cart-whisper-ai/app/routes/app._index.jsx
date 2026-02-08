@@ -678,6 +678,7 @@ export default function Index() {
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [isDowngradeModalOpen, setIsDowngradeModalOpen] = useState(false);
   const [targetDowngradePlan, setTargetDowngradePlan] = useState(null);
+  const [upgradingPlan, setUpgradingPlan] = useState(null); // Track which plan is being upgraded
 
   // Initialize optimisticSyncing from sessionStorage (survives page refresh)
   const [optimisticSyncing, setOptimisticSyncing] = useState(() => {
@@ -756,7 +757,6 @@ export default function Index() {
       planFetcher.data?.success ||
       resetFetcher.data?.success ||
       syncFetcher.data?.success ||
-      (billingFetcher.state === 'idle' && billingFetcher.data) ||
       upgraded ||
       cancelled;
 
@@ -776,8 +776,6 @@ export default function Index() {
     planFetcher.data,
     resetFetcher.data,
     syncFetcher.data,
-    billingFetcher.state,
-    billingFetcher.data,
     upgraded,
     upgradeFailed,
     cancelled,
@@ -873,15 +871,11 @@ export default function Index() {
 
   const handleUpgrade = useCallback((plan = 'PRO') => {
     console.log('[Frontend] Initiating upgrade to plan:', plan);
-    // Submit first, then close modal (modal will be closed after redirect or on success)
+    setUpgradingPlan(plan); // Track which plan is being upgraded
     billingFetcher.submit(
       { action: 'upgrade', plan },
       { method: 'post', action: '/app/billing' }
     );
-    // Close modal after a short delay to ensure submit is processed
-    setTimeout(() => {
-      setIsManageModalOpen(false);
-    }, 100);
   }, [billingFetcher]);
 
   // Downgrade handlers
@@ -919,6 +913,8 @@ export default function Index() {
       // 如果有 confirmationUrl，跳转到 Shopify 支付页面
       if (billingFetcher.data.confirmationUrl) {
         console.log('[Frontend] Redirecting to Shopify billing page:', billingFetcher.data.confirmationUrl);
+        setIsManageModalOpen(false);
+        setUpgradingPlan(null);
         // 在 Shopify Embedded App 中，使用 window.open 跳转到支付页面
         window.open(billingFetcher.data.confirmationUrl, '_top');
         return;
@@ -930,6 +926,7 @@ export default function Index() {
         setIsDowngradeModalOpen(false);
         setIsManageModalOpen(false);
         setTargetDowngradePlan(null);
+        setUpgradingPlan(null);
         setShowNotification({
           type: 'success',
           message: `Successfully changed to ${billingFetcher.data.newPlan === 'free' ? 'Free' : billingFetcher.data.newPlan} Plan`
@@ -940,6 +937,7 @@ export default function Index() {
 
       // 如果有错误，显示通知
       if (billingFetcher.data.error) {
+        setUpgradingPlan(null);
         setShowNotification({
           type: 'error',
           message: `Operation failed: ${billingFetcher.data.error}`
@@ -1343,7 +1341,8 @@ export default function Index() {
         currentPlan={currentPlan}
         onUpgrade={handleUpgrade}
         onDowngrade={handleDowngradeClick}
-        isLoading={billingFetcher.state === 'submitting'}
+        upgradingPlan={upgradingPlan}
+        isDowngrading={billingFetcher.state !== 'idle' && targetDowngradePlan !== null}
       />
 
       <DowngradeWarningModal
