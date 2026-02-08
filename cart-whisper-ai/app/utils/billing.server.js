@@ -256,16 +256,40 @@ export async function confirmSubscription(admin, shop) {
   const result = await response.json();
   const activeSubscriptions = result.data.currentAppInstallation.activeSubscriptions;
 
-  const activeSubscription = activeSubscriptions.find(
+  console.log('[confirmSubscription] Active subscriptions from Shopify:', JSON.stringify(activeSubscriptions, null, 2));
+  console.log('[confirmSubscription] Local subscription:', JSON.stringify({ id: subscription.shopifySubscriptionId, plan: subscription.plan, status: subscription.status }, null, 2));
+
+  // 先尝试精确匹配
+  let activeSubscription = activeSubscriptions.find(
     sub => sub.id === subscription.shopifySubscriptionId
   );
 
+  // 如果精确匹配失败，取最新的 ACTIVE 订阅（处理升级场景：Shopify 可能替换了订阅 ID）
+  if (!activeSubscription) {
+    activeSubscription = activeSubscriptions.find(sub => sub.status === 'ACTIVE');
+    if (activeSubscription) {
+      console.log('[confirmSubscription] Exact match failed, using latest active subscription:', activeSubscription.id);
+    }
+  }
+
   if (activeSubscription && activeSubscription.status === 'ACTIVE') {
+    // 根据 Shopify 订阅的 name 来确定实际的 plan
+    let confirmedPlan = subscription.plan;
+    const subName = activeSubscription.name?.toLowerCase() || '';
+    if (subName.includes('max')) {
+      confirmedPlan = 'max';
+    } else if (subName.includes('pro')) {
+      confirmedPlan = 'pro';
+    }
+    console.log('[confirmSubscription] Confirmed plan:', confirmedPlan, 'from subscription name:', activeSubscription.name);
+
     // 更新订阅状态为激活
     await prisma.subscription.update({
       where: { shop },
       data: {
+        plan: confirmedPlan,
         status: 'active',
+        shopifySubscriptionId: activeSubscription.id,
         currentPeriodStart: new Date(activeSubscription.createdAt),
         currentPeriodEnd: activeSubscription.currentPeriodEnd
           ? new Date(activeSubscription.currentPeriodEnd)
@@ -282,8 +306,8 @@ export async function confirmSubscription(admin, shop) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          plan: subscription.plan,
-          shopifySubscriptionId: subscription.shopifySubscriptionId,
+          plan: confirmedPlan,
+          shopifySubscriptionId: activeSubscription.id,
           billingStatus: 'active',
           subscriptionStartedAt: new Date(activeSubscription.createdAt).toISOString(),
           subscriptionEndsAt: activeSubscription.currentPeriodEnd
