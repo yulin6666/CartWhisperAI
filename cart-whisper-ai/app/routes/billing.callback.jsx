@@ -3,9 +3,8 @@
  * 用户完成支付后Shopify会重定向到这里
  */
 
-import { sessionStorage } from '../shopify.server';
-import { confirmSubscription } from '../utils/billing.server';
 import shopify from '../shopify.server';
+import { confirmSubscription } from '../utils/billing.server';
 
 export async function loader({ request }) {
   const url = new URL(request.url);
@@ -23,26 +22,10 @@ export async function loader({ request }) {
   }
 
   try {
-    const sessionId = `offline_${shop}`;
-    console.log('[BILLING] callback | Looking for session:', sessionId);
-
-    const session = await sessionStorage.loadSession(sessionId);
-
-    if (!session) {
-      console.error('[BILLING] callback | No session found for shop:', shop);
-      return new Response(getRedirectHTML(shop, 'success'), {
-        headers: { 'Content-Type': 'text/html' },
-      });
-    }
-
-    console.log('[BILLING] callback | Session found, creating GraphQL client');
-
-    const admin = new shopify.clients.Graphql({
-      session,
-      apiVersion: '2025-01'
-    });
-
-    console.log('[BILLING] callback | Calling confirmSubscription...');
+    // 使用 shopify.unauthenticated.admin 获取 admin API client
+    console.log('[BILLING] callback | Getting admin client via unauthenticated.admin...');
+    const { admin } = await shopify.unauthenticated.admin(shop);
+    console.log('[BILLING] callback | Admin client obtained, calling confirmSubscription...');
 
     const confirmed = await confirmSubscription(admin, shop);
     console.log('[BILLING] callback | confirmSubscription returned:', confirmed);
