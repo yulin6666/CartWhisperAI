@@ -350,23 +350,29 @@ export async function confirmSubscription(admin, shop) {
  */
 export async function cancelSubscription(admin, shop) {
   const subscription = await getSubscription(shop);
+  console.log('[BILLING] cancelSubscription | shop:', shop, '| current plan:', subscription.plan, '| isTestMode:', subscription.isTestMode, '| shopifyId:', subscription.shopifySubscriptionId);
 
   // 测试模式：直接降级，不调用Shopify API
   if (subscription.isTestMode || !subscription.shopifySubscriptionId) {
-    console.log('[cancelSubscription] Test mode or no Shopify subscription - direct downgrade');
+    console.log('[BILLING] cancelSubscription | Test mode - direct downgrade to free');
     await prisma.subscription.update({
       where: { shop },
       data: {
         plan: 'free',
-        status: 'active', // 保持active状态，只是降级到free
+        status: 'active',
+        shopifySubscriptionId: null,
         cancelledAt: new Date(),
-        isTestMode: subscription.isTestMode, // 保持测试模式标记
+        isTestMode: subscription.isTestMode,
       },
     });
+
+    // 同步到后端
+    await syncPlanToBackend(shop, 'free');
     return true;
   }
 
   // 生产模式：取消Shopify订阅
+  console.log('[BILLING] cancelSubscription | Production - calling Shopify API to cancel:', subscription.shopifySubscriptionId);
   const response = await admin.graphql(
     `#graphql
       mutation AppSubscriptionCancel($id: ID!) {
@@ -389,22 +395,53 @@ export async function cancelSubscription(admin, shop) {
   );
 
   const result = await response.json();
+  console.log('[BILLING] cancelSubscription | Shopify response:', JSON.stringify(result.data?.appSubscriptionCancel, null, 2));
 
   if (result.data.appSubscriptionCancel.userErrors.length > 0) {
     throw new Error(result.data.appSubscriptionCancel.userErrors[0].message);
   }
 
-  // 更新本地订阅状态
+  // 更新本地订阅状态：降级到 free，保持 active 状态，清除 shopifySubscriptionId
   await prisma.subscription.update({
     where: { shop },
     data: {
       plan: 'free',
-      status: 'cancelled',
+      status: 'active',
+      shopifySubscriptionId: null,
       cancelledAt: new Date(),
     },
   });
 
+  console.log('[BILLING] cancelSubscription | DB updated: plan=free status=active shopifyId=null');
+
+  // 同步到后端
+  await syncPlanToBackend(shop, 'free');
   return true;
+}
+
+/**
+ * 同步 plan 到后端 PostgreSQL
+ */
+async function syncPlanToBackend(shop, plan) {
+  try {
+    const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+    const syncResponse = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan,
+        billingStatus: 'active',
+      }),
+    });
+
+    if (!syncResponse.ok) {
+      console.error('[BILLING] syncPlanToBackend | Failed:', await syncResponse.text());
+    } else {
+      console.log('[BILLING] syncPlanToBackend | OK: plan=%s', plan);
+    }
+  } catch (error) {
+    console.error('[BILLING] syncPlanToBackend | Error:', error.message);
+  }
 }
 
 /**

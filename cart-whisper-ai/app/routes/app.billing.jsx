@@ -62,8 +62,17 @@ export async function action({ request }) {
           return Response.json({ success: true, newPlan: 'free' });
         }
 
-        console.warn('[BILLING] action | downgrade to non-FREE not supported');
-        return Response.json({ error: 'Downgrade to this plan is not yet supported' }, { status: 400 });
+        // MAX → PRO: 取消当前订阅，创建新的 PRO 订阅
+        console.log('[BILLING] action | downgrade MAX→PRO: cancelling current, creating PRO subscription');
+        await cancelSubscription(admin, shop);
+        const result = await createSubscription(admin, shop, targetPlan.toUpperCase());
+        console.log('[BILLING] action | downgrade MAX→PRO: confirmationUrl:', result.confirmationUrl);
+
+        if (!result.confirmationUrl) {
+          throw new Error('No confirmation URL returned from Shopify');
+        }
+
+        return Response.json({ confirmationUrl: result.confirmationUrl });
       } catch (downgradeError) {
         console.error('[BILLING] action | downgrade failed:', downgradeError.message);
         return Response.json({ error: downgradeError.message }, { status: 500 });
