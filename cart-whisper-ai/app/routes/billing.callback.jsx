@@ -9,40 +9,23 @@ import { confirmSubscription } from '../utils/billing.server';
 export async function loader({ request }) {
   const url = new URL(request.url);
   const shop = url.searchParams.get('shop');
-  const chargeId = url.searchParams.get('charge_id');
 
-  console.log('[BILLING] callback ========================================');
-  console.log('[BILLING] callback | shop:', shop, '| chargeId:', chargeId);
-
-  if (!shop) {
-    console.error('[BILLING] callback | No shop parameter');
+  // 验证 shop 参数格式，防止 XSS
+  if (!shop || !/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shop)) {
     return new Response(getRedirectHTML(null, 'error'), {
       headers: { 'Content-Type': 'text/html' },
     });
   }
 
   try {
-    // 使用 shopify.unauthenticated.admin 获取 admin API client
-    console.log('[BILLING] callback | Getting admin client via unauthenticated.admin...');
     const { admin } = await shopify.unauthenticated.admin(shop);
-    console.log('[BILLING] callback | Admin client obtained, calling confirmSubscription...');
-
-    const confirmed = await confirmSubscription(admin, shop);
-    console.log('[BILLING] callback | confirmSubscription returned:', confirmed);
-
-    if (confirmed) {
-      console.log('[BILLING] callback | SUCCESS - subscription confirmed');
-    } else {
-      console.warn('[BILLING] callback | WARN - confirmSubscription returned false');
-    }
+    await confirmSubscription(admin, shop);
 
     return new Response(getRedirectHTML(shop, 'success'), {
       headers: { 'Content-Type': 'text/html' },
     });
   } catch (error) {
-    console.error('[BILLING] callback | ERROR:', error.message);
-    console.error('[BILLING] callback | Stack:', error.stack);
-    return new Response(getRedirectHTML(shop, 'success'), {
+    return new Response(getRedirectHTML(shop, 'error'), {
       headers: { 'Content-Type': 'text/html' },
     });
   }
@@ -51,8 +34,8 @@ export async function loader({ request }) {
 function getRedirectHTML(shop, status) {
   const message = status === 'success'
     ? 'Subscription confirmed!'
-    : status === 'failed'
-    ? 'Subscription not confirmed'
+    : status === 'error'
+    ? 'Something went wrong. Please try again.'
     : 'Processing subscription...';
 
   const redirectUrl = shop

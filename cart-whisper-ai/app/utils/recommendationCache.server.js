@@ -25,19 +25,16 @@ export function getCachedRecommendations(productId, limit = 1) {
   const cached = cache.get(key);
 
   if (!cached) {
-    console.log(`[Cache] No cache found for product ${productId}`);
     return null;
   }
 
   // 检查是否过期
   const age = Date.now() - cached.timestamp;
   if (age > CACHE_TTL) {
-    console.log(`[Cache] Cache expired for product ${productId} (age: ${Math.round(age/1000)}s)`);
     cache.delete(key);
     return null;
   }
 
-  console.log(`[Cache] Cache hit for product ${productId} (age: ${Math.round(age/1000)}s)`);
   return cached.data;
 }
 
@@ -53,7 +50,6 @@ export function setCachedRecommendations(productId, limit, recommendations) {
     data: recommendations,
     timestamp: Date.now(),
   });
-  console.log(`[Cache] Cached ${recommendations.length} recommendations for product ${productId}`);
 }
 
 /**
@@ -68,7 +64,6 @@ export function clearCacheForProduct(productId) {
       cleared++;
     }
   }
-  console.log(`[Cache] Cleared ${cleared} cache entries for product ${productId}`);
 }
 
 /**
@@ -77,7 +72,6 @@ export function clearCacheForProduct(productId) {
 export function clearAllCache() {
   const size = cache.size;
   cache.clear();
-  console.log(`[Cache] Cleared all ${size} cache entries`);
 }
 
 /**
@@ -119,11 +113,9 @@ function cleanupExpiredCache() {
   }
 
   if (cleaned > 0) {
-    console.log(`[Cache] Cleanup removed ${cleaned} expired entries`);
   }
 }
 
 // 每10分钟清理一次过期缓存
 setInterval(cleanupExpiredCache, 600000);
 
-console.log('[Cache] Recommendation cache initialized (TTL: 1 hour)');

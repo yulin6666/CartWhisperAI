@@ -225,6 +225,15 @@
   const productsList = document.getElementById('cart-whisper-products-list');
   const loadingEl = document.getElementById('cart-whisper-loading');
 
+  // 事件委托：处理推荐商品的添加购物车按钮点击
+  productsList.addEventListener('click', function(e) {
+    var button = e.target.closest('.cart-whisper-add-btn');
+    if (!button) return;
+    var productId = button.getAttribute('data-product-id');
+    var handle = button.getAttribute('data-handle');
+    window.CartWhisperAI.addToCart(button, productId, handle);
+  });
+
   // 获取购物车中的商品
   async function getCartItems() {
     try {
@@ -232,16 +241,15 @@
       const cart = await response.json();
       return cart.items || [];
     } catch (error) {
-      console.error('CartWhisper: Failed to get cart items', error);
       return [];
     }
   }
 
-  // Shopify App API URL（推荐接口）
-  const appUrl = 'https://cartwhisperai-production.up.railway.app';
+  // 使用 App Proxy 路径（通过商店域名路由，无需硬编码外部 URL）
+  const proxyBase = '/apps/chat-proxy';
 
-  // Railway 后端 API URL（仅用于追踪）
-  const backendUrl = 'https://cartwhisperaibackend-production.up.railway.app';
+  // 货币格式
+  const moneyFormat = {{ shop.money_format | json }};
 
   // 当前源商品 ID（用于追踪）
   let currentSourceProductId = null;
@@ -265,7 +273,6 @@
         return null;
       }
 
-      console.log('[CartWhisper] Cache hit for product:', productId, '- got', data.length, 'recommendations');
       return data;
     } catch (e) {
       return null;
@@ -280,7 +287,6 @@
         data: recommendations,
         timestamp: Date.now()
       }));
-      console.log('[CartWhisper] Cached', recommendations.length, 'recommendations for product:', productId);
     } catch (e) {
       // localStorage 可能已满，清理旧缓存
       clearOldCache();
@@ -312,17 +318,14 @@
     currentSourceProductId = productId;
     loadedFromCache = false;
 
-    // 🔥 调用 Shopify 应用的 API（有正确的订阅检查逻辑）
-    const fetchUrl = `${appUrl}/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper] Fetching recommendations from Shopify App:', fetchUrl);
+    // 🔥 调用 App Proxy（有正确的订阅检查逻辑）
+    const fetchUrl = `${proxyBase}/recommendations?product_id=${encodeURIComponent(productId)}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
 
     try {
       const response = await fetch(fetchUrl);
-      console.log('[CartWhisper] Response status:', response.status);
 
       if (!response.ok) {
         const text = await response.text();
-        console.error('[CartWhisper] Error response:', text);
         throw new Error('API request failed');
       }
 
@@ -331,12 +334,10 @@
       const maxRecommendations = data.maxRecommendations || 1;
       const showWatermark = data.showWatermark !== false;
 
-      console.log(`[CartWhisper] API returned: ${apiRecommendations.length} recommendations, maxRecommendations: ${maxRecommendations}, showWatermark: ${showWatermark}`);
 
       // 🔥 检查plan是否变化，如果变化则清除所有推荐缓存
       const cachedPlanLimit = localStorage.getItem(PLAN_CACHE_KEY);
       if (cachedPlanLimit && parseInt(cachedPlanLimit) !== maxRecommendations) {
-        console.log(`[CartWhisper] Plan changed from ${cachedPlanLimit} to ${maxRecommendations}, clearing all caches`);
         const keys = Object.keys(localStorage).filter(k => k.startsWith(CACHE_KEY_PREFIX));
         keys.forEach(key => localStorage.removeItem(key));
       }
@@ -354,11 +355,9 @@
       let recommendations;
 
       if (cached && cached.length > 0) {
-        console.log(`[CartWhisper] Using cached data (${cached.length} items), trimming to ${maxRecommendations}`);
         recommendations = cached.slice(0, maxRecommendations);
         loadedFromCache = true;
       } else {
-        console.log(`[CartWhisper] No cache, using API data (${apiRecommendations.length} items), trimming to ${maxRecommendations}`);
         recommendations = apiRecommendations.slice(0, maxRecommendations);
 
         // 保存完整的推荐列表到缓存（不限制数量）
@@ -367,11 +366,9 @@
         }
       }
 
-      console.log(`[CartWhisper] Final recommendations count: ${recommendations.length}`);
       return recommendations;
 
     } catch (error) {
-      console.error('[CartWhisper] Failed to fetch recommendations', error);
       return [];
     }
   }
@@ -394,16 +391,15 @@
       sourceProductId: String(sourceProductId),
       targetProductIds: targetProductIds
     };
-    console.log('[CartWhisper] Tracking impression:', payload);
 
-    fetch(`${backendUrl}/api/tracking/impression`, {
+    fetch(`${proxyBase}/tracking/impression`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(r => r.json())
-    .then(data => console.log('[CartWhisper] Impression result:', data))
-    .catch(e => console.log('[CartWhisper] Impression tracking failed:', e.message));
+    .then(() => {})
+    .catch(() => {});
   }
 
   // 追踪点击（当用户点击 Add to Cart）
@@ -417,16 +413,15 @@
       sourceProductId: cleanSourceId,
       targetProductId: cleanTargetId
     };
-    console.log('[CartWhisper] Tracking click:', payload);
 
-    fetch(`${backendUrl}/api/tracking/click`, {
+    fetch(`${proxyBase}/tracking/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(r => r.json())
-    .then(data => console.log('[CartWhisper] Click result:', data))
-    .catch(e => console.log('[CartWhisper] Click tracking failed:', e.message));
+    .then(() => {})
+    .catch(() => {});
   }
 
   // 添加商品到购物车
@@ -456,7 +451,6 @@
         throw new Error('Failed to add to cart');
       }
     } catch (error) {
-      console.error('CartWhisper: Failed to add to cart', error);
       button.disabled = false;
       button.textContent = '{{ block.settings.button_text }}';
     }
@@ -474,25 +468,26 @@
 
     productsList.innerHTML = recommendations.map(rec => {
       const price = formatMoney(rec.price);
-      const imageUrl = rec.image || 'https://via.placeholder.com/300x300?text=No+Image';
+      const imageUrl = rec.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23999'%3ENo Image%3C/text%3E%3C/svg%3E";
       // 用 numericId 进行追踪（纯数字 ID）
       const trackingId = rec.numericId || (rec.id ? rec.id.replace('gid://shopify/Product/', '') : '');
       // 用 handle 构建产品链接
-      const productUrl = rec.handle ? `/products/${rec.handle}` : `/products/${trackingId}`;
+      const validHandle = validateHandle(rec.handle);
+      const productUrl = validHandle ? `/products/${validHandle}` : `/products/${trackingId}`;
 
       return `
         <div class="cart-whisper-product">
-          <a href="${productUrl}">
-            <img class="cart-whisper-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
+          <a href="${sanitizeUrl(productUrl)}">
+            <img class="cart-whisper-product-image" src="${sanitizeUrl(imageUrl)}" alt="${escapeAttr(rec.title)}" loading="lazy">
           </a>
           <div class="cart-whisper-product-info">
-            <a href="${productUrl}" style="text-decoration:none;color:inherit;">
+            <a href="${sanitizeUrl(productUrl)}" style="text-decoration:none;color:inherit;">
               <h4 class="cart-whisper-product-title">${escapeHtml(rec.title)}</h4>
             </a>
             ${rec.reasoning ? `<p class="cart-whisper-product-reasoning">${escapeHtml(rec.reasoning)}</p>` : ''}
             <div class="cart-whisper-product-footer">
               <span class="cart-whisper-product-price">${price}</span>
-              <button class="cart-whisper-add-btn" data-product-id="${trackingId}" data-handle="${rec.handle || ''}" onclick="cartWhisperAddToCart(this, '${trackingId}', '${rec.handle || ''}')">
+              <button class="cart-whisper-add-btn" data-product-id="${escapeAttr(trackingId)}" data-handle="${escapeAttr(validHandle)}">
                 {{ block.settings.button_text }}
               </button>
             </div>
@@ -513,7 +508,7 @@
   // 格式化价格
   function formatMoney(price) {
     const amount = parseFloat(price).toFixed(2);
-    return `$${amount}`;
+    return moneyFormat.replace('{{amount}}', amount).replace('{{amount_no_decimals}}', Math.round(parseFloat(price)));
   }
 
   // HTML转义
@@ -523,9 +518,35 @@
     return div.innerHTML;
   }
 
-  // 全局添加购物车函数
-  window.cartWhisperAddToCart = async function(button, productId, handle) {
-    console.log('[CartWhisper] Add to cart clicked:', { productId, handle, sourceProductId: currentSourceProductId });
+  // 转义 HTML 属性值
+  function escapeAttr(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/'/g, '&#39;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // 验证产品 handle（仅允许字母数字、连字符、下划线）
+  function validateHandle(handle) {
+    if (!handle) return '';
+    return String(handle).replace(/[^a-zA-Z0-9\-_]/g, '');
+  }
+
+  // 清理 URL（仅允许相对路径和 https）
+  function sanitizeUrl(url) {
+    if (!url) return '';
+    var str = String(url);
+    if (str.startsWith('/')) return str;
+    if (str.startsWith('https://')) return str;
+    if (str.startsWith('data:image/')) return str;
+    return '';
+  }
+
+  // 全局添加购物车函数（命名空间）
+  window.CartWhisperAI = window.CartWhisperAI || {};
+  window.CartWhisperAI.addToCart = async function(button, productId, handle) {
 
     // 追踪点击（使用数字 ID）
     if (currentSourceProductId) {
@@ -541,12 +562,10 @@
       }
       const product = await response.json();
       const variantId = product.variants[0]?.id;
-      console.log('[CartWhisper] Got variant:', variantId);
       if (variantId) {
         await addToCart(variantId, button);
       }
     } catch (error) {
-      console.error('[CartWhisper] Failed to get product variant:', error);
       button.textContent = 'Error';
       setTimeout(() => {
         button.textContent = '{{ block.settings.button_text }}';

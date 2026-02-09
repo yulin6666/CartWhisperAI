@@ -8,10 +8,26 @@ node_modules
 /app/public/build
 /prisma/dev.sqlite
 /prisma/dev.sqlite-journal
+/prisma/dev.db
+/prisma/dev.db-journal
 database.sqlite
 
 .env
 .env.*
+
+# Data files (may contain merchant data)
+/data/
+
+# Test files
+test-recommendation-limit.html
+
+# IDE/tool config
+.cursor/
+.gemini/
+.mcp.json
+
+# Utility scripts
+check-subscription.js
 
 
 

@@ -1,11 +1,12 @@
 /**
- * Shopify Billing 工具函数
- * 处理订阅创建、检查、取消等操作
+ * Shopify Billing utility functions
+ * Handles subscription creation, checking, cancellation, etc.
  */
 
 import prisma from '../db.server';
+import { getApiKey } from './shopConfig.server';
 
-// 计划配置
+// Plan configuration
 export const PLANS = {
   FREE: {
     name: 'Free Plan',
@@ -17,8 +18,8 @@ export const PLANS = {
       apiCallsPerDay: 5000,
       manualRefreshPerMonth: 1,
       editableReasons: false,
-      analytics: 'basic', // 只有曝光和点击数
-      showWatermark: true, // 显示水印
+      analytics: 'basic', // Impressions and clicks only
+      showWatermark: true, // Show watermark
     },
   },
   PRO: {
@@ -32,9 +33,9 @@ export const PLANS = {
       apiCallsPerDay: 50000,
       manualRefreshPerMonth: 3,
       editableReasons: true,
-      analytics: 'advanced', // 包含转化率和Top推荐
+      analytics: 'advanced', // Includes conversion rate and top recommendations
       prioritySupport: true,
-      showWatermark: false, // 不显示水印
+      showWatermark: false, // No watermark
     },
   },
   MAX: {
@@ -48,10 +49,10 @@ export const PLANS = {
       apiCallsPerDay: 100000,
       manualRefreshPerMonth: 10,
       editableReasons: true,
-      analytics: 'advanced', // 包含转化率和Top推荐
+      analytics: 'advanced', // Includes conversion rate and top recommendations
       prioritySupport: true,
       premiumSupport: true,
-      showWatermark: false, // 不显示水印
+      showWatermark: false, // No watermark
     },
   },
 };
@@ -131,16 +132,13 @@ export async function getPlanFeatures(shop) {
  * 创建Shopify订阅
  */
 export async function createSubscription(admin, shop, plan = 'PRO') {
-  console.log('[BILLING] createSubscription | plan:', plan, '| shop:', shop);
 
   const planConfig = PLANS[plan];
 
   if (!planConfig || plan === 'FREE') {
-    console.error('[BILLING] createSubscription | Invalid plan:', plan);
     throw new Error('Invalid plan');
   }
 
-  console.log('[BILLING] createSubscription | planConfig.name:', planConfig.name, '| price:', planConfig.price);
 
   // 创建订阅
   const response = await admin.graphql(
@@ -180,29 +178,24 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
         ],
         returnUrl: `${process.env.SHOPIFY_APP_URL}/billing/callback?shop=${shop}`,
         trialDays: planConfig.trialDays || 0,
-        // 使用专门的环境变量控制测试模式，默认为 true（测试模式）
-        // 只有在生产环境且明确设置 BILLING_TEST_MODE=false 时才使用真实订阅
-        test: process.env.BILLING_TEST_MODE !== 'false',
+        // 生产环境必须设置 BILLING_TEST_MODE=false 以启用真实计费
+        test: process.env.BILLING_TEST_MODE === 'true',
       },
     }
   );
 
   const result = await response.json();
 
-  console.log('[BILLING] createSubscription | GraphQL response:', JSON.stringify(result, null, 2));
 
   if (result.errors) {
-    console.error('[BILLING] createSubscription | GraphQL errors:', result.errors);
     throw new Error(result.errors[0].message);
   }
 
   if (result.data.appSubscriptionCreate.userErrors.length > 0) {
-    console.error('[BILLING] createSubscription | User errors:', result.data.appSubscriptionCreate.userErrors);
     throw new Error(result.data.appSubscriptionCreate.userErrors[0].message);
   }
 
   const { appSubscription, confirmationUrl } = result.data.appSubscriptionCreate;
-  console.log('[BILLING] createSubscription | subscriptionId:', appSubscription.id, '| confirmationUrl:', confirmationUrl);
 
   // 保存订阅信息（待确认状态）
   await prisma.subscription.upsert({
@@ -222,7 +215,6 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
     },
   });
 
-  console.log('[BILLING] createSubscription | DB saved: plan=%s status=pending shopifyId=%s', plan.toLowerCase(), appSubscription.id);
 
   return { confirmationUrl, subscriptionId: appSubscription.id };
 }
@@ -231,15 +223,12 @@ export async function createSubscription(admin, shop, plan = 'PRO') {
  * 确认订阅（用户完成支付后）
  */
 export async function confirmSubscription(admin, shop) {
-  console.log('[BILLING] confirmSubscription | shop:', shop);
   const subscription = await getSubscription(shop);
 
   if (!subscription.shopifySubscriptionId) {
-    console.error('[BILLING] confirmSubscription | No shopifySubscriptionId in DB');
     throw new Error('No pending subscription found');
   }
 
-  console.log('[BILLING] confirmSubscription | DB state: plan=%s status=%s shopifyId=%s', subscription.plan, subscription.status, subscription.shopifySubscriptionId);
 
   // 查询Shopify订阅状态
   const response = await admin.graphql(
@@ -261,7 +250,6 @@ export async function confirmSubscription(admin, shop) {
   const result = await response.json();
   const activeSubscriptions = result.data.currentAppInstallation.activeSubscriptions;
 
-  console.log('[BILLING] confirmSubscription | Shopify activeSubscriptions:', JSON.stringify(activeSubscriptions, null, 2));
 
   // 先尝试精确匹配
   let activeSubscription = activeSubscriptions.find(
@@ -269,15 +257,11 @@ export async function confirmSubscription(admin, shop) {
   );
 
   if (activeSubscription) {
-    console.log('[BILLING] confirmSubscription | Exact match found: id=%s name=%s status=%s', activeSubscription.id, activeSubscription.name, activeSubscription.status);
   } else {
-    console.log('[BILLING] confirmSubscription | Exact match FAILED for id:', subscription.shopifySubscriptionId);
     // 如果精确匹配失败，取最新的 ACTIVE 订阅（处理升级场景：Shopify 可能替换了订阅 ID）
     activeSubscription = activeSubscriptions.find(sub => sub.status === 'ACTIVE');
     if (activeSubscription) {
-      console.log('[BILLING] confirmSubscription | Fallback match: id=%s name=%s status=%s', activeSubscription.id, activeSubscription.name, activeSubscription.status);
     } else {
-      console.log('[BILLING] confirmSubscription | No ACTIVE subscription found at all');
     }
   }
 
@@ -290,7 +274,6 @@ export async function confirmSubscription(admin, shop) {
     } else if (subName.includes('pro')) {
       confirmedPlan = 'pro';
     }
-    console.log('[BILLING] confirmSubscription | confirmedPlan=%s (from name="%s", DB plan was=%s)', confirmedPlan, activeSubscription.name, subscription.plan);
 
     // 更新订阅状态为激活
     await prisma.subscription.update({
@@ -308,15 +291,16 @@ export async function confirmSubscription(admin, shop) {
 
     // 验证 DB 写入
     const updatedSub = await prisma.subscription.findUnique({ where: { shop } });
-    console.log('[BILLING] confirmSubscription | DB AFTER update: plan=%s status=%s shopifyId=%s', updatedSub.plan, updatedSub.status, updatedSub.shopifySubscriptionId);
 
-    // 同步到后端 PostgreSQL 数据库
+    // Sync to backend PostgreSQL database
     try {
       const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+      const apiKey = await getApiKey(shop);
       const syncResponse = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
         },
         body: JSON.stringify({
           plan: confirmedPlan,
@@ -329,13 +313,7 @@ export async function confirmSubscription(admin, shop) {
         }),
       });
 
-      if (!syncResponse.ok) {
-        console.error('[BILLING] confirmSubscription | Failed to sync to backend:', await syncResponse.text());
-      } else {
-        console.log('[BILLING] confirmSubscription | Synced to backend OK');
-      }
     } catch (error) {
-      console.error('[BILLING] confirmSubscription | Error syncing to backend:', error);
       // 不抛出错误，因为本地订阅已经成功
     }
 
@@ -350,11 +328,9 @@ export async function confirmSubscription(admin, shop) {
  */
 export async function cancelSubscription(admin, shop) {
   const subscription = await getSubscription(shop);
-  console.log('[BILLING] cancelSubscription | shop:', shop, '| current plan:', subscription.plan, '| isTestMode:', subscription.isTestMode, '| shopifyId:', subscription.shopifySubscriptionId);
 
   // 测试模式：直接降级，不调用Shopify API
   if (subscription.isTestMode || !subscription.shopifySubscriptionId) {
-    console.log('[BILLING] cancelSubscription | Test mode - direct downgrade to free');
     await prisma.subscription.update({
       where: { shop },
       data: {
@@ -372,7 +348,6 @@ export async function cancelSubscription(admin, shop) {
   }
 
   // 生产模式：取消Shopify订阅
-  console.log('[BILLING] cancelSubscription | Production - calling Shopify API to cancel:', subscription.shopifySubscriptionId);
   const response = await admin.graphql(
     `#graphql
       mutation AppSubscriptionCancel($id: ID!) {
@@ -395,7 +370,6 @@ export async function cancelSubscription(admin, shop) {
   );
 
   const result = await response.json();
-  console.log('[BILLING] cancelSubscription | Shopify response:', JSON.stringify(result.data?.appSubscriptionCancel, null, 2));
 
   if (result.data.appSubscriptionCancel.userErrors.length > 0) {
     throw new Error(result.data.appSubscriptionCancel.userErrors[0].message);
@@ -412,7 +386,6 @@ export async function cancelSubscription(admin, shop) {
     },
   });
 
-  console.log('[BILLING] cancelSubscription | DB updated: plan=free status=active shopifyId=null');
 
   // 同步到后端
   await syncPlanToBackend(shop, 'free');
@@ -425,22 +398,20 @@ export async function cancelSubscription(admin, shop) {
 async function syncPlanToBackend(shop, plan) {
   try {
     const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+    const apiKey = await getApiKey(shop);
     const syncResponse = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
       body: JSON.stringify({
         plan,
         billingStatus: 'active',
       }),
     });
 
-    if (!syncResponse.ok) {
-      console.error('[BILLING] syncPlanToBackend | Failed:', await syncResponse.text());
-    } else {
-      console.log('[BILLING] syncPlanToBackend | OK: plan=%s', plan);
-    }
   } catch (error) {
-    console.error('[BILLING] syncPlanToBackend | Error:', error.message);
   }
 }
 
@@ -449,7 +420,9 @@ async function syncPlanToBackend(shop, plan) {
  * 用于应用未公开发布时的测试
  */
 export async function directUpgrade(shop, plan = 'PRO') {
-  console.log('[directUpgrade] Upgrading shop:', shop, 'to plan:', plan);
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('directUpgrade is only available in development');
+  }
 
   const planLower = plan.toLowerCase();
   const now = new Date();
@@ -474,13 +447,15 @@ export async function directUpgrade(shop, plan = 'PRO') {
     },
   });
 
-  // 同步到后端 PostgreSQL 数据库
+  // Sync to backend PostgreSQL database
   try {
     const BACKEND_URL = process.env.CARTWHISPER_BACKEND_URL || 'https://cartwhisperaibackend-production.up.railway.app';
+    const apiKey = await getApiKey(shop);
     const syncResponse = await fetch(`${BACKEND_URL}/api/shops/${shop}/plan`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
       },
       body: JSON.stringify({
         plan: planLower,
@@ -490,17 +465,10 @@ export async function directUpgrade(shop, plan = 'PRO') {
       }),
     });
 
-    if (!syncResponse.ok) {
-      console.error('[directUpgrade] Failed to sync to backend:', await syncResponse.text());
-    } else {
-      console.log('[directUpgrade] Successfully synced plan to backend');
-    }
   } catch (error) {
-    console.error('[directUpgrade] Error syncing to backend:', error);
     // 不抛出错误，因为本地订阅已经成功
   }
 
-  console.log('[directUpgrade] Successfully upgraded to:', planLower);
   return planLower;
 }
 

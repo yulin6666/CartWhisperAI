@@ -62,7 +62,6 @@ async function getAllProducts(admin) {
   let hasNextPage = true;
   let cursor = null;
 
-  console.log('🔄 Fetching products from Shopify...');
 
   while (hasNextPage) {
     const response = await admin.graphql(PRODUCTS_QUERY, {
@@ -75,7 +74,6 @@ async function getAllProducts(admin) {
     const data = await response.json();
 
     if (data.errors) {
-      console.error('❌ GraphQL errors:', data.errors);
       throw new Error(`Failed to fetch products: ${data.errors.map(e => e.message).join(', ')}`);
     }
 
@@ -101,7 +99,6 @@ async function getAllProducts(admin) {
     });
 
     allProducts.push(...products);
-    console.log(`✅ Fetched ${products.length} products (total: ${allProducts.length})`);
 
     hasNextPage = data.data.products.pageInfo.hasNextPage;
     if (hasNextPage && data.data.products.edges.length > 0) {
@@ -125,22 +122,16 @@ export async function action({ request }) {
       // If not form data, that's fine, use default
     }
 
-    console.log(`🔄 Starting scan (mode: ${mode})...`);
 
     // 1. Shopify 认证
     const { admin, session } = await authenticate.admin(request);
     const shop = session.shop;
-    console.log(`✅ Authenticated: ${shop}`);
 
     // 2. 获取 API Key（首次会自动注册）
-    console.log('🔑 Getting API key...');
     const apiKey = await getApiKey(shop, admin);
-    console.log('✅ API key ready');
 
     // 3. 从 Shopify 获取所有商品
-    console.log('📦 Fetching products from Shopify...');
     let products = await getAllProducts(admin);
-    console.log(`✅ Got ${products.length} products`);
 
     if (products.length === 0) {
       return {
@@ -161,20 +152,16 @@ export async function action({ request }) {
     let originalProductCount = products.length;
 
     if (maxProducts !== Infinity && products.length > maxProducts) {
-      console.log(`⚠️ Product limit exceeded: ${products.length} > ${maxProducts} (${currentPlan} plan), syncing first ${maxProducts} products`);
       products = products.slice(0, maxProducts);
       partialSync = true;
     }
 
     // 4. 异步同步到后端（不等待完成）
-    console.log(`🚀 Starting async sync to backend (mode: ${mode})...`);
 
     // 立即返回，不等待同步完成
     // 在后台触发同步（fire and forget）
     syncProducts(apiKey, products, mode).then(syncResult => {
-      console.log(`✅ Async sync complete: mode=${syncResult.mode}, ${syncResult.products} products, ${syncResult.newRecommendations} new recommendations`);
     }).catch(error => {
-      console.error(`❌ Async sync failed:`, error);
     });
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -197,7 +184,6 @@ export async function action({ request }) {
       estimatedCompletionTime: '30 minutes',
     };
   } catch (error) {
-    console.error('❌ Scan error:', error);
 
     // Parse rate limit error
     const errorParts = (error.message || '').split('|');
@@ -213,7 +199,7 @@ export async function action({ request }) {
 
     return {
       success: false,
-      error: error.message || 'Unknown error',
+      error: 'Sync failed. Please try again.',
     };
   }
 }

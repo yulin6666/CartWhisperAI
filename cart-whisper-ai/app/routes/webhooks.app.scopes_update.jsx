@@ -5,7 +5,6 @@ export const action = async ({ request }) => {
   try {
     const { payload, session, topic, shop } = await authenticate.webhook(request);
 
-    console.log(`Received ${topic} webhook for ${shop}`);
     const current = payload.current;
 
     if (session) {
@@ -21,7 +20,6 @@ export const action = async ({ request }) => {
 
     return new Response();
   } catch (error) {
-    console.error('Webhook authentication error:', error);
     // Return 401 for authentication errors (including HMAC validation failures)
     return new Response(null, { status: 401 });
   }

@@ -5,7 +5,6 @@ export const action = async ({ request }) => {
   try {
     const { shop, session, topic } = await authenticate.webhook(request);
 
-    console.log(`Received ${topic} webhook for ${shop}`);
 
     // Webhook requests can trigger multiple times and after an app has already been uninstalled.
     // If this webhook already ran, the session may have been deleted previously.
@@ -15,7 +14,6 @@ export const action = async ({ request }) => {
 
     return new Response();
   } catch (error) {
-    console.error('Webhook authentication error:', error);
     // Return 401 for authentication errors (including HMAC validation failures)
     return new Response(null, { status: 401 });
   }

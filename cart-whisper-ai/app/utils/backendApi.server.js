@@ -109,8 +109,6 @@ export async function getRecommendations(apiKey, productId, limit = 3, retries =
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
     try {
-      console.log(`[BackendAPI] Attempt ${attempt + 1}/${retries + 1}: Fetching from ${url}`);
-      console.log('[BackendAPI] Using API key:', apiKey?.slice(0, 10) + '...');
 
       const response = await fetch(url, {
         method: 'GET',
@@ -119,16 +117,13 @@ export async function getRecommendations(apiKey, productId, limit = 3, retries =
       });
 
       clearTimeout(timeoutId);
-      console.log('[BackendAPI] Response status:', response.status);
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('[BackendAPI] Error response:', error);
         throw new Error(error.error || `HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('[BackendAPI] Success! Got', data.recommendations?.length || 0, 'recommendations');
 
       // 成功时更新缓存
       if (data.recommendations?.length > 0) {
@@ -141,15 +136,12 @@ export async function getRecommendations(apiKey, productId, limit = 3, retries =
       clearTimeout(timeoutId);
 
       const errorMsg = error.name === 'AbortError' ? 'Request timeout' : error.message;
-      console.error(`[BackendAPI] Attempt ${attempt + 1} failed:`, errorMsg);
 
       // 最后一次重试失败
       if (attempt === retries) {
-        console.error('[BackendAPI] All retries failed');
 
         // 尝试使用缓存降级
         if (cached) {
-          console.warn('[BackendAPI] ⚠️ Using cached recommendations as fallback');
           return {
             productId,
             recommendations: cached,
@@ -159,7 +151,6 @@ export async function getRecommendations(apiKey, productId, limit = 3, retries =
         }
 
         // 没有缓存，返回空结果
-        console.warn('[BackendAPI] ⚠️ No cache available, returning empty recommendations');
         return {
           productId,
           recommendations: [],
@@ -170,7 +161,6 @@ export async function getRecommendations(apiKey, productId, limit = 3, retries =
 
       // 指数退避：等待后重试
       const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
-      console.log(`[BackendAPI] Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

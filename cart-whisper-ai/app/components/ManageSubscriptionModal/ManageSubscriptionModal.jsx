@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Modal } from '../Modal/Modal';
 import styles from './ManageSubscriptionModal.module.css';
 
-// 套餐配置（与 billing.server.js 保持一致）
+// Plan configuration (keep in sync with billing.server.js)
 const PLANS_CONFIG = {
   FREE: {
     name: 'Starter',

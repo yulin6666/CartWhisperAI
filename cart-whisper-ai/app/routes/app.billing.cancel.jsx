@@ -14,8 +14,7 @@ export async function action({ request }) {
     await cancelSubscription(admin, shop);
     return redirect('/app?cancelled=true');
   } catch (error) {
-    console.error('[Billing Cancel] Error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to cancel subscription' }, { status: 500 });
   }
 }
 

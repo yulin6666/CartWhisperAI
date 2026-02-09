@@ -1,7 +1,7 @@
 import { Modal } from '../Modal/Modal';
 import styles from './DowngradeWarningModal.module.css';
 
-// 套餐功能配置
+// Plan feature configuration
 const PLAN_FEATURES = {
   FREE: {
     maxProducts: 50,

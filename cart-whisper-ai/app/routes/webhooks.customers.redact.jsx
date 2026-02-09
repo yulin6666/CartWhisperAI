@@ -14,12 +14,6 @@ export const action = async ({ request }) => {
   try {
     const { shop, payload } = await authenticate.webhook(request);
 
-    console.log('[GDPR] Customer redaction request received:', {
-      shop,
-      customer: payload.customer,
-      orders_to_redact: payload.orders_to_redact,
-    });
-
     const customerId = payload.customer?.id;
     const customerEmail = payload.customer?.email;
 
@@ -33,18 +27,11 @@ export const action = async ({ request }) => {
             email: customerEmail,
           },
         });
-
-        console.log('[GDPR] Local database cleanup completed:', {
-          shop,
-          customerEmail,
-          deletedSessions: deletedSessions.count,
-        });
       }
 
       // 注意：ProductRecommendation 表不包含客户个人信息，无需删除
       // 如果未来添加了客户点击记录等表，需要在这里删除
     } catch (dbError) {
-      console.error('[GDPR] Local database cleanup error:', dbError);
       // 继续执行后端清理，即使本地清理失败
     }
 
@@ -64,36 +51,18 @@ export const action = async ({ request }) => {
         });
 
         if (backendResponse.ok) {
-          console.log('[GDPR] Backend customer data cleanup completed:', {
-            shop,
-            customerId,
-            customerEmail,
-          });
         } else {
           const errorText = await backendResponse.text();
-          console.error('[GDPR] Backend customer cleanup failed:', {
-            shop,
-            status: backendResponse.status,
-            error: errorText,
-          });
         }
       }
     } catch (backendError) {
-      console.error('[GDPR] Backend customer cleanup error:', backendError);
       // 不抛出错误，因为本地数据已经删除
     }
 
     // 3. 记录删除操作（仅日志，不存储到数据库）
-    console.log('[GDPR] Customer data redaction completed successfully:', {
-      shop,
-      customerId,
-      customerEmail,
-      timestamp: new Date().toISOString(),
-    });
 
     return new Response(null, { status: 200 });
   } catch (error) {
-    console.error('[GDPR] Customer redaction error:', error);
 
     // Shopify webhook authentication errors should return 401
     // This includes HMAC validation failures

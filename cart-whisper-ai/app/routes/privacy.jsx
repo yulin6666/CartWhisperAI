@@ -16,7 +16,6 @@ export default function Privacy() {
         <li>Store name and domain</li>
         <li>Store owner contact information</li>
         <li>Product catalog data (titles, descriptions, prices, images)</li>
-        <li>Order history and cart data</li>
         <li>Customer browsing behavior (anonymized)</li>
       </ul>
 
@@ -92,7 +91,7 @@ export default function Privacy() {
       <p>If you have questions about this Privacy Policy or our data practices, please contact us at:</p>
       <p>
         <strong>Email:</strong> support@cartwhisperai.com<br />
-        <strong>Website:</strong> https://cartwhisperai-production.up.railway.app
+        <strong>Website:</strong> https://cartwhisper.ai
       </p>
 
       <h2>13. Shopify-Specific Information</h2>

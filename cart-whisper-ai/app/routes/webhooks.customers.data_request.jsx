@@ -14,12 +14,6 @@ export const action = async ({ request }) => {
   try {
     const { shop, payload } = await authenticate.webhook(request);
 
-    console.log('[GDPR] Customer data request received:', {
-      shop,
-      customer: payload.customer,
-      orders_requested: payload.orders_requested,
-    });
-
     const customerId = payload.customer?.id;
     const customerEmail = payload.customer?.email;
 
@@ -57,7 +51,6 @@ export const action = async ({ request }) => {
       // 注意：ProductRecommendation 表不包含客户个人信息
       // 如果未来添加了客户点击记录等表，需要在这里查询
     } catch (dbError) {
-      console.error('[GDPR] Local database query error:', dbError);
       customerData.data.localDataError = dbError.message;
     }
 
@@ -79,34 +72,16 @@ export const action = async ({ request }) => {
         if (backendResponse.ok) {
           const backendData = await backendResponse.json();
           customerData.data.backendData = backendData;
-          console.log('[GDPR] Backend customer data retrieved:', {
-            shop,
-            customerId,
-            customerEmail,
-          });
         } else {
           const errorText = await backendResponse.text();
-          console.error('[GDPR] Backend data retrieval failed:', {
-            shop,
-            status: backendResponse.status,
-            error: errorText,
-          });
           customerData.data.backendDataError = errorText;
         }
       }
     } catch (backendError) {
-      console.error('[GDPR] Backend data retrieval error:', backendError);
       customerData.data.backendDataError = backendError.message;
     }
 
     // 3. 记录数据请求（仅日志）
-    console.log('[GDPR] Customer data request completed:', {
-      shop,
-      customerId,
-      customerEmail,
-      dataCollected: Object.keys(customerData.data),
-      timestamp: new Date().toISOString(),
-    });
 
     // 4. 返回收集到的数据（Shopify会将此数据发送给客户）
     // 注意：根据 Shopify 的要求，我们应该返回 200 OK
@@ -118,7 +93,6 @@ export const action = async ({ request }) => {
 
     return new Response(null, { status: 200 });
   } catch (error) {
-    console.error('[GDPR] Customer data request error:', error);
 
     // Shopify webhook authentication errors should return 401
     // This includes HMAC validation failures

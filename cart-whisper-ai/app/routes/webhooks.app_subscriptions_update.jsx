@@ -26,13 +26,10 @@ export async function action({ request }) {
   try {
     const { shop, payload } = await authenticate.webhook(request);
 
-    console.log('[BILLING] webhook | APP_SUBSCRIPTIONS_UPDATE for shop:', shop);
-    console.log('[BILLING] webhook | payload:', JSON.stringify(payload, null, 2));
 
     const { app_subscription } = payload;
 
     if (!app_subscription) {
-      console.error('[BILLING] webhook | No app_subscription in payload');
       return new Response('OK', { status: 200 });
     }
 
@@ -41,7 +38,6 @@ export async function action({ request }) {
     });
 
     if (!subscription) {
-      console.log('[BILLING] webhook | No subscription found, creating new one');
       const detectedPlan = app_subscription.status === 'ACTIVE'
         ? detectPlanFromSubscription(app_subscription)
         : 'free';
@@ -53,7 +49,6 @@ export async function action({ request }) {
           shopifySubscriptionId: app_subscription.admin_graphql_api_id,
         },
       });
-      console.log('[BILLING] webhook | Created: plan=%s status=%s', detectedPlan, app_subscription.status);
     } else {
       let newPlan = subscription.plan;
       let newStatus = app_subscription.status.toLowerCase();
@@ -68,14 +63,9 @@ export async function action({ request }) {
         if (app_subscription.admin_graphql_api_id === subscription.shopifySubscriptionId) {
           newPlan = 'free';
         } else {
-          console.log('[BILLING] webhook | CANCELLED for old subscription %s, current is %s — skipping downgrade',
-            app_subscription.admin_graphql_api_id, subscription.shopifySubscriptionId);
           return new Response('OK', { status: 200 });
         }
       }
-
-      console.log('[BILLING] webhook | Updating: plan=%s→%s status=%s→%s shopifyId=%s',
-        subscription.plan, newPlan, subscription.status, newStatus, app_subscription.admin_graphql_api_id);
 
       await prisma.subscription.update({
         where: { shop },
@@ -88,10 +78,8 @@ export async function action({ request }) {
       });
     }
 
-    console.log('[BILLING] webhook | Done');
     return new Response('OK', { status: 200 });
   } catch (error) {
-    console.error('[BILLING] webhook | Error:', error);
     return new Response('Unauthorized', { status: 401 });
   }
 }

@@ -30,7 +30,7 @@ shop_deletion_url = "https://cartwhisperai-production.up.railway.app/webhooks/sh
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_customers,read_orders,read_products,write_products"
+scopes = "read_products"
 
 [auth]
 redirect_urls = [

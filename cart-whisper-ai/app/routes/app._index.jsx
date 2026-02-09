@@ -27,7 +27,6 @@ export async function loader({ request }) {
     subscription = await getSubscription(shop);
     planFeatures = await getPlanFeatures(shop);
     currentPlan = await getCurrentPlan(shop);
-    console.log('[BILLING] loader | plan=%s status=%s shopifyId=%s currentPlan=%s', subscription.plan, subscription.status, subscription.shopifySubscriptionId, currentPlan);
 
     apiKey = await getApiKey(shop, admin);
 
@@ -47,16 +46,13 @@ export async function loader({ request }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(planData),
         });
-        console.log('[Home] Synced plan to backend:', currentPlan, 'with features:', planData);
       } catch (e) {
-        console.error('[Home] Failed to sync plan to backend:', e.message);
       }
       */
 
       // 获取同步状态（包含 API 使用量）
       const statusResult = await getSyncStatus(apiKey);
       syncStatus = statusResult.syncStatus;
-      console.log('[Home] Full syncStatus from backend:', JSON.stringify(syncStatus, null, 2));
 
       // 获取所有推荐数据
       const res = await fetch(`${BACKEND_URL}/api/recommendations`, {
@@ -73,7 +69,6 @@ export async function loader({ request }) {
         const statsResult = await getStatistics(apiKey);
         statistics = statsResult.statistics;
       } catch (e) {
-        console.log('[Home] Error getting statistics:', e.message);
       }
     }
   } catch (e) {
@@ -89,13 +84,11 @@ export async function loader({ request }) {
         globalQuota = await quotaRes.json();
       }
     } catch (e) {
-      console.log('[Home] Error getting global quota:', e.message);
     }
   }
 
   return {
     shop,
-    backendUrl: BACKEND_URL,
     isRegistered: !!apiKey,
     recommendations,
     stats,
@@ -116,6 +109,10 @@ export async function loader({ request }) {
 
 // Action: Handle reset API usage and reset refresh
 export const action = async ({ request }) => {
+  if (process.env.NODE_ENV !== 'development') {
+    return new Response('Not Found', { status: 404 });
+  }
+
   const formData = await request.formData();
   const actionType = formData.get('_action');
   const { session } = await authenticate.admin(request);
@@ -648,7 +645,6 @@ ProductsTable.displayName = 'ProductsTable';
 export default function Index() {
   const {
     shop,
-    backendUrl,
     isRegistered,
     recommendations,
     stats,
@@ -689,7 +685,6 @@ export default function Index() {
         const { timestamp, shopDomain } = JSON.parse(stored);
         // Check if it's for the current shop and within 5 minutes
         if (shopDomain === shop && Date.now() - timestamp < 5 * 60 * 1000) {
-          console.log('[Optimistic] Restored syncing state from sessionStorage');
           return true;
         } else {
           // Clear stale data
@@ -788,7 +783,6 @@ export default function Index() {
           shopDomain: shop
         }));
       }
-      console.log('[Optimistic] Sync started, disabling button and saving to sessionStorage');
     }
   }, [syncFetcher.data, shop]);
 
@@ -801,7 +795,6 @@ export default function Index() {
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('cartwhisper_syncing');
         }
-        console.log('[Optimistic] Backend confirmed syncing, clearing optimistic state and sessionStorage');
       }
     } else if (optimisticSyncing) {
       // Check if we should clear optimistic state
@@ -823,7 +816,6 @@ export default function Index() {
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('cartwhisper_syncing');
         }
-        console.log('[Optimistic] Clearing stale optimistic state and sessionStorage');
       }
     }
   }, [isBackendSyncing, optimisticSyncing, syncStatus?.initialSyncDone]);
@@ -832,7 +824,6 @@ export default function Index() {
   useEffect(() => {
     const hasOptimisticState = typeof window !== 'undefined' && sessionStorage.getItem('cartwhisper_syncing');
     if (hasOptimisticState) {
-      console.log('[Optimistic] Page loaded with syncing flag, revalidating immediately');
       revalidator.revalidate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -843,7 +834,6 @@ export default function Index() {
     if (isBackendSyncing || optimisticSyncing) {
       // 每45秒刷新一次，检查同步状态（从30秒优化到45秒以减少服务器负载）
       const intervalId = setInterval(() => {
-        console.log('[Auto-refresh] Checking sync status...');
         revalidator.revalidate();
       }, 45000); // 45秒
 
@@ -854,13 +844,12 @@ export default function Index() {
   // Format date helper
   const formatDate = useCallback((dateStr) => {
     if (!dateStr) return 'Never';
-    return new Date(dateStr).toLocaleDateString('zh-CN', {
+    return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   }, []);
 
   const handleUpgrade = useCallback((plan = 'PRO') => {
-    console.log('[Frontend] Initiating upgrade to plan:', plan);
     setUpgradingPlan(plan); // Track which plan is being upgraded
     billingFetcher.submit(
       { action: 'upgrade', plan },
@@ -888,7 +877,6 @@ export default function Index() {
   }, []);
 
   const handleConfirmDowngrade = useCallback(() => {
-    console.log('[Frontend] Confirming downgrade to:', targetDowngradePlan);
     billingFetcher.submit(
       { action: 'downgrade', targetPlan: targetDowngradePlan },
       { method: 'post', action: '/app/billing' }
@@ -898,11 +886,9 @@ export default function Index() {
   // 监听billing响应并处理重定向
   useEffect(() => {
     if (billingFetcher.state === 'idle' && billingFetcher.data) {
-      console.log('[Frontend] Billing fetcher data:', billingFetcher.data);
 
       // 如果有 confirmationUrl，跳转到 Shopify 支付页面
       if (billingFetcher.data.confirmationUrl) {
-        console.log('[Frontend] Redirecting to Shopify billing page:', billingFetcher.data.confirmationUrl);
         setIsManageModalOpen(false);
         setUpgradingPlan(null);
         // 在 Shopify Embedded App 中，使用 window.open 跳转到支付页面
@@ -912,7 +898,6 @@ export default function Index() {
 
       // 如果降级成功
       if (billingFetcher.data.success && billingFetcher.data.newPlan) {
-        console.log('[Frontend] Downgrade successful to:', billingFetcher.data.newPlan);
         setIsDowngradeModalOpen(false);
         setIsManageModalOpen(false);
         setTargetDowngradePlan(null);

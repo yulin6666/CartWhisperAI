@@ -10,7 +10,7 @@
      style="display: none;">
 
   <div class="cart-whisper-popup-modal">
-    <button class="cart-whisper-popup-close" onclick="cartWhisperClosePopup()" aria-label="Close">
+    <button class="cart-whisper-popup-close" id="cart-whisper-popup-close-btn" aria-label="Close">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
@@ -35,7 +35,7 @@
     </div>
 
     <div class="cart-whisper-popup-actions">
-      <button class="cart-whisper-popup-continue" onclick="cartWhisperClosePopup()">
+      <button class="cart-whisper-popup-continue" id="cart-whisper-popup-continue-btn">
         {{ block.settings.continue_text }}
       </button>
       <a href="/cart" class="cart-whisper-popup-checkout">
@@ -58,7 +58,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 99999;
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -330,88 +330,92 @@
 </style>
 
 <script>
-// CartWhisper: 立即设置 fetch 拦截器（在 IIFE 之前）
+// CartWhisper: Cart change detection (no global API monkey-patching)
 (function() {
   'use strict';
 
-  console.log('[CartWhisper] Installing fetch interceptor...');
+  // Namespace for all CartWhisper globals
+  window.CartWhisperAI = window.CartWhisperAI || {};
+  window.CartWhisperAI._showPopup = null;
+  window.CartWhisperAI._suppressNextCartChange = false;
 
-  // 存储弹窗显示函数，稍后由主代码设置
-  window._cartWhisperShowPopup = null;
+  // --- Method 1: Form submit event delegation ---
+  document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (!form || !form.action) return;
+    if (form.action.indexOf('/cart/add') === -1) return;
 
-  // 立即拦截 fetch
-  const originalFetch = window.fetch;
-  window.fetch = async function(...args) {
-    const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
-    console.log('[CartWhisper] Fetch intercepted:', url);
+    var formData = new FormData(form);
+    var productId = formData.get('product_id') || formData.get('id');
 
-    const response = await originalFetch.apply(this, args);
-
-    // 检查是否是添加购物车请求
-    if (url.includes('/cart/add')) {
-      console.log('[CartWhisper] *** CART ADD DETECTED ***');
-      try {
-        const clonedResponse = response.clone();
-        const data = await clonedResponse.json();
-        console.log('[CartWhisper] Cart add response data:', data);
-
-        const productId = data.items?.[0]?.product_id || data.product_id;
-        console.log('[CartWhisper] Extracted product ID:', productId);
-
-        if (productId && window._cartWhisperShowPopup) {
-          console.log('[CartWhisper] Triggering popup...');
-          setTimeout(() => window._cartWhisperShowPopup(productId), 300);
-        } else if (!window._cartWhisperShowPopup) {
-          console.warn('[CartWhisper] Popup function not ready yet');
-        }
-      } catch (e) {
-        console.error('[CartWhisper] Error parsing cart response:', e);
-      }
+    if (productId && window.CartWhisperAI._showPopup) {
+      setTimeout(function() { window.CartWhisperAI._showPopup(productId); }, 500);
     }
+  }, true);
 
-    return response;
-  };
+  // --- Method 2: Cart polling for AJAX-only themes ---
+  var lastItemCount = -1;
+  var pollInterval = null;
+  var POLL_MS = 1500;
 
-  // 也拦截 XMLHttpRequest
-  const originalXHROpen = XMLHttpRequest.prototype.open;
-  const originalXHRSend = XMLHttpRequest.prototype.send;
+  function checkCartChange() {
+    fetch('/cart.js', { credentials: 'same-origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(cart) {
+        var currentCount = cart.item_count;
 
-  XMLHttpRequest.prototype.open = function(method, url) {
-    this._cartWhisperUrl = url;
-    this._cartWhisperMethod = method;
-    return originalXHROpen.apply(this, arguments);
-  };
+        if (lastItemCount === -1) {
+          lastItemCount = currentCount;
+          return;
+        }
 
-  XMLHttpRequest.prototype.send = function(body) {
-    const xhr = this;
-    const url = this._cartWhisperUrl || '';
-
-    console.log('[CartWhisper] XHR intercepted:', this._cartWhisperMethod, url);
-
-    if (url.includes('/cart/add')) {
-      console.log('[CartWhisper] *** XHR CART ADD DETECTED ***');
-      this.addEventListener('load', function() {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          console.log('[CartWhisper] XHR cart response:', data);
-
-          const productId = data.items?.[0]?.product_id || data.product_id;
-          if (productId && window._cartWhisperShowPopup) {
-            setTimeout(() => window._cartWhisperShowPopup(productId), 300);
+        if (currentCount > lastItemCount) {
+          if (window.CartWhisperAI._suppressNextCartChange) {
+            window.CartWhisperAI._suppressNextCartChange = false;
+          } else {
+            var items = cart.items || [];
+            if (items.length > 0 && window.CartWhisperAI._showPopup) {
+              var newestItem = items[items.length - 1];
+              window.CartWhisperAI._showPopup(newestItem.product_id);
+            }
           }
-        } catch (e) {
-          console.error('[CartWhisper] XHR parse error:', e);
         }
-      });
+
+        lastItemCount = currentCount;
+      })
+      .catch(function() {});
+  }
+
+  function startPolling() {
+    if (!pollInterval) {
+      checkCartChange();
+      pollInterval = setInterval(checkCartChange, POLL_MS);
     }
+  }
 
-    return originalXHRSend.apply(this, arguments);
-  };
+  function stopPolling() {
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
+  }
 
-  console.log('[CartWhisper] Fetch interceptor installed successfully!');
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      stopPolling();
+    } else {
+      startPolling();
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startPolling);
+  } else {
+    startPolling();
+  }
 })();
 
-// CartWhisper: 主要弹窗逻辑
+// CartWhisper: Main popup logic
 (function() {
   'use strict';
 
@@ -419,59 +423,64 @@
   if (!popup) return;
 
   const shop = popup.dataset.shop;
-  const limit = 6; // 请求最大数量，后端会根据订阅计划限制实际返回数量
+  const limit = 6; // Max request count; backend will limit actual results based on subscription plan
   const productsContainer = document.getElementById('cart-whisper-popup-products');
 
-  // Shopify App API URL（推荐接口）
-  const appUrl = 'https://cartwhisperai-production.up.railway.app';
+  // Event delegation: handle add-to-cart button clicks for recommended products
+  productsContainer.addEventListener('click', function(e) {
+    var button = e.target.closest('.cart-whisper-popup-add-btn');
+    if (!button) return;
+    e.stopPropagation();
+    var handle = button.getAttribute('data-handle');
+    var trackingId = button.getAttribute('data-tracking-id');
+    window.CartWhisperAI.popupAdd(button, handle, trackingId);
+  });
 
-  // Railway 后端 API URL（仅用于追踪）
-  const backendUrl = 'https://cartwhisperaibackend-production.up.railway.app';
+  // Use App Proxy path (routed through shop domain, no need to hardcode external URL)
+  const proxyBase = '/apps/chat-proxy';
 
-  // 当前源商品 ID（触发 popup 的商品）
+  // Currency format
+  const moneyFormat = {{ shop.money_format | json }};
+
+  // Current source product ID (the product that triggered the popup)
   let currentSourceProductId = null;
 
-  // 调试信息
-  console.log('[CartWhisper Popup] === DEBUG INFO ===');
-  console.log('[CartWhisper Popup] Shop:', shop);
-  console.log('[CartWhisper Popup] Limit:', limit);
-  console.log('[CartWhisper Popup] Using direct backend connection');
-  console.log('[CartWhisper Popup] Backend URL:', backendUrl);
-  console.log('[CartWhisper Popup] =================');
+  // Debug info
 
-  // 关闭弹窗
-  window.cartWhisperClosePopup = function() {
+  // Close popup (namespaced)
+  window.CartWhisperAI = window.CartWhisperAI || {};
+  window.CartWhisperAI.closePopup = function() {
     popup.classList.remove('active');
     setTimeout(() => {
       popup.style.display = 'none';
     }, 300);
   };
 
-  // 点击遮罩关闭
+  var closeBtn = document.getElementById('cart-whisper-popup-close-btn');
+  if (closeBtn) closeBtn.addEventListener('click', function() { window.CartWhisperAI.closePopup(); });
+  var continueBtn = document.getElementById('cart-whisper-popup-continue-btn');
+  if (continueBtn) continueBtn.addEventListener('click', function() { window.CartWhisperAI.closePopup(); });
+
   popup.addEventListener('click', function(e) {
     if (e.target === popup) {
-      cartWhisperClosePopup();
+      window.CartWhisperAI.closePopup();
     }
   });
 
-  // ESC键关闭
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && popup.classList.contains('active')) {
-      cartWhisperClosePopup();
+      window.CartWhisperAI.closePopup();
     }
   });
 
-  // ===== localStorage 缓存管理器 =====
   const CACHE_PREFIX = 'cartwhisper_rec_';
-  const CACHE_TTL = 3600000; // 1小时（毫秒）
+  const CACHE_TTL = 3600000;
 
-  // 从 localStorage 获取缓存（完整列表，不限制数量）
   function getLocalCache(productId) {
     try {
       const key = CACHE_PREFIX + productId;
       const cached = localStorage.getItem(key);
       if (!cached) {
-        console.log('[CartWhisper Cache] No local cache for product', productId);
         return null;
       }
 
@@ -479,20 +488,16 @@
       const age = Date.now() - data.timestamp;
 
       if (age > CACHE_TTL) {
-        console.log('[CartWhisper Cache] Cache expired (age:', Math.round(age/1000), 's)');
         localStorage.removeItem(key);
         return null;
       }
 
-      console.log('[CartWhisper Cache] ✓ Cache hit! (age:', Math.round(age/1000), 's) - got', data.recommendations.length, 'recommendations');
       return data.recommendations;
     } catch (e) {
-      console.error('[CartWhisper Cache] Error reading cache:', e);
       return null;
     }
   }
 
-  // 保存到 localStorage（存储完整列表）
   function setLocalCache(productId, recommendations) {
     try {
       const key = CACHE_PREFIX + productId;
@@ -502,13 +507,10 @@
         productId: productId
       };
       localStorage.setItem(key, JSON.stringify(data));
-      console.log('[CartWhisper Cache] ✓ Cached', recommendations.length, 'recommendations');
     } catch (e) {
-      console.error('[CartWhisper Cache] Error saving cache:', e);
     }
   }
 
-  // 追踪展示（当推荐显示时）
   function trackImpression(sourceProductId, recommendations) {
     if (!recommendations || recommendations.length === 0) return;
 
@@ -525,19 +527,17 @@
       sourceProductId: String(sourceProductId),
       targetProductIds: targetProductIds
     };
-    console.log('[CartWhisper Popup] Tracking impression:', payload);
 
-    fetch(`${backendUrl}/api/tracking/impression`, {
+    fetch(`${proxyBase}/tracking/impression`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(r => r.json())
-    .then(data => console.log('[CartWhisper Popup] Impression result:', data))
-    .catch(e => console.log('[CartWhisper Popup] Impression tracking failed:', e.message));
+    .then(() => {})
+    .catch(() => {});
   }
 
-  // 追踪点击（当用户点击 Add）
   function trackClick(sourceProductId, targetProductId) {
     const cleanSourceId = String(sourceProductId).replace('gid://shopify/Product/', '');
     const cleanTargetId = String(targetProductId).replace('gid://shopify/Product/', '');
@@ -547,32 +547,27 @@
       sourceProductId: cleanSourceId,
       targetProductId: cleanTargetId
     };
-    console.log('[CartWhisper Popup] Tracking click:', payload);
 
-    fetch(`${backendUrl}/api/tracking/click`, {
+    fetch(`${proxyBase}/tracking/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(r => r.json())
-    .then(data => console.log('[CartWhisper Popup] Click result:', data))
-    .catch(e => console.log('[CartWhisper Popup] Click tracking failed:', e.message));
+    .then(() => {})
+    .catch(() => {});
   }
 
-  // 获取推荐，每次都先获取最新的订阅级别
   async function fetchRecommendations(productId) {
-    // 🔥 调用 Shopify 应用的 API（有正确的订阅检查逻辑）
-    const fetchUrl = `${appUrl}/api/recommendations/${encodeURIComponent(shop)}/${productId}?limit=${limit}`;
-    console.log('[CartWhisper Popup] Fetching recommendations from Shopify App:', fetchUrl);
+    const fetchUrl = `${proxyBase}/recommendations?product_id=${encodeURIComponent(productId)}&shop=${encodeURIComponent(shop)}&limit=${limit}`;
 
     const maxRetries = 2;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        console.log(`[CartWhisper] Attempt ${attempt + 1}/${maxRetries + 1}`);
 
         const response = await fetch(fetchUrl, {
           method: 'GET',
@@ -581,69 +576,52 @@
         });
 
         clearTimeout(timeoutId);
-        console.log('[CartWhisper] Response status:', response.status);
 
         if (!response.ok) {
           const text = await response.text();
-          console.error('[CartWhisper] Error response:', text);
           throw new Error(`HTTP ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('[CartWhisper] Got recommendations:', data);
 
         const apiRecommendations = data.recommendations || [];
         const maxRecommendations = data.maxRecommendations || 1;
         const showWatermark = data.showWatermark !== false;
 
-        console.log(`[CartWhisper] API returned: ${apiRecommendations.length} recommendations, maxRecommendations: ${maxRecommendations}, showWatermark: ${showWatermark}`);
 
-        // 显示/隐藏水印（根据最新的订阅状态）
         const watermarkEl = document.getElementById('cart-whisper-watermark');
         if (watermarkEl) {
           watermarkEl.style.display = showWatermark ? 'block' : 'none';
         }
 
-        // 🔥 检查缓存（在获取订阅级别之后）
         const cached = getLocalCache(productId);
         let recommendations;
 
         if (cached && cached.length > 0) {
-          console.log(`[CartWhisper] Using cached data (${cached.length} items), trimming to ${maxRecommendations}`);
           recommendations = cached.slice(0, maxRecommendations);
-          // 显示缓存警告
           const warningEl = document.getElementById('cart-whisper-cache-warning');
           if (warningEl) warningEl.style.display = 'flex';
         } else {
-          console.log(`[CartWhisper] No cache, using API data (${apiRecommendations.length} items), trimming to ${maxRecommendations}`);
           recommendations = apiRecommendations.slice(0, maxRecommendations);
 
-          // 保存完整的推荐列表到缓存（不限制数量）
           if (apiRecommendations.length > 0) {
             setLocalCache(productId, apiRecommendations);
           }
 
-          // 隐藏缓存警告（这是新数据）
           const warningEl = document.getElementById('cart-whisper-cache-warning');
           if (warningEl) warningEl.style.display = 'none';
         }
 
-        console.log(`[CartWhisper] Final recommendations count: ${recommendations.length}`);
         return recommendations;
 
       } catch (error) {
         const errorMsg = error.name === 'AbortError' ? 'Request timeout' : error.message;
-        console.error(`[CartWhisper] Attempt ${attempt + 1}/${maxRetries + 1} failed:`, errorMsg);
 
-        // 最后一次失败，返回空并显示友好提示
         if (attempt === maxRetries) {
-          console.error('[CartWhisper] All retries failed, showing empty recommendations');
           return [];
         }
 
-        // 等待后重试（指数退避）
         const delay = Math.min(1000 * Math.pow(2, attempt), 3000);
-        console.log(`[CartWhisper] Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -651,28 +629,27 @@
     return [];
   }
 
-  // 添加到购物车
-  window.cartWhisperPopupAdd = async function(button, handle, numericId) {
-    console.log('[CartWhisper Popup] Add button clicked, handle:', handle, 'numericId:', numericId);
+  window.CartWhisperAI.popupAdd = async function(button, handle, numericId) {
 
-    // 追踪点击
     if (currentSourceProductId && numericId) {
       trackClick(currentSourceProductId, numericId);
     }
+
+    window.CartWhisperAI._suppressNextCartChange = true;
 
     button.disabled = true;
     button.textContent = '{{ block.settings.adding_text }}';
 
     try {
-      // 用 handle 获取产品信息
-      const productResponse = await fetch(`/products/${handle}.js`);
+      var validHandle = String(handle || '').replace(/[^a-zA-Z0-9\-_]/g, '');
+      if (!validHandle) throw new Error('Invalid handle');
+
+      const productResponse = await fetch(`/products/${validHandle}.js`);
       if (!productResponse.ok) {
         throw new Error('Product not found');
       }
       const product = await productResponse.json();
       const variantId = product.variants[0]?.id;
-
-      console.log('[CartWhisper] Variant ID:', variantId);
 
       if (variantId) {
         const addResponse = await fetch('/cart/add.js', {
@@ -684,7 +661,6 @@
         if (addResponse.ok) {
           button.textContent = '{{ block.settings.added_text }}';
           document.dispatchEvent(new CustomEvent('cart:refresh'));
-          // 2秒后恢复按钮状态
           setTimeout(() => {
             button.disabled = false;
             button.textContent = '{{ block.settings.button_text }}';
@@ -694,13 +670,11 @@
         }
       }
     } catch (error) {
-      console.error('[CartWhisper] Failed to add to cart:', error);
       button.textContent = '{{ block.settings.button_text }}';
       button.disabled = false;
     }
   };
 
-  // 渲染推荐
   function renderRecommendations(recommendations) {
     if (!recommendations || recommendations.length === 0) {
       productsContainer.innerHTML = '<p class="cart-whisper-popup-loading">{{ block.settings.no_recommendations_text }}</p>';
@@ -711,13 +685,12 @@
 
     productsContainer.innerHTML = recommendations.map(rec => {
       const price = formatMoney(rec.price);
-      const imageUrl = rec.image || 'https://via.placeholder.com/80x80?text=No+Image';
-      const productUrl = rec.handle ? `/products/${rec.handle}` : `/products/${rec.numericId}`;
-      const addHandle = rec.handle || rec.numericId;
-      // 用于追踪的数字 ID
+      const imageUrl = rec.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%23999'%3ENo Image%3C/text%3E%3C/svg%3E";
+      const validHandle = validateHandle(rec.handle);
+      const productUrl = validHandle ? `/products/${validHandle}` : `/products/${rec.numericId}`;
+      const addHandle = validHandle || rec.numericId;
       const trackingId = rec.numericId || (rec.id ? rec.id.replace('gid://shopify/Product/', '') : '');
 
-      // 过滤推荐理由：如果包含中文|英文格式，只保留英文部分
       let reasoning = rec.reasoning || '';
       if (reasoning.includes('|')) {
         reasoning = reasoning.split('|')[1].trim();
@@ -725,17 +698,17 @@
 
       return `
         <div class="cart-whisper-popup-product">
-          <a href="${productUrl}">
-            <img class="cart-whisper-popup-product-image" src="${imageUrl}" alt="${escapeHtml(rec.title)}" loading="lazy">
+          <a href="${sanitizeUrl(productUrl)}">
+            <img class="cart-whisper-popup-product-image" src="${sanitizeUrl(imageUrl)}" alt="${escapeAttr(rec.title)}" loading="lazy">
           </a>
           <div class="cart-whisper-popup-product-info">
             ${reasoning ? `<p class="cart-whisper-popup-product-reason">${escapeHtml(reasoning)}</p>` : ''}
-            <a href="${productUrl}" style="text-decoration:none;color:inherit;">
+            <a href="${sanitizeUrl(productUrl)}" style="text-decoration:none;color:inherit;">
               <h4 class="cart-whisper-popup-product-title">${escapeHtml(rec.title)}</h4>
             </a>
             <div class="cart-whisper-popup-product-bottom">
               <span class="cart-whisper-popup-product-price">${price}</span>
-              <button class="cart-whisper-popup-add-btn" onclick="event.stopPropagation(); cartWhisperPopupAdd(this, '${addHandle}', '${trackingId}')">
+              <button class="cart-whisper-popup-add-btn" data-handle="${escapeAttr(addHandle)}" data-tracking-id="${escapeAttr(trackingId)}">
                 {{ block.settings.button_text }}
               </button>
             </div>
@@ -744,16 +717,14 @@
       `;
     }).join('');
 
-    // 追踪展示
     if (currentSourceProductId) {
       trackImpression(currentSourceProductId, recommendations);
     }
   }
 
   function formatMoney(price) {
-    // 直接格式化价格，不需要转换
     const amount = parseFloat(price).toFixed(2);
-    return `$${amount}`;
+    return moneyFormat.replace('{{amount}}', amount).replace('{{amount_no_decimals}}', Math.round(parseFloat(price)));
   }
 
   function escapeHtml(text) {
@@ -762,14 +733,32 @@
     return div.innerHTML;
   }
 
-  // 显示弹窗
-  async function showPopup(productId) {
-    console.log('[CartWhisper Popup] showPopup called with productId:', productId);
+  function escapeAttr(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/'/g, '&#39;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
 
-    // 保存源商品 ID 用于追踪
+  function validateHandle(handle) {
+    if (!handle) return '';
+    return String(handle).replace(/[^a-zA-Z0-9\-_]/g, '');
+  }
+
+  function sanitizeUrl(url) {
+    if (!url) return '';
+    var str = String(url);
+    if (str.startsWith('/')) return str;
+    if (str.startsWith('https://')) return str;
+    if (str.startsWith('data:image/')) return str;
+    return '';
+  }
+  async function showPopup(productId) {
+
     currentSourceProductId = productId;
 
-    console.log('[CartWhisper Popup] Showing popup...');
     productsContainer.innerHTML = '<p class="cart-whisper-popup-loading">{{ block.settings.loading_text }}</p>';
     popup.style.display = 'flex';
 
@@ -778,13 +767,10 @@
     });
 
     const recommendations = await fetchRecommendations(productId);
-    console.log('[CartWhisper Popup] Got recommendations for popup:', recommendations);
     renderRecommendations(recommendations);
   }
 
-  // 注册 showPopup 函数到全局，供拦截器使用
-  window._cartWhisperShowPopup = showPopup;
-  console.log('[CartWhisper] Popup function registered');
+  window.CartWhisperAI._showPopup = showPopup;
 
 })();
 </script>
